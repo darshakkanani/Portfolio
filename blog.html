@@ -43,8 +43,8 @@
       from a cybersecurity student in the trenches.
     </p>
     <div class="blog-stats">
-      <div class="bs-item"><span class="bs-num">6</span><span class="bs-label">Posts</span></div>
-      <div class="bs-item"><span class="bs-num">4</span><span class="bs-label">Topics</span></div>
+      <div class="bs-item"><span class="bs-num">1</span><span class="bs-label">Posts</span></div>
+      <div class="bs-item"><span class="bs-num">2</span><span class="bs-label">Topics</span></div>
       <div class="bs-item"><span class="bs-num">+</span><span class="bs-label">Learning</span></div>
     </div>
   </div>
@@ -64,137 +64,29 @@
 
   <div class="blog-grid" id="blog-grid">
 
-    <!-- FEATURED POST -->
-    <a class="blog-card blog-card-featured" href="#" data-cat="hacking">
-      <div class="featured-thumb">
-        <span class="featured-thumb-label">HTB</span>
-      </div>
-      <div class="featured-body">
-        <span class="featured-badge">Featured Post</span>
-        <h2>My First CTF Win: How I Solved a Privilege Escalation Challenge</h2>
-        <p>
-          A complete walkthrough of a HackTheBox challenge that taught me Linux SUID abuse,
-          wildcard injection, and the power of enumeration scripts.
-        </p>
-        <div class="featured-meta">
-          <span class="rbadge rb-r">Hacking</span>
-          <span class="blog-date">Jan 15, 2025</span>
-          <span class="blog-read-time">8 min read</span>
-        </div>
-        <span class="blog-arrow" style="margin-top:0.5rem;">Read More →</span>
-      </div>
-    </a>
-
-    <!-- POST 2 -->
-    <a class="blog-card" href="#" data-cat="webapp">
+    <!-- POST — HackerOne #504751 (Bug Bounty) -->
+    <a class="blog-card" href="blog-h1-504751-password-reset-poisoning.html" data-cat="webapp">
       <div class="blog-thumb">
-        <span class="blog-thumb-label">IDOR</span>
+        <span class="blog-thumb-label">H1</span>
       </div>
       <div class="blog-body">
         <div class="blog-meta">
-          <span class="rbadge rb-b blog-cat">Web App</span>
-          <span class="blog-date">Feb 3, 2025</span>
+          <span class="rbadge rb-b blog-cat">Bug Bounty</span>
+          <span class="blog-date">Jun 10, 2025</span>
         </div>
-        <div class="blog-title">Breaking IDOR: How I Found a $500 Bug Bounty Vulnerability</div>
+        <div class="blog-title">Password Reset Poisoning via Host Header Injection — HackerOne #504751</div>
         <p class="blog-excerpt">
-          A hands-on breakdown of how an insecure direct object reference flaw let me access
-          any user's private data with a single parameter change.
+          How a single missing header validation on Nextcloud's password-reset flow
+          let an attacker silently redirect reset tokens to their own server — and how to
+          test for it in every web app assessment.
         </p>
         <div class="blog-foot">
-          <span class="blog-read-time">6 min read</span>
+          <span class="blog-read-time">10 min read</span>
           <span class="blog-arrow">→</span>
         </div>
       </div>
     </a>
 
-    <!-- POST 3 (was 4) -->
-    <a class="blog-card" href="#" data-cat="ai">
-      <div class="blog-thumb">
-        <span class="blog-thumb-label">LLM</span>
-      </div>
-      <div class="blog-body">
-        <div class="blog-meta">
-          <span class="rbadge rb-y blog-cat">AI Security</span>
-          <span class="blog-date">Mar 5, 2025</span>
-        </div>
-        <div class="blog-title">Prompt Injection 101: Hijacking AI Assistants with Plain Text</div>
-        <p class="blog-excerpt">
-          Five real prompt injection patterns — from simple overrides to multi-turn agent
-          manipulation — and why they work at the model architecture level.
-        </p>
-        <div class="blog-foot">
-          <span class="blog-read-time">7 min read</span>
-          <span class="blog-arrow">→</span>
-        </div>
-      </div>
-    </a>
-
-    <!-- POST 5 -->
-    <a class="blog-card" href="#" data-cat="webapp">
-      <div class="blog-thumb">
-        <span class="blog-thumb-label">SSRF</span>
-      </div>
-      <div class="blog-body">
-        <div class="blog-meta">
-          <span class="rbadge rb-b blog-cat">Web App</span>
-          <span class="blog-date">Mar 20, 2025</span>
-        </div>
-        <div class="blog-title">SSRF Deep Dive: When Servers Fetch What You Tell Them</div>
-        <p class="blog-excerpt">
-          Server-Side Request Forgery is more dangerous than it looks — internal network
-          scanning, cloud metadata endpoint leakage, and blind SSRF with DNS canaries.
-        </p>
-        <div class="blog-foot">
-          <span class="blog-read-time">9 min read</span>
-          <span class="blog-arrow">→</span>
-        </div>
-      </div>
-    </a>
-
-    <!-- POST 6 -->
-    <a class="blog-card" href="#" data-cat="hacking">
-      <div class="blog-thumb">
-        <span class="blog-thumb-label">HTB</span>
-      </div>
-      <div class="blog-body">
-        <div class="blog-meta">
-          <span class="rbadge rb-r blog-cat">Hacking</span>
-          <span class="blog-date">Apr 1, 2025</span>
-        </div>
-        <div class="blog-title">Nmap to Root: My Full Methodology for HTB Machines</div>
-        <p class="blog-excerpt">
-          From the first scan to the root flag — my exact workflow for approaching any
-          HackTheBox machine. Recon → enum → exploit → priv-esc.
-        </p>
-        <div class="blog-foot">
-          <span class="blog-read-time">12 min read</span>
-          <span class="blog-arrow">→</span>
-        </div>
-      </div>
-    </a>
-
-
-    <!-- POST 8 -->
-    <a class="blog-card" href="#" data-cat="ai">
-      <div class="blog-thumb">
-        <span class="blog-thumb-label">ML</span>
-      </div>
-      <div class="blog-body">
-        <div class="blog-meta">
-          <span class="rbadge rb-y blog-cat">AI Security</span>
-          <span class="blog-date">May 2, 2025</span>
-        </div>
-        <div class="blog-title">MITRE ATLAS in Plain English: Mapping Attacks on AI Systems</div>
-        <p class="blog-excerpt">
-          A guided tour through the MITRE ATLAS framework — the adversarial ML equivalent
-          of ATT&amp;CK — and how to apply it to audit LLM-powered applications.
-        </p>
-        <div class="blog-foot">
-          <span class="blog-read-time">8 min read</span>
-          <span class="blog-arrow">→</span>
-        </div>
-      </div>
-    </a>
 
   </div>
 
