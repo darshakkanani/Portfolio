@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Darshak Patel's personal ethical hacking methodology — recon, scanning, exploitation, privilege escalation, post-exploitation, and reporting." />
+  <title>Hacking Methodology | Darshak Patel</title>
+  <link rel="stylesheet" href="assets/css/style.css" />
+  <link rel="stylesheet" href="assets/css/pages/methodology.css" />
+</head>
+<body>
+
+<canvas id="particles"></canvas>
+
+<nav>
+  <a href="index.html" class="nav-logo"><span class="bracket">[</span>dp<span class="bracket">]</span></a>
+  <ul class="nav-links">
+    <li><a href="about.html">about</a></li>
+    <li><a href="expertise.html">expertise</a></li>
+    <li><a href="certifications.html">certifications</a></li>
+    <li><a href="achievements.html">achievements</a></li>
+    <li><a href="tools.html">tools</a></li>
+    <li><a href="resources.html" class="active">resources</a></li>
+    <li><a href="blog.html">blog</a></li>
+    <li><a href="contact.html">contact</a></li>
+  </ul>
+  <a href="mailto:your@email.com" class="nav-cta">Hire Me</a>
+  <div class="nav-hamburger"><span></span><span></span><span></span></div>
+</nav>
+
+<div class="page-header">
+  <p class="section-label">ethical hacking</p>
+  <h1 class="section-title">My Hacking Methodology</h1>
+  <p class="section-sub">A systematic, phase-driven approach to ethical hacking — from passive recon to post-exploitation and final report.</p>
+</div>
+
+<section class="cert-page-body">
+  <div class="container">
+
+    <div class="reports-page-back">
+      <a href="resources.html" class="reports-back-link">
+        <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
+        Back to Resources
+      </a>
+    </div>
+
+    <!-- ── PHASE INDEX ─────────────────────────────── -->
+    <div class="mth-index reveal">
+      <p class="mth-index-label">Phases</p>
+      <div class="mth-index-pills">
+        <a href="#phase-1" class="mth-pill">01 · Recon</a>
+        <a href="#phase-2" class="mth-pill">02 · Scanning</a>
+        <a href="#phase-3" class="mth-pill">03 · Enumeration</a>
+        <a href="#phase-4" class="mth-pill">04 · Exploitation</a>
+        <a href="#phase-5" class="mth-pill">05 · Privilege Escalation</a>
+        <a href="#phase-6" class="mth-pill">06 · Post-Exploitation</a>
+        <a href="#phase-7" class="mth-pill">07 · Reporting</a>
+      </div>
+    </div>
+
+    <!-- ══════════════════════════════════════════════
+         PHASE 01 — RECONNAISSANCE
+    ══════════════════════════════════════════════ -->
+    <div class="mth-phase reveal" id="phase-1">
+      <div class="mth-phase-header">
+        <span class="mth-num">01</span>
+        <div>
+          <h2 class="mth-phase-title">Reconnaissance</h2>
+          <p class="mth-phase-sub">PASSIVE · OSINT · FOOTPRINTING</p>
+        </div>
+      </div>
+      <div class="mth-phase-body">
+        <div class="mth-desc">
+          <p>Recon is the most critical phase. The more I know about the target before touching it, the more precise and efficient the rest of the engagement becomes. All recon at this stage is passive — no packets sent to the target.</p>
+          <p>I build a complete picture: infrastructure, technology stack, people, exposed assets, and historical data.</p>
+        </div>
+        <div class="mth-steps">
+          <div class="mth-step">
+            <div class="mth-step-icon"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></div>
+            <div><strong>Domain & Subdomain Enum</strong>Certificate transparency logs (crt.sh), subfinder, amass, and passive DNS to discover all attack surface subdomains.</div>
+          </div>
+          <div class="mth-step">
+            <div class="mth-step-icon"><svg viewBox="0 0 24 24"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg></div>
+            <div><strong>Shodan / Censys Recon</strong>Find exposed services, open ports, and misconfigured assets tied to the target's IP ranges and ASN.</div>
+          </div>
+          <div class="mth-step">
+            <div class="mth-step-icon"><svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg></div>
+            <div><strong>People & OSINT</strong>LinkedIn, GitHub, HaveIBeenPwned — identify employees, leaked credentials, and exposed source code.</div>
+          </div>
+          <div class="mth-step">
+            <div class="mth-step-icon"><svg viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg></div>
+            <div><strong>Tech Fingerprinting</strong>Wappalyzer, BuiltWith, HTTP headers, and error pages to identify frameworks, CMS, server software, and CDNs.</div>
+          </div>
+        </div>
+      </div>
+      <div class="mth-tools">
+        <p class="mth-tools-label">Tools</p>
+        <div class="mth-tools-chips">
+          <span class="tool-chip">subfinder</span><span class="tool-chip">amass</span><span class="tool-chip">dnsx</span>
+          <span class="tool-chip">crt.sh</span><span class="tool-chip">Shodan</span><span class="tool-chip">theHarvester</span>
+          <span class="tool-chip">Google Dorks</span><span class="tool-chip">Wayback Machine</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════════════════════════════════════════════
+         PHASE 02 — SCANNING
+    ══════════════════════════════════════════════ -->
+    <div class="mth-phase reveal" id="phase-2">
+      <div class="mth-phase-header">
+        <span class="mth-num">02</span>
+        <div>
+          <h2 class="mth-phase-title">Scanning</h2>
+          <p class="mth-phase-sub">PORT SCAN · SERVICE DETECTION · VULN SCAN</p>
+        </div>
+      </div>
+      <div class="mth-phase-body">
+        <div class="mth-desc">
+          <p>With a full asset list in hand I move to active scanning — identifying every open port, running service, and software version across all in-scope hosts.</p>
+        </div>
+        <div class="mth-steps">
+          <div class="mth-step">
+            <div class="mth-step-icon"><svg viewBox="0 0 24 24"><polyline points="4 17 10 11 4 5"/><line x1="12" y1="19" x2="20" y2="19"/></svg></div>
+            <div><strong>Full-Port Nmap Scan</strong>TCP SYN scan on all 65,535 ports. Follow up with service/version detection (-sV) and default scripts (-sC) on discovered ports.</div>
+          </div>
+          <div class="mth-step">
+            <div class="mth-step-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg></div>
+            <div><strong>Web Service Discovery</strong>httpx to probe all discovered hosts for live web services, titles, status codes, and technologies.</div>
+          </div>
+          <div class="mth-step">
+            <div class="mth-step-icon"><svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div>
+            <div><strong>Automated Vuln Scanning</strong>Nuclei templates for CVE detection, misconfigurations, and exposed panels. Used as a supplement to manual work — never a replacement.</div>
+          </div>
+        </div>
+      </div>
+      <div class="mth-tools">
+        <p class="mth-tools-label">Tools</p>
+        <div class="mth-tools-chips">
+          <span class="tool-chip">Nmap</span><span class="tool-chip">httpx</span><span class="tool-chip">Nuclei</span><span class="tool-chip">Masscan</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════════════════════════════════════════════
+         PHASE 03 — ENUMERATION
+    ══════════════════════════════════════════════ -->
+    <div class="mth-phase reveal" id="phase-3">
+      <div class="mth-phase-header">
+        <span class="mth-num">03</span>
+        <div>
+          <h2 class="mth-phase-title">Enumeration</h2>
+          <p class="mth-phase-sub">SMB · FTP · SSH · WEB · AD</p>
+        </div>
+      </div>
+      <div class="mth-phase-body">
+        <div class="mth-desc">
+          <p>Deep-dive into each discovered service. The goal is to pull as much information as possible from each service before attempting exploitation — valid usernames, shares, version-specific weaknesses, and misconfigurations.</p>
+        </div>
+        <div class="mth-steps">
+          <div class="mth-step">
+            <div class="mth-step-icon"><svg viewBox="0 0 24 24"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg></div>
+            <div><strong>SMB / Samba Enum</strong>List shares, check null sessions, enumerate users and groups via enum4linux-ng and smbclient.</div>
+          </div>
+          <div class="mth-step">
+            <div class="mth-step-icon"><svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></div>
+            <div><strong>Active Directory Recon</strong>BloodHound / SharpHound for AD graph mapping — identify attack paths, Kerberoastable accounts, and AS-REP roasting targets.</div>
+          </div>
+          <div class="mth-step">
+            <div class="mth-step-icon"><svg viewBox="0 0 24 24"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg></div>
+            <div><strong>Web Enumeration</strong>FFUF for directories and virtual hosts. Gobuster for file extensions. Collect all endpoints from JS bundles and Wayback Machine.</div>
+          </div>
+          <div class="mth-step">
+            <div class="mth-step-icon"><svg viewBox="0 0 24 24"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></svg></div>
+            <div><strong>Database & SNMP</strong>Check for unauthenticated DB access, SNMP community strings, and anonymous LDAP binds.</div>
+          </div>
+        </div>
+      </div>
+      <div class="mth-tools">
+        <p class="mth-tools-label">Tools</p>
+        <div class="mth-tools-chips">
+          <span class="tool-chip">enum4linux-ng</span><span class="tool-chip">smbclient</span><span class="tool-chip">BloodHound</span>
+          <span class="tool-chip">FFUF</span><span class="tool-chip">Gobuster</span><span class="tool-chip">ldapsearch</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════════════════════════════════════════════
+         PHASE 04 — EXPLOITATION
+    ══════════════════════════════════════════════ -->
+    <div class="mth-phase reveal" id="phase-4">
+      <div class="mth-phase-header">
+        <span class="mth-num">04</span>
+        <div>
+          <h2 class="mth-phase-title">Exploitation</h2>
+          <p class="mth-phase-sub">INITIAL ACCESS · SHELLS · CVE EXPLOITATION</p>
+        </div>
+      </div>
+      <div class="mth-phase-body">
+        <div class="mth-desc">
+          <p>Using the intelligence gathered, I select the most reliable attack path for initial access. Manual exploitation always comes first — I use Metasploit only as a last resort or to confirm a finding.</p>
+        </div>
+        <div class="mth-steps">
+          <div class="mth-step">
+            <div class="mth-step-icon"><svg viewBox="0 0 24 24"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg></div>
+            <div><strong>Public Exploit Research</strong>Search ExploitDB, GitHub, and CVE databases for known vulnerabilities matching enumerated software versions.</div>
+          </div>
+          <div class="mth-step">
+            <div class="mth-step-icon"><svg viewBox="0 0 24 24"><polyline points="4 17 10 11 4 5"/><line x1="12" y1="19" x2="20" y2="19"/></svg></div>
+            <div><strong>Manual Exploitation</strong>Craft and test payloads manually — understand exactly what the exploit does before running it. Modify public PoCs as needed.</div>
+          </div>
+          <div class="mth-step">
+            <div class="mth-step-icon"><svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></div>
+            <div><strong>Credential Attacks</strong>Password spraying, credential stuffing with collected usernames. Brute-force only where explicitly in-scope and rate-limit safe.</div>
+          </div>
+          <div class="mth-step">
+            <div class="mth-step-icon"><svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></div>
+            <div><strong>Shell Stabilisation</strong>Upgrade raw shells to fully interactive TTY. Python pty, socat, or rlwrap — never work in a raw netcat shell.</div>
+          </div>
+        </div>
+      </div>
+      <div class="mth-tools">
+        <p class="mth-tools-label">Tools</p>
+        <div class="mth-tools-chips">
+          <span class="tool-chip">Metasploit</span><span class="tool-chip">Netcat</span><span class="tool-chip">ExploitDB</span>
+          <span class="tool-chip">CrackMapExec</span><span class="tool-chip">Hydra</span><span class="tool-chip">pwncat</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════════════════════════════════════════════
+         PHASE 05 — PRIVILEGE ESCALATION
+    ══════════════════════════════════════════════ -->
+    <div class="mth-phase reveal" id="phase-5">
+      <div class="mth-phase-header">
+        <span class="mth-num">05</span>
+        <div>
+          <h2 class="mth-phase-title">Privilege Escalation</h2>
+          <p class="mth-phase-sub">LINUX · WINDOWS · ACTIVE DIRECTORY</p>
+        </div>
+      </div>
+      <div class="mth-phase-body">
+        <div class="mth-desc">
+          <p>Once inside, I escalate to root or SYSTEM. I always enumerate manually first, then use automated scripts to catch anything I may have missed. Understanding <em>why</em> a privesc works matters more than just running a script.</p>
+        </div>
+        <div class="mth-steps">
+          <div class="mth-step">
+            <div class="mth-step-icon"><svg viewBox="0 0 24 24"><polyline points="17 11 12 6 7 11"/><polyline points="17 18 12 13 7 18"/></svg></div>
+            <div><strong>Linux PrivEsc</strong>SUID/SGID binaries, sudo -l misconfigurations, writable cron jobs, PATH hijacking, kernel exploits, and weak file permissions.</div>
+          </div>
+          <div class="mth-step">
+            <div class="mth-step-icon"><svg viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg></div>
+            <div><strong>Windows PrivEsc</strong>Token impersonation (PrintSpoofer, GodPotato), unquoted service paths, AlwaysInstallElevated, weak registry permissions.</div>
+          </div>
+          <div class="mth-step">
+            <div class="mth-step-icon"><svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/></svg></div>
+            <div><strong>Active Directory Attacks</strong>Kerberoasting, AS-REP roasting, Pass-the-Hash, Pass-the-Ticket, DCSync, and ACL abuse paths found via BloodHound.</div>
+          </div>
+        </div>
+      </div>
+      <div class="mth-tools">
+        <p class="mth-tools-label">Tools</p>
+        <div class="mth-tools-chips">
+          <span class="tool-chip">LinPEAS</span><span class="tool-chip">WinPEAS</span><span class="tool-chip">GTFOBins</span>
+          <span class="tool-chip">BloodHound</span><span class="tool-chip">Rubeus</span><span class="tool-chip">Mimikatz</span>
+          <span class="tool-chip">PrintSpoofer</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════════════════════════════════════════════
+         PHASE 06 — POST-EXPLOITATION
+    ══════════════════════════════════════════════ -->
+    <div class="mth-phase reveal" id="phase-6">
+      <div class="mth-phase-header">
+        <span class="mth-num">06</span>
+        <div>
+          <h2 class="mth-phase-title">Post-Exploitation</h2>
+          <p class="mth-phase-sub">PERSISTENCE · LATERAL MOVEMENT · EXFILTRATION</p>
+        </div>
+      </div>
+      <div class="mth-phase-body">
+        <div class="mth-desc">
+          <p>After reaching the objective, I document what an attacker <em>could</em> do — without actually causing harm. The goal is to demonstrate real business impact to drive accurate severity ratings and fix prioritisation.</p>
+        </div>
+        <div class="mth-steps">
+          <div class="mth-step">
+            <div class="mth-step-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg></div>
+            <div><strong>Lateral Movement</strong>Use compromised credentials and tokens to pivot to adjacent hosts — pass-the-hash, SSH key reuse, and WMI/RDP.</div>
+          </div>
+          <div class="mth-step">
+            <div class="mth-step-icon"><svg viewBox="0 0 24 24"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></svg></div>
+            <div><strong>Data Access Assessment</strong>Identify what sensitive data is accessible — PII, credentials, financial records — document without mass exfiltration.</div>
+          </div>
+          <div class="mth-step">
+            <div class="mth-step-icon"><svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div>
+            <div><strong>Objective Documentation</strong>Capture screenshots and request logs at each stage. Every step is traceable and reproducible for the report.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════════════════════════════════════════════
+         PHASE 07 — REPORTING
+    ══════════════════════════════════════════════ -->
+    <div class="mth-phase reveal" id="phase-7">
+      <div class="mth-phase-header">
+        <span class="mth-num">07</span>
+        <div>
+          <h2 class="mth-phase-title">Reporting</h2>
+          <p class="mth-phase-sub">FINDINGS · IMPACT · REMEDIATION</p>
+        </div>
+      </div>
+      <div class="mth-phase-body">
+        <div class="mth-desc">
+          <p>A pentest is only as valuable as its report. I write findings so a developer, a manager, and a CISO can all understand them. Every finding includes a reproduction path, impact statement, and concrete fix.</p>
+        </div>
+        <div class="mth-steps">
+          <div class="mth-step">
+            <div class="mth-step-icon"><svg viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg></div>
+            <div><strong>CVSS Severity Rating</strong>Rate each finding with CVSS v3.1 — attack vector, complexity, privileges required, user interaction, and impact scope.</div>
+          </div>
+          <div class="mth-step">
+            <div class="mth-step-icon"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg></div>
+            <div><strong>Finding Structure</strong>Title → Severity → Summary → Steps to Reproduce → PoC → Impact → Remediation → References.</div>
+          </div>
+          <div class="mth-step">
+            <div class="mth-step-icon"><svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div>
+            <div><strong>Remediation Guidance</strong>Specific, actionable fixes — not just "patch the server" but exact config changes, code patterns, or mitigating controls.</div>
+          </div>
+        </div>
+      </div>
+      <div class="mth-tools">
+        <p class="mth-tools-label">Report structure</p>
+        <div class="mth-tools-chips">
+          <span class="tool-chip">Executive Summary</span><span class="tool-chip">Scope</span>
+          <span class="tool-chip">Findings (CVSS)</span><span class="tool-chip">PoC</span>
+          <span class="tool-chip">Impact</span><span class="tool-chip">Remediation</span>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<footer>
+  <p>© 2025 <span class="f-name">Darshak Patel</span> · B.Tech CSE Cybersecurity</p>
+  <div class="f-links">
+    <a href="index.html">Home</a>
+    <a href="about.html">About</a>
+    <a href="expertise.html">Expertise</a>
+    <a href="certifications.html">Certifications</a>
+    <a href="achievements.html">Achievements</a>
+    <a href="tools.html">Tools</a>
+    <a href="resources.html">Resources</a>
+    <a href="blog.html">Blog</a>
+    <a href="contact.html">Contact</a>
+  </div>
+</footer>
+
+<script src="assets/js/main.js"></script>
+<script src="assets/js/pages/methodology.js"></script>
+</body>
+</html>

@@ -1,0 +1,107 @@
+/* ═══════════════════════════════════════════════════
+   Tools page — layout & component styles
+═══════════════════════════════════════════════════ */
+
+/* ── SECTION STRUCTURE ───────────────────────────── */
+.tools-section { margin-bottom: 4rem; }
+.tools-section-heading {
+  display: flex; align-items: center; gap: 1rem; margin-bottom: 1.8rem;
+}
+.tools-section-heading h2 { font-size: 1rem; font-weight: 700; white-space: nowrap; }
+.tools-section-heading .t-divider { flex: 1; height: 1px; background: var(--border); }
+.tools-section-heading .t-count {
+  font-family: var(--mono); font-size: 0.68rem; color: var(--muted2);
+  border: 1px solid var(--border); border-radius: 4px;
+  padding: 0.1rem 0.5rem; white-space: nowrap;
+}
+
+/* ── TOOL CARD GRID ──────────────────────────────── */
+.tool-card-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 1px;
+}
+.tool-card {
+  background: var(--surface); border: 1px solid var(--border);
+  padding: 1.4rem 1.3rem;
+  display: flex; flex-direction: column; gap: 0.75rem;
+  transition: background var(--ease), border-color var(--ease);
+  position: relative; overflow: hidden;
+}
+.tool-card::before {
+  content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 2px;
+  background: var(--border2); transform: scaleY(0); transform-origin: bottom;
+  transition: transform 0.3s;
+}
+.tool-card:hover { background: var(--surface2); border-color: var(--border2); }
+.tool-card:hover::before { transform: scaleY(1); }
+
+.tool-card-top {
+  display: flex; align-items: center; justify-content: space-between;
+}
+.tool-card-icon {
+  width: 38px; height: 38px; background: var(--surface2); border: 1px solid var(--border);
+  border-radius: 8px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+}
+.tool-card-icon svg { width: 17px; height: 17px; stroke: var(--muted2); fill: none; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+.tool-card:hover .tool-card-icon svg { stroke: var(--muted); }
+
+.tool-badge {
+  font-family: var(--mono); font-size: 0.62rem; color: var(--muted2);
+  border: 1px solid var(--border); border-radius: 3px;
+  padding: 0.1rem 0.45rem; text-transform: uppercase; letter-spacing: 0.5px;
+}
+.tool-badge.daily { color: var(--white);  border-color: var(--border2); background: var(--surface2); }
+.tool-badge.key   { color: var(--muted);  border-color: var(--border2); }
+
+.tool-name { font-size: 0.9rem; font-weight: 700; }
+.tool-desc { font-size: 0.77rem; color: var(--muted); line-height: 1.65; flex: 1; }
+.tool-tags { display: flex; gap: 0.35rem; flex-wrap: wrap; margin-top: 0.1rem; }
+.tool-tag {
+  font-family: var(--mono); font-size: 0.62rem; color: var(--muted2);
+  border: 1px solid var(--border); border-radius: 3px; padding: 0.1rem 0.4rem;
+}
+.tool-link {
+  font-size: 0.75rem; color: var(--muted2); font-weight: 500;
+  display: inline-flex; align-items: center; gap: 0.25rem;
+  transition: color var(--ease); margin-top: auto; align-self: flex-start;
+}
+.tool-link:hover { color: var(--white); text-decoration: none; }
+.tool-link svg { width: 11px; height: 11px; stroke: currentColor; fill: none; stroke-width: 2; transition: transform var(--ease); }
+.tool-link:hover svg { transform: translate(2px, -2px); }
+
+/* ── FILTER BAR ──────────────────────────────────── */
+.tools-filter-bar {
+  display: flex; align-items: center; justify-content: space-between;
+  flex-wrap: wrap; gap: 1rem; margin-bottom: 3rem;
+}
+.tools-search {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 7px; padding: 0.5rem 1rem; color: var(--text);
+  font-size: 0.82rem; font-family: var(--font); width: 220px;
+  outline: none; transition: border-color var(--ease);
+}
+.tools-search::placeholder { color: var(--muted2); }
+.tools-search:focus { border-color: var(--border2); }
+
+/* ── STATS BAR ───────────────────────────────────── */
+.tools-stats {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 1px; margin-bottom: 3.5rem;
+}
+.tools-stat {
+  background: var(--surface); border: 1px solid var(--border);
+  padding: 1.4rem 1.2rem; text-align: center;
+  transition: background var(--ease);
+}
+.tools-stat:hover { background: var(--surface2); }
+.tools-stat-num {
+  font-family: var(--mono); font-size: 1.8rem; font-weight: 800;
+  color: var(--white); display: block; line-height: 1; margin-bottom: 0.35rem;
+}
+.tools-stat-lbl { font-size: 0.7rem; color: var(--muted2); text-transform: uppercase; letter-spacing: 1.5px; }
+
+/* ── EMPTY STATE ─────────────────────────────────── */
+.no-tools { display: none; text-align: center; padding: 3rem; color: var(--muted); }
+.no-tools.visible { display: block; }
+.tool-card.t-hidden { display: none !important; }

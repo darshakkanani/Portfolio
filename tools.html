@@ -1,0 +1,505 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Security Tools — Darshak Patel's personal toolkit across ethical hacking, web app testing, and AI security." />
+  <title>Tools | Darshak Patel</title>
+  <link rel="stylesheet" href="assets/css/style.css" />
+  <link rel="stylesheet" href="assets/css/pages/tools.css" />
+</head>
+<body>
+
+<canvas id="particles"></canvas>
+
+<nav>
+  <a href="index.html" class="nav-logo"><span class="bracket">[</span>dp<span class="bracket">]</span></a>
+  <ul class="nav-links">
+    <li><a href="about.html">about</a></li>
+    <li><a href="expertise.html">expertise</a></li>
+    <li><a href="certifications.html">certifications</a></li>
+    <li><a href="achievements.html">achievements</a></li>
+    <li><a href="tools.html" class="active">tools</a></li>
+    <li><a href="resources.html">resources</a></li>
+    <li><a href="blog.html">blog</a></li>
+    <li><a href="contact.html">contact</a></li>
+  </ul>
+  <a href="mailto:your@email.com" class="nav-cta">Hire Me</a>
+  <div class="nav-hamburger"><span></span><span></span><span></span></div>
+</nav>
+
+<div class="page-header">
+  <p class="section-label">my toolkit</p>
+  <h1 class="section-title">Security Tools</h1>
+  <p class="section-sub">Every tool I actively use across ethical hacking, web app testing, and AI security — categorised, described, and linked.</p>
+</div>
+
+<section class="cert-page-body">
+  <div class="container">
+
+    <!-- Stats -->
+    <div class="tools-stats reveal">
+      <div class="tools-stat">
+        <span class="tools-stat-num">25+</span>
+        <span class="tools-stat-lbl">Total Tools</span>
+      </div>
+      <div class="tools-stat">
+        <span class="tools-stat-num">3</span>
+        <span class="tools-stat-lbl">Domains</span>
+      </div>
+      <div class="tools-stat">
+        <span class="tools-stat-num">10</span>
+        <span class="tools-stat-lbl">Daily Drivers</span>
+      </div>
+      <div class="tools-stat">
+        <span class="tools-stat-num">100%</span>
+        <span class="tools-stat-lbl">Open Source</span>
+      </div>
+    </div>
+
+    <!-- Filter bar -->
+    <div class="tools-filter-bar reveal">
+      <div class="filter-row" style="margin:0;">
+        <button class="filt-btn active" onclick="filterTools('all',this)">All</button>
+        <button class="filt-btn" onclick="filterTools('hacking',this)">Hacking</button>
+        <button class="filt-btn" onclick="filterTools('webapp',this)">Web App</button>
+        <button class="filt-btn" onclick="filterTools('ai',this)">AI Security</button>
+        <button class="filt-btn" onclick="filterTools('recon',this)">Recon</button>
+        <button class="filt-btn" onclick="filterTools('forensics',this)">Forensics</button>
+      </div>
+      <input type="text" class="tools-search" id="tools-search" placeholder="Search tools..." />
+    </div>
+
+    <div id="no-tools" class="no-tools">No tools found. Try a different keyword.</div>
+
+    <!-- ── HACKING & EXPLOITATION ─────────────────────── -->
+    <div class="tools-section reveal" data-section="hacking">
+      <div class="tools-section-heading">
+        <h2>Hacking &amp; Exploitation</h2>
+        <div class="t-divider"></div>
+        <span class="t-count">7 tools</span>
+      </div>
+      <div class="tool-card-grid">
+
+        <div class="tool-card" data-cat="hacking">
+          <div class="tool-card-top">
+            <div class="tool-card-icon">
+              <svg viewBox="0 0 24 24"><polyline points="4 17 10 11 4 5"/><line x1="12" y1="19" x2="20" y2="19"/></svg>
+            </div>
+            <span class="tool-badge daily">Daily</span>
+          </div>
+          <div class="tool-name">Metasploit Framework</div>
+          <div class="tool-desc">The world's most used pen test framework. Module-based exploitation, payload generation, post-exploitation, and pivoting across network targets.</div>
+          <div class="tool-tags"><span class="tool-tag">Exploitation</span><span class="tool-tag">Post-Exploit</span><span class="tool-tag">Payloads</span></div>
+          <a href="https://metasploit.com" target="_blank" rel="noopener" class="tool-link">Visit <svg viewBox="0 0 24 24"><line x1="7" y1="17" x2="17" y2="7"/><polyline points="7 7 17 7 17 17"/></svg></a>
+        </div>
+
+        <div class="tool-card" data-cat="hacking">
+          <div class="tool-card-top">
+            <div class="tool-card-icon">
+              <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            </div>
+            <span class="tool-badge daily">Daily</span>
+          </div>
+          <div class="tool-name">Nmap</div>
+          <div class="tool-desc">Network mapper for host discovery, port scanning, version detection, OS fingerprinting, and NSE script-based vulnerability scanning.</div>
+          <div class="tool-tags"><span class="tool-tag">Recon</span><span class="tool-tag">Port Scan</span><span class="tool-tag">NSE</span></div>
+          <a href="https://nmap.org" target="_blank" rel="noopener" class="tool-link">Visit <svg viewBox="0 0 24 24"><line x1="7" y1="17" x2="17" y2="7"/><polyline points="7 7 17 7 17 17"/></svg></a>
+        </div>
+
+        <div class="tool-card" data-cat="hacking">
+          <div class="tool-card-top">
+            <div class="tool-card-icon">
+              <svg viewBox="0 0 24 24"><polyline points="17 11 12 6 7 11"/><polyline points="17 18 12 13 7 18"/></svg>
+            </div>
+            <span class="tool-badge key">Key Tool</span>
+          </div>
+          <div class="tool-name">LinPEAS / WinPEAS</div>
+          <div class="tool-desc">Privilege escalation awesome scripts — automated enumeration of misconfigurations, SUID/SUDO paths, cron jobs, and credential leaks on Linux and Windows.</div>
+          <div class="tool-tags"><span class="tool-tag">PrivEsc</span><span class="tool-tag">Enum</span><span class="tool-tag">Linux</span><span class="tool-tag">Windows</span></div>
+          <a href="https://github.com/carlospolop/PEASS-ng" target="_blank" rel="noopener" class="tool-link">Visit <svg viewBox="0 0 24 24"><line x1="7" y1="17" x2="17" y2="7"/><polyline points="7 7 17 7 17 17"/></svg></a>
+        </div>
+
+        <div class="tool-card" data-cat="hacking">
+          <div class="tool-card-top">
+            <div class="tool-card-icon">
+              <svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+            </div>
+            <span class="tool-badge key">Key Tool</span>
+          </div>
+          <div class="tool-name">BloodHound</div>
+          <div class="tool-desc">Active Directory attack path analysis. Visualises relationships between AD objects to find shortest privilege escalation paths using graph theory.</div>
+          <div class="tool-tags"><span class="tool-tag">Active Directory</span><span class="tool-tag">Graph</span><span class="tool-tag">PrivEsc</span></div>
+          <a href="https://github.com/BloodHoundAD/BloodHound" target="_blank" rel="noopener" class="tool-link">Visit <svg viewBox="0 0 24 24"><line x1="7" y1="17" x2="17" y2="7"/><polyline points="7 7 17 7 17 17"/></svg></a>
+        </div>
+
+        <div class="tool-card" data-cat="hacking">
+          <div class="tool-card-top">
+            <div class="tool-card-icon">
+              <svg viewBox="0 0 24 24"><rect x="2" y="2" width="20" height="8" rx="2"/><rect x="2" y="14" width="20" height="8" rx="2"/><line x1="6" y1="6" x2="6.01" y2="6"/><line x1="6" y1="18" x2="6.01" y2="18"/></svg>
+            </div>
+            <span class="tool-badge">Tool</span>
+          </div>
+          <div class="tool-name">Netcat</div>
+          <div class="tool-desc">The Swiss army knife of networking — reverse shells, bind shells, port listening, file transfer, and manual banner grabbing across any port.</div>
+          <div class="tool-tags"><span class="tool-tag">Shells</span><span class="tool-tag">Networking</span><span class="tool-tag">Transfer</span></div>
+          <a href="https://netcat.sourceforge.net" target="_blank" rel="noopener" class="tool-link">Visit <svg viewBox="0 0 24 24"><line x1="7" y1="17" x2="17" y2="7"/><polyline points="7 7 17 7 17 17"/></svg></a>
+        </div>
+
+        <div class="tool-card" data-cat="hacking">
+          <div class="tool-card-top">
+            <div class="tool-card-icon">
+              <svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+            </div>
+            <span class="tool-badge">Tool</span>
+          </div>
+          <div class="tool-name">John the Ripper</div>
+          <div class="tool-desc">Fast password cracker supporting hundreds of hash types. Used with custom wordlists and rules for offline credential recovery and hash analysis.</div>
+          <div class="tool-tags"><span class="tool-tag">Password</span><span class="tool-tag">Hash Crack</span><span class="tool-tag">Wordlists</span></div>
+          <a href="https://www.openwall.com/john" target="_blank" rel="noopener" class="tool-link">Visit <svg viewBox="0 0 24 24"><line x1="7" y1="17" x2="17" y2="7"/><polyline points="7 7 17 7 17 17"/></svg></a>
+        </div>
+
+        <div class="tool-card" data-cat="hacking">
+          <div class="tool-card-top">
+            <div class="tool-card-icon">
+              <svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+            </div>
+            <span class="tool-badge">Tool</span>
+          </div>
+          <div class="tool-name">Hashcat</div>
+          <div class="tool-desc">GPU-accelerated password recovery tool. Supports rule-based attacks, combinator attacks, mask attacks, and hybrid modes against all major hash algorithms.</div>
+          <div class="tool-tags"><span class="tool-tag">GPU</span><span class="tool-tag">Hash Crack</span><span class="tool-tag">Rules</span></div>
+          <a href="https://hashcat.net" target="_blank" rel="noopener" class="tool-link">Visit <svg viewBox="0 0 24 24"><line x1="7" y1="17" x2="17" y2="7"/><polyline points="7 7 17 7 17 17"/></svg></a>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ── WEB APP TESTING ─────────────────────────────── -->
+    <div class="tools-section reveal" data-section="webapp">
+      <div class="tools-section-heading">
+        <h2>Web App &amp; API Testing</h2>
+        <div class="t-divider"></div>
+        <span class="t-count">8 tools</span>
+      </div>
+      <div class="tool-card-grid">
+
+        <div class="tool-card" data-cat="webapp">
+          <div class="tool-card-top">
+            <div class="tool-card-icon">
+              <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+            </div>
+            <span class="tool-badge daily">Daily</span>
+          </div>
+          <div class="tool-name">Burp Suite</div>
+          <div class="tool-desc">Industry-standard web proxy for intercepting, replaying, and modifying HTTP/S traffic. Intruder, Repeater, and Scanner cover every manual and automated test case.</div>
+          <div class="tool-tags"><span class="tool-tag">Proxy</span><span class="tool-tag">Intercept</span><span class="tool-tag">Scanner</span></div>
+          <a href="https://portswigger.net/burp" target="_blank" rel="noopener" class="tool-link">Visit <svg viewBox="0 0 24 24"><line x1="7" y1="17" x2="17" y2="7"/><polyline points="7 7 17 7 17 17"/></svg></a>
+        </div>
+
+        <div class="tool-card" data-cat="webapp">
+          <div class="tool-card-top">
+            <div class="tool-card-icon">
+              <svg viewBox="0 0 24 24"><polyline points="4 17 10 11 4 5"/><line x1="12" y1="19" x2="20" y2="19"/></svg>
+            </div>
+            <span class="tool-badge daily">Daily</span>
+          </div>
+          <div class="tool-name">SQLMap</div>
+          <div class="tool-desc">Automated SQL injection detection and exploitation. Supports blind, time-based, error-based, and union-based injection across all major databases.</div>
+          <div class="tool-tags"><span class="tool-tag">SQLi</span><span class="tool-tag">Auto</span><span class="tool-tag">DB Dump</span></div>
+          <a href="https://sqlmap.org" target="_blank" rel="noopener" class="tool-link">Visit <svg viewBox="0 0 24 24"><line x1="7" y1="17" x2="17" y2="7"/><polyline points="7 7 17 7 17 17"/></svg></a>
+        </div>
+
+        <div class="tool-card" data-cat="webapp">
+          <div class="tool-card-top">
+            <div class="tool-card-icon">
+              <svg viewBox="0 0 24 24"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>
+            </div>
+            <span class="tool-badge key">Key Tool</span>
+          </div>
+          <div class="tool-name">FFUF</div>
+          <div class="tool-desc">Fast web fuzzer for directory brute-forcing, parameter discovery, vhost enumeration, and custom wordlist-based content discovery at high speed.</div>
+          <div class="tool-tags"><span class="tool-tag">Fuzzing</span><span class="tool-tag">Directory</span><span class="tool-tag">Params</span></div>
+          <a href="https://github.com/ffuf/ffuf" target="_blank" rel="noopener" class="tool-link">Visit <svg viewBox="0 0 24 24"><line x1="7" y1="17" x2="17" y2="7"/><polyline points="7 7 17 7 17 17"/></svg></a>
+        </div>
+
+        <div class="tool-card" data-cat="webapp">
+          <div class="tool-card-top">
+            <div class="tool-card-icon">
+              <svg viewBox="0 0 24 24"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+            </div>
+            <span class="tool-badge key">Key Tool</span>
+          </div>
+          <div class="tool-name">Nuclei</div>
+          <div class="tool-desc">Template-based vulnerability scanner. Community-maintained YAML templates cover CVEs, misconfigurations, exposed panels, and custom checks at scale.</div>
+          <div class="tool-tags"><span class="tool-tag">Templates</span><span class="tool-tag">CVE</span><span class="tool-tag">Scanner</span></div>
+          <a href="https://projectdiscovery.io/nuclei" target="_blank" rel="noopener" class="tool-link">Visit <svg viewBox="0 0 24 24"><line x1="7" y1="17" x2="17" y2="7"/><polyline points="7 7 17 7 17 17"/></svg></a>
+        </div>
+
+        <div class="tool-card" data-cat="webapp">
+          <div class="tool-card-top">
+            <div class="tool-card-icon">
+              <svg viewBox="0 0 24 24"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+            </div>
+            <span class="tool-badge">Tool</span>
+          </div>
+          <div class="tool-name">Gobuster</div>
+          <div class="tool-desc">Directory, file, DNS, and vhost brute-forcer. Faster than DirBuster with concurrent thread support and flexible output formats for automation pipelines.</div>
+          <div class="tool-tags"><span class="tool-tag">Brute Force</span><span class="tool-tag">DNS</span><span class="tool-tag">Dirs</span></div>
+          <a href="https://github.com/OJ/gobuster" target="_blank" rel="noopener" class="tool-link">Visit <svg viewBox="0 0 24 24"><line x1="7" y1="17" x2="17" y2="7"/><polyline points="7 7 17 7 17 17"/></svg></a>
+        </div>
+
+        <div class="tool-card" data-cat="webapp">
+          <div class="tool-card-top">
+            <div class="tool-card-icon">
+              <svg viewBox="0 0 24 24"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+            </div>
+            <span class="tool-badge">Tool</span>
+          </div>
+          <div class="tool-name">Postman</div>
+          <div class="tool-desc">API development and testing platform. Used for manual REST/GraphQL API testing, crafting custom auth headers, and chaining request flows for logic testing.</div>
+          <div class="tool-tags"><span class="tool-tag">API</span><span class="tool-tag">REST</span><span class="tool-tag">GraphQL</span></div>
+          <a href="https://postman.com" target="_blank" rel="noopener" class="tool-link">Visit <svg viewBox="0 0 24 24"><line x1="7" y1="17" x2="17" y2="7"/><polyline points="7 7 17 7 17 17"/></svg></a>
+        </div>
+
+        <div class="tool-card" data-cat="webapp">
+          <div class="tool-card-top">
+            <div class="tool-card-icon">
+              <svg viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+            </div>
+            <span class="tool-badge">Tool</span>
+          </div>
+          <div class="tool-name">Nikto</div>
+          <div class="tool-desc">Web server scanner that checks for dangerous files, outdated software, insecure configurations, and 6,700+ known vulnerabilities in a single scan.</div>
+          <div class="tool-tags"><span class="tool-tag">Scanner</span><span class="tool-tag">Server</span><span class="tool-tag">CVE</span></div>
+          <a href="https://cirt.net/Nikto2" target="_blank" rel="noopener" class="tool-link">Visit <svg viewBox="0 0 24 24"><line x1="7" y1="17" x2="17" y2="7"/><polyline points="7 7 17 7 17 17"/></svg></a>
+        </div>
+
+        <div class="tool-card" data-cat="webapp">
+          <div class="tool-card-top">
+            <div class="tool-card-icon">
+              <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14"/></svg>
+            </div>
+            <span class="tool-badge">Tool</span>
+          </div>
+          <div class="tool-name">OWASP ZAP</div>
+          <div class="tool-desc">Open-source web app security scanner with both automated and manual testing modes. Great for DAST testing, spidering, and active/passive scanning.</div>
+          <div class="tool-tags"><span class="tool-tag">DAST</span><span class="tool-tag">Spider</span><span class="tool-tag">Passive</span></div>
+          <a href="https://zaproxy.org" target="_blank" rel="noopener" class="tool-link">Visit <svg viewBox="0 0 24 24"><line x1="7" y1="17" x2="17" y2="7"/><polyline points="7 7 17 7 17 17"/></svg></a>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ── RECON & OSINT ───────────────────────────────── -->
+    <div class="tools-section reveal" data-section="recon">
+      <div class="tools-section-heading">
+        <h2>Recon &amp; OSINT</h2>
+        <div class="t-divider"></div>
+        <span class="t-count">5 tools</span>
+      </div>
+      <div class="tool-card-grid">
+
+        <div class="tool-card" data-cat="recon">
+          <div class="tool-card-top">
+            <div class="tool-card-icon">
+              <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            </div>
+            <span class="tool-badge daily">Daily</span>
+          </div>
+          <div class="tool-name">theHarvester</div>
+          <div class="tool-desc">Email, subdomain, IP, and URL gathering from public sources including Google, Bing, Shodan, LinkedIn, and DNS records for external reconnaissance.</div>
+          <div class="tool-tags"><span class="tool-tag">OSINT</span><span class="tool-tag">Email</span><span class="tool-tag">Subdomains</span></div>
+          <a href="https://github.com/laramies/theHarvester" target="_blank" rel="noopener" class="tool-link">Visit <svg viewBox="0 0 24 24"><line x1="7" y1="17" x2="17" y2="7"/><polyline points="7 7 17 7 17 17"/></svg></a>
+        </div>
+
+        <div class="tool-card" data-cat="recon">
+          <div class="tool-card-top">
+            <div class="tool-card-icon">
+              <svg viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+            </div>
+            <span class="tool-badge key">Key Tool</span>
+          </div>
+          <div class="tool-name">Shodan</div>
+          <div class="tool-desc">Search engine for internet-connected devices. Finds exposed services, default credentials, industrial control systems, and misconfigured servers globally.</div>
+          <div class="tool-tags"><span class="tool-tag">IoT</span><span class="tool-tag">Exposed</span><span class="tool-tag">Search</span></div>
+          <a href="https://shodan.io" target="_blank" rel="noopener" class="tool-link">Visit <svg viewBox="0 0 24 24"><line x1="7" y1="17" x2="17" y2="7"/><polyline points="7 7 17 7 17 17"/></svg></a>
+        </div>
+
+        <div class="tool-card" data-cat="recon">
+          <div class="tool-card-top">
+            <div class="tool-card-icon">
+              <svg viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+            </div>
+            <span class="tool-badge key">Key Tool</span>
+          </div>
+          <div class="tool-name">Subfinder</div>
+          <div class="tool-desc">Passive subdomain discovery tool that queries dozens of sources including Certificate Transparency logs, DNS databases, and threat intelligence APIs.</div>
+          <div class="tool-tags"><span class="tool-tag">Subdomains</span><span class="tool-tag">Passive</span><span class="tool-tag">CT Logs</span></div>
+          <a href="https://github.com/projectdiscovery/subfinder" target="_blank" rel="noopener" class="tool-link">Visit <svg viewBox="0 0 24 24"><line x1="7" y1="17" x2="17" y2="7"/><polyline points="7 7 17 7 17 17"/></svg></a>
+        </div>
+
+        <div class="tool-card" data-cat="recon">
+          <div class="tool-card-top">
+            <div class="tool-card-icon">
+              <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+            </div>
+            <span class="tool-badge">Tool</span>
+          </div>
+          <div class="tool-name">Amass</div>
+          <div class="tool-desc">In-depth attack surface mapping and asset discovery. Combines active and passive DNS enumeration with graph-based network infrastructure tracking.</div>
+          <div class="tool-tags"><span class="tool-tag">DNS</span><span class="tool-tag">Attack Surface</span><span class="tool-tag">Graph</span></div>
+          <a href="https://github.com/owasp-amass/amass" target="_blank" rel="noopener" class="tool-link">Visit <svg viewBox="0 0 24 24"><line x1="7" y1="17" x2="17" y2="7"/><polyline points="7 7 17 7 17 17"/></svg></a>
+        </div>
+
+        <div class="tool-card" data-cat="recon">
+          <div class="tool-card-top">
+            <div class="tool-card-icon">
+              <svg viewBox="0 0 24 24"><path d="M1 6l11 6 11-6M1 12l11 6 11-6"/></svg>
+            </div>
+            <span class="tool-badge">Tool</span>
+          </div>
+          <div class="tool-name">Maltego</div>
+          <div class="tool-desc">Visual link analysis and OSINT platform. Maps relationships between people, companies, domains, IPs, and social profiles for deep threat intelligence graphs.</div>
+          <div class="tool-tags"><span class="tool-tag">OSINT</span><span class="tool-tag">Graph</span><span class="tool-tag">Intel</span></div>
+          <a href="https://maltego.com" target="_blank" rel="noopener" class="tool-link">Visit <svg viewBox="0 0 24 24"><line x1="7" y1="17" x2="17" y2="7"/><polyline points="7 7 17 7 17 17"/></svg></a>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ── AI SECURITY ────────────────────────────────── -->
+    <div class="tools-section reveal" data-section="ai">
+      <div class="tools-section-heading">
+        <h2>AI &amp; LLM Security</h2>
+        <div class="t-divider"></div>
+        <span class="t-count">3 tools</span>
+      </div>
+      <div class="tool-card-grid">
+
+        <div class="tool-card" data-cat="ai">
+          <div class="tool-card-top">
+            <div class="tool-card-icon">
+              <svg viewBox="0 0 24 24"><rect x="9" y="9" width="6" height="6" rx="1"/><path d="M9 3H15M9 21H15M3 9V15M21 9V15M3 3l3 3M21 3l-3 3M3 21l3-3M21 21l-3-3"/></svg>
+            </div>
+            <span class="tool-badge daily">Daily</span>
+          </div>
+          <div class="tool-name">Garak</div>
+          <div class="tool-desc">Open-source LLM vulnerability scanner by NVIDIA. Probes models for prompt injection, jailbreaks, data leakage, hallucination, and toxic output generation.</div>
+          <div class="tool-tags"><span class="tool-tag">LLM</span><span class="tool-tag">Scanner</span><span class="tool-tag">Jailbreak</span></div>
+          <a href="https://github.com/NVIDIA/garak" target="_blank" rel="noopener" class="tool-link">Visit <svg viewBox="0 0 24 24"><line x1="7" y1="17" x2="17" y2="7"/><polyline points="7 7 17 7 17 17"/></svg></a>
+        </div>
+
+        <div class="tool-card" data-cat="ai">
+          <div class="tool-card-top">
+            <div class="tool-card-icon">
+              <svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+            </div>
+            <span class="tool-badge key">Key Tool</span>
+          </div>
+          <div class="tool-name">Promptfoo</div>
+          <div class="tool-desc">LLM testing and red teaming framework. Runs systematic prompt injection tests, compares model outputs, and generates audit reports for AI-powered applications.</div>
+          <div class="tool-tags"><span class="tool-tag">Red Team</span><span class="tool-tag">Prompt</span><span class="tool-tag">Audit</span></div>
+          <a href="https://promptfoo.dev" target="_blank" rel="noopener" class="tool-link">Visit <svg viewBox="0 0 24 24"><line x1="7" y1="17" x2="17" y2="7"/><polyline points="7 7 17 7 17 17"/></svg></a>
+        </div>
+
+        <div class="tool-card" data-cat="ai">
+          <div class="tool-card-top">
+            <div class="tool-card-icon">
+              <svg viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+            </div>
+            <span class="tool-badge">Tool</span>
+          </div>
+          <div class="tool-name">LangChain</div>
+          <div class="tool-desc">Framework for building LLM-powered applications. Used to prototype agent pipelines, test tool-use attack surfaces, and study indirect prompt injection vectors.</div>
+          <div class="tool-tags"><span class="tool-tag">Agents</span><span class="tool-tag">Pipeline</span><span class="tool-tag">Research</span></div>
+          <a href="https://python.langchain.com" target="_blank" rel="noopener" class="tool-link">Visit <svg viewBox="0 0 24 24"><line x1="7" y1="17" x2="17" y2="7"/><polyline points="7 7 17 7 17 17"/></svg></a>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ── FORENSICS & ANALYSIS ───────────────────────── -->
+    <div class="tools-section reveal" data-section="forensics">
+      <div class="tools-section-heading">
+        <h2>Forensics &amp; Analysis</h2>
+        <div class="t-divider"></div>
+        <span class="t-count">3 tools</span>
+      </div>
+      <div class="tool-card-grid">
+
+        <div class="tool-card" data-cat="forensics">
+          <div class="tool-card-top">
+            <div class="tool-card-icon">
+              <svg viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+            </div>
+            <span class="tool-badge daily">Daily</span>
+          </div>
+          <div class="tool-name">Wireshark</div>
+          <div class="tool-desc">Network protocol analyser for capturing and inspecting traffic in real-time. Essential for CTF forensics, credential sniffing, and protocol-level debugging.</div>
+          <div class="tool-tags"><span class="tool-tag">PCAP</span><span class="tool-tag">Protocol</span><span class="tool-tag">Traffic</span></div>
+          <a href="https://wireshark.org" target="_blank" rel="noopener" class="tool-link">Visit <svg viewBox="0 0 24 24"><line x1="7" y1="17" x2="17" y2="7"/><polyline points="7 7 17 7 17 17"/></svg></a>
+        </div>
+
+        <div class="tool-card" data-cat="forensics">
+          <div class="tool-card-top">
+            <div class="tool-card-icon">
+              <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+            </div>
+            <span class="tool-badge key">Key Tool</span>
+          </div>
+          <div class="tool-name">Volatility</div>
+          <div class="tool-desc">Memory forensics framework for analysing RAM dumps. Extracts running processes, network connections, registry hives, and malware artefacts from memory images.</div>
+          <div class="tool-tags"><span class="tool-tag">Memory</span><span class="tool-tag">RAM Dump</span><span class="tool-tag">Malware</span></div>
+          <a href="https://volatilityfoundation.org" target="_blank" rel="noopener" class="tool-link">Visit <svg viewBox="0 0 24 24"><line x1="7" y1="17" x2="17" y2="7"/><polyline points="7 7 17 7 17 17"/></svg></a>
+        </div>
+
+        <div class="tool-card" data-cat="forensics">
+          <div class="tool-card-top">
+            <div class="tool-card-icon">
+              <svg viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+            </div>
+            <span class="tool-badge">Tool</span>
+          </div>
+          <div class="tool-name">Autopsy</div>
+          <div class="tool-desc">Digital forensics platform for disk image analysis. Recovers deleted files, extracts browser history, parses email, and builds timelines of user activity.</div>
+          <div class="tool-tags"><span class="tool-tag">Disk</span><span class="tool-tag">Recovery</span><span class="tool-tag">Timeline</span></div>
+          <a href="https://sleuthkit.org/autopsy" target="_blank" rel="noopener" class="tool-link">Visit <svg viewBox="0 0 24 24"><line x1="7" y1="17" x2="17" y2="7"/><polyline points="7 7 17 7 17 17"/></svg></a>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- CTA -->
+    <div class="expertise-cta reveal">
+      <h3>Want to See These Tools in Action?</h3>
+      <p>Check out my blog for write-ups where I apply these tools to real CTF challenges and bug bounty findings.</p>
+      <div style="display:flex;gap:0.8rem;justify-content:center;flex-wrap:wrap;">
+        <a href="blog.html" class="btn btn-primary">Read Blog</a>
+        <a href="expertise.html" class="btn btn-outline">View Expertise</a>
+        <a href="contact.html" class="btn btn-ghost">Get in Touch</a>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<footer>
+  <p>© 2025 <span class="f-name">Darshak Patel</span> · B.Tech CSE Cybersecurity</p>
+  <div class="f-links">
+    <a href="index.html">Home</a>
+    <a href="about.html">About</a>
+    <a href="expertise.html">Expertise</a>
+    <a href="certifications.html">Certifications</a>
+    <a href="achievements.html">Achievements</a>
+    <a href="tools.html">Tools</a>
+    <a href="resources.html">Resources</a>
+    <a href="blog.html">Blog</a>
+    <a href="contact.html">Contact</a>
+  </div>
+</footer>
+
+<script src="assets/js/main.js"></script>
+<script src="assets/js/pages/tools.js"></script>
+</body>
+</html>

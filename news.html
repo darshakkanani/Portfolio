@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Cybersecurity news — CVEs, zero-days, breaches, threat intelligence, and research from across the security community." />
+  <title>Security News | Darshak Patel</title>
+  <link rel="stylesheet" href="assets/css/style.css" />
+  <link rel="stylesheet" href="assets/css/pages/news.css" />
+</head>
+<body>
+
+<canvas id="particles"></canvas>
+
+<nav>
+  <a href="index.html" class="nav-logo"><span class="bracket">[</span>dp<span class="bracket">]</span></a>
+  <ul class="nav-links">
+    <li><a href="about.html">about</a></li>
+    <li><a href="expertise.html">expertise</a></li>
+    <li><a href="certifications.html">certifications</a></li>
+    <li><a href="achievements.html">achievements</a></li>
+    <li><a href="tools.html">tools</a></li>
+    <li><a href="resources.html" class="active">resources</a></li>
+    <li><a href="blog.html">blog</a></li>
+    <li><a href="contact.html">contact</a></li>
+  </ul>
+  <a href="mailto:your@email.com" class="nav-cta">Hire Me</a>
+  <div class="nav-hamburger"><span></span><span></span><span></span></div>
+</nav>
+
+<div class="page-header">
+  <p class="section-label">ethical hacking</p>
+  <h1 class="section-title">Cybersecurity News</h1>
+  <p class="section-sub">Latest CVEs, zero-days, breaches, threat intelligence, and research — curated from across the security community.</p>
+</div>
+
+<section class="cert-page-body">
+  <div class="container">
+
+    <div class="reports-page-back">
+      <a href="resources.html" class="reports-back-link">
+        <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
+        Back to Resources
+      </a>
+    </div>
+
+    <!-- ── FEED FILTER TABS ───────────────────────── -->
+    <div class="news-tabs" id="news-tabs">
+      <button class="news-tab active" data-cat="all">All</button>
+      <button class="news-tab" data-cat="cve">CVE / Vulns</button>
+      <button class="news-tab" data-cat="breach">Breaches</button>
+      <button class="news-tab" data-cat="research">Research</button>
+      <button class="news-tab" data-cat="tools">Tools</button>
+      <button class="news-tab" data-cat="intel">Threat Intel</button>
+    </div>
+
+    <!-- ── FEED SOURCES ───────────────────────────── -->
+    <div class="news-sources-bar">
+      <span class="news-sources-label">Sources</span>
+      <div class="news-sources-list">
+        <a href="https://feeds.feedburner.com/TheHackersNews" target="_blank" rel="noopener" class="news-source-pill">The Hacker News</a>
+        <a href="https://www.bleepingcomputer.com/feed/" target="_blank" rel="noopener" class="news-source-pill">BleepingComputer</a>
+        <a href="https://krebsonsecurity.com/feed/" target="_blank" rel="noopener" class="news-source-pill">Krebs on Security</a>
+        <a href="https://www.darkreading.com/rss.xml" target="_blank" rel="noopener" class="news-source-pill">Dark Reading</a>
+        <a href="https://portswigger.net/daily-swig/rss" target="_blank" rel="noopener" class="news-source-pill">PortSwigger Daily Swig</a>
+        <a href="https://www.cisa.gov/news.xml" target="_blank" rel="noopener" class="news-source-pill">CISA Advisories</a>
+      </div>
+    </div>
+
+    <!-- ── LOADING STATE ─────────────────────────── -->
+    <div id="news-loading" class="news-loading">Fetching latest security news...</div>
+    <div id="news-error"  class="news-error  hidden"></div>
+    <div id="news-grid"   class="news-grid   hidden"></div>
+
+    <!-- ── STATIC CURATED FEEDS (always visible) ─── -->
+    <div class="news-curated reveal">
+      <p class="news-section-label">Curated Sources</p>
+      <div class="news-curated-grid">
+
+        <a href="https://thehackernews.com" target="_blank" rel="noopener" class="news-source-card">
+          <div class="nsc-top">
+            <span class="nsc-badge">Daily</span>
+            <span class="nsc-type">News</span>
+          </div>
+          <h4>The Hacker News</h4>
+          <p>High-volume daily security news covering breaches, CVEs, malware, and threat intelligence. One of the most-read infosec news outlets.</p>
+          <span class="nsc-link">Visit ↗</span>
+        </a>
+
+        <a href="https://www.bleepingcomputer.com" target="_blank" rel="noopener" class="news-source-card">
+          <div class="nsc-top">
+            <span class="nsc-badge">Daily</span>
+            <span class="nsc-type">News</span>
+          </div>
+          <h4>BleepingComputer</h4>
+          <p>In-depth reporting on ransomware, malware campaigns, vulnerability disclosures, and how-to security guidance.</p>
+          <span class="nsc-link">Visit ↗</span>
+        </a>
+
+        <a href="https://krebsonsecurity.com" target="_blank" rel="noopener" class="news-source-card">
+          <div class="nsc-top">
+            <span class="nsc-badge">Investigative</span>
+            <span class="nsc-type">Blog</span>
+          </div>
+          <h4>Krebs on Security</h4>
+          <p>Investigative security journalism by Brian Krebs — data breaches, cybercrime, fraud, and deep-dive exposés.</p>
+          <span class="nsc-link">Visit ↗</span>
+        </a>
+
+        <a href="https://www.darkreading.com" target="_blank" rel="noopener" class="news-source-card">
+          <div class="nsc-top">
+            <span class="nsc-badge">Daily</span>
+            <span class="nsc-type">News</span>
+          </div>
+          <h4>Dark Reading</h4>
+          <p>Enterprise security news covering cloud security, application security, threat intelligence, and industry analysis.</p>
+          <span class="nsc-link">Visit ↗</span>
+        </a>
+
+        <a href="https://portswigger.net/daily-swig" target="_blank" rel="noopener" class="news-source-card">
+          <div class="nsc-top">
+            <span class="nsc-badge">Web Focused</span>
+            <span class="nsc-type">News</span>
+          </div>
+          <h4>PortSwigger Daily Swig</h4>
+          <p>Web security-focused news from the Burp Suite team — XSS, SQLi, new browser bugs, and web vuln research.</p>
+          <span class="nsc-link">Visit ↗</span>
+        </a>
+
+        <a href="https://www.cisa.gov/news-events/cybersecurity-advisories" target="_blank" rel="noopener" class="news-source-card">
+          <div class="nsc-top">
+            <span class="nsc-badge">Official</span>
+            <span class="nsc-type">Advisory</span>
+          </div>
+          <h4>CISA Advisories</h4>
+          <p>Official US CISA cybersecurity advisories — actively exploited CVEs, ICS vulnerabilities, and nation-state threat warnings.</p>
+          <span class="nsc-link">Visit ↗</span>
+        </a>
+
+        <a href="https://nvd.nist.gov/vuln/search" target="_blank" rel="noopener" class="news-source-card">
+          <div class="nsc-top">
+            <span class="nsc-badge">CVE Database</span>
+            <span class="nsc-type">Reference</span>
+          </div>
+          <h4>NVD — NIST</h4>
+          <p>National Vulnerability Database — authoritative source for CVE details, CVSS scores, and affected product versions.</p>
+          <span class="nsc-link">Visit ↗</span>
+        </a>
+
+        <a href="https://www.exploit-db.com" target="_blank" rel="noopener" class="news-source-card">
+          <div class="nsc-top">
+            <span class="nsc-badge">PoC / Exploit</span>
+            <span class="nsc-type">Database</span>
+          </div>
+          <h4>Exploit-DB</h4>
+          <p>Offensive Security's public exploit archive — PoCs, shellcode, and working exploits for CVEs and undisclosed vulns.</p>
+          <span class="nsc-link">Visit ↗</span>
+        </a>
+
+        <a href="https://googleprojectzero.blogspot.com" target="_blank" rel="noopener" class="news-source-card">
+          <div class="nsc-top">
+            <span class="nsc-badge">Research</span>
+            <span class="nsc-type">Blog</span>
+          </div>
+          <h4>Google Project Zero</h4>
+          <p>Deep technical vulnerability research from Google's elite bug-hunting team — zero-days, browser exploitation, and kernel bugs.</p>
+          <span class="nsc-link">Visit ↗</span>
+        </a>
+
+        <a href="https://www.rapid7.com/blog/tag/vulnerability-disclosure/" target="_blank" rel="noopener" class="news-source-card">
+          <div class="nsc-top">
+            <span class="nsc-badge">Research</span>
+            <span class="nsc-type">Blog</span>
+          </div>
+          <h4>Rapid7 Vulnerability Disclosure</h4>
+          <p>Rapid7's research team disclosure blog — detailed writeups on newly discovered vulnerabilities and coordinated disclosures.</p>
+          <span class="nsc-link">Visit ↗</span>
+        </a>
+
+        <a href="https://twitter.com/i/lists/1322042555287080960" target="_blank" rel="noopener" class="news-source-card">
+          <div class="nsc-top">
+            <span class="nsc-badge">Real-time</span>
+            <span class="nsc-type">Social</span>
+          </div>
+          <h4>Security Twitter / X</h4>
+          <p>Real-time vulnerability disclosures, PoC drops, and threat intel from researchers — fastest source for breaking security news.</p>
+          <span class="nsc-link">Visit ↗</span>
+        </a>
+
+        <a href="https://www.reddit.com/r/netsec/" target="_blank" rel="noopener" class="news-source-card">
+          <div class="nsc-top">
+            <span class="nsc-badge">Community</span>
+            <span class="nsc-type">Forum</span>
+          </div>
+          <h4>r/netsec</h4>
+          <p>Community-curated technical security content — research papers, writeups, CVE discussions, and tool releases.</p>
+          <span class="nsc-link">Visit ↗</span>
+        </a>
+
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<footer>
+  <p>© 2025 <span class="f-name">Darshak Patel</span> · B.Tech CSE Cybersecurity</p>
+  <div class="f-links">
+    <a href="index.html">Home</a>
+    <a href="about.html">About</a>
+    <a href="expertise.html">Expertise</a>
+    <a href="certifications.html">Certifications</a>
+    <a href="achievements.html">Achievements</a>
+    <a href="tools.html">Tools</a>
+    <a href="resources.html">Resources</a>
+    <a href="blog.html">Blog</a>
+    <a href="contact.html">Contact</a>
+  </div>
+</footer>
+
+<script src="assets/js/main.js"></script>
+<script src="assets/js/pages/news.js"></script>
+</body>
+</html>

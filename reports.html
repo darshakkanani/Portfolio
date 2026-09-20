@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Web Application Vulnerability Research — 14,972 public HackerOne reports across XSS, SQLi, IDOR, SSRF, CSRF, authentication flaws, and more." />
+  <title>Security Reports | Darshak Patel</title>
+  <link rel="stylesheet" href="assets/css/style.css" />
+</head>
+<body class="reports-page">
+
+<canvas id="particles"></canvas>
+
+<nav>
+  <a href="index.html" class="nav-logo"><span class="bracket">[</span>dp<span class="bracket">]</span></a>
+  <ul class="nav-links">
+    <li><a href="about.html">about</a></li>
+    <li><a href="expertise.html">expertise</a></li>
+    <li><a href="certifications.html">certifications</a></li>
+    <li><a href="achievements.html">achievements</a></li>
+    <li><a href="tools.html">tools</a></li>
+    <li><a href="resources.html" class="active">resources</a></li>
+    <li><a href="blog.html">blog</a></li>
+    <li><a href="contact.html">contact</a></li>
+  </ul>
+  <a href="mailto:your@email.com" class="nav-cta">Hire Me</a>
+  <div class="nav-hamburger"><span></span><span></span><span></span></div>
+</nav>
+
+<div class="page-header">
+  <p class="section-label">web app security</p>
+  <h1 class="section-title">Web Application Vulnerability Research</h1>
+  <p class="section-sub">14,972 public HackerOne reports across XSS, SQLi, IDOR, SSRF, CSRF, authentication flaws, and more — sourced, categorised, and filterable.</p>
+</div>
+
+<section class="cert-page-body">
+  <div class="container">
+
+    <div class="reports-page-back">
+      <a href="resources.html" class="reports-back-link">
+        <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
+        Back to Resources
+      </a>
+    </div>
+
+    <div class="reports-section" id="reports-section">
+
+      <div class="reports-header">
+        <div class="reports-header-left">
+          <p class="reports-label">Security Reports</p>
+          <p class="reports-title">Web Application Vulnerability Research</p>
+          <p class="reports-meta" id="reports-meta"><span>Loading...</span></p>
+        </div>
+      </div>
+
+      <div class="reports-tabs" id="reports-tabs"></div>
+
+      <div class="reports-controls">
+        <input class="reports-search" id="reports-search" type="text" placeholder="Search by title, program, or vulnerability type..." autocomplete="off" />
+        <select class="reports-sort" id="reports-sort">
+          <option value="upvotes">↑ Most Upvoted</option>
+          <option value="upvotes-asc">↑ Least Upvoted</option>
+          <option value="bounty">$ Highest Bounty</option>
+          <option value="title">A–Z Title</option>
+        </select>
+      </div>
+
+      <div class="reports-grid" id="reports-grid">
+        <div class="reports-loading">Loading reports...</div>
+      </div>
+
+      <div class="reports-pagination" id="reports-pagination"></div>
+
+    </div>
+
+  </div>
+</section>
+
+<footer>
+  <p>© 2025 <span class="f-name">Darshak Patel</span> · B.Tech CSE Cybersecurity</p>
+  <div class="f-links">
+    <a href="index.html">Home</a>
+    <a href="about.html">About</a>
+    <a href="expertise.html">Expertise</a>
+    <a href="certifications.html">Certifications</a>
+    <a href="achievements.html">Achievements</a>
+    <a href="tools.html">Tools</a>
+    <a href="resources.html">Resources</a>
+    <a href="blog.html">Blog</a>
+    <a href="contact.html">Contact</a>
+  </div>
+</footer>
+
+<script src="assets/js/main.js"></script>
+<script src="assets/js/pages/reports.js"></script>
+</body>
+</html>

@@ -1,0 +1,136 @@
+/* ═══════════════════════════════════════════════════
+   Achievements page — layout & component styles
+═══════════════════════════════════════════════════ */
+
+/* ── STATS STRIP ─────────────────────────────────── */
+.ach-stats {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 1.2rem; margin-bottom: 3.5rem;
+}
+.ach-stat {
+  background: var(--surface); border: 1px solid var(--border);
+  padding: 1.6rem 1.4rem; text-align: center;
+  transition: background var(--ease);
+}
+.ach-stat:hover { background: var(--surface2); }
+.ach-stat-num {
+  font-family: var(--mono); font-size: 2rem; font-weight: 800;
+  color: var(--white); display: block; line-height: 1; margin-bottom: 0.4rem;
+}
+.ach-stat-lbl { font-size: 0.72rem; color: var(--muted2); text-transform: uppercase; letter-spacing: 1.5px; }
+
+/* ── SECTION HEADINGS ────────────────────────────── */
+.ach-section { margin-bottom: 3.5rem; }
+.ach-section-heading { display: flex; align-items: center; gap: 1rem; margin-bottom: 1.5rem; }
+.ach-section-heading h2 { font-size: 1rem; font-weight: 700; white-space: nowrap; }
+.ach-divider { flex: 1; height: 1px; background: var(--border); }
+
+/* ── HIGHLIGHT CARD (featured achievement) ───────── */
+.ach-highlight {
+  background: var(--surface); border: 1px solid var(--border); border-radius: 10px;
+  padding: 2rem; display: flex; align-items: flex-start; gap: 1.5rem;
+  margin-bottom: 1rem; transition: border-color var(--ease);
+  position: relative; overflow: hidden;
+}
+.ach-highlight::before {
+  content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 2px;
+  background: var(--white);
+}
+.ach-highlight:hover { border-color: var(--border2); }
+.ach-highlight-icon {
+  width: 48px; height: 48px; background: var(--surface2); border: 1px solid var(--border);
+  border-radius: 10px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+}
+.ach-highlight-icon svg { width: 22px; height: 22px; stroke: var(--muted); fill: none; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
+.ach-highlight-label {
+  font-family: var(--mono); font-size: 0.67rem; color: var(--muted2);
+  text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 0.35rem;
+}
+.ach-highlight-title { font-size: 1rem; font-weight: 800; margin-bottom: 0.4rem; }
+.ach-highlight-body { font-size: 0.82rem; color: var(--muted); line-height: 1.75; }
+.ach-highlight-meta { display: flex; gap: 0.6rem; flex-wrap: wrap; margin-top: 0.8rem; }
+.ach-meta-pill {
+  font-family: var(--mono); font-size: 0.65rem; color: var(--muted2);
+  border: 1px solid var(--border); border-radius: 4px; padding: 0.15rem 0.55rem;
+}
+
+/* ── ACHIEVEMENT CARD GRID ───────────────────────── */
+.ach-grid {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 1.2rem;
+}
+.ach-card {
+  background: var(--surface); border: 1px solid var(--border);
+  padding: 1.3rem 1.2rem; display: flex; flex-direction: column; gap: 0.6rem;
+  transition: background var(--ease), border-color var(--ease);
+}
+.ach-card:hover { background: var(--surface2); border-color: var(--border2); }
+.ach-card-top { display: flex; align-items: center; justify-content: space-between; }
+.ach-card-icon {
+  width: 34px; height: 34px; background: var(--surface2); border: 1px solid var(--border);
+  border-radius: 7px; display: flex; align-items: center; justify-content: center;
+}
+.ach-card-icon svg { width: 15px; height: 15px; stroke: var(--muted2); fill: none; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+.ach-card:hover .ach-card-icon svg { stroke: var(--muted); }
+.ach-card-year { font-family: var(--mono); font-size: 0.68rem; color: var(--muted2); }
+.ach-card-title { font-size: 0.88rem; font-weight: 700; line-height: 1.3; }
+.ach-card-body  { font-size: 0.77rem; color: var(--muted); flex: 1; line-height: 1.65; }
+.ach-card-tag   {
+  display: inline-flex; font-family: var(--mono); font-size: 0.63rem; color: var(--muted2);
+  border: 1px solid var(--border); border-radius: 4px; padding: 0.12rem 0.45rem;
+  align-self: flex-start; margin-top: auto;
+}
+
+/* ── TIMELINE MILESTONES ─────────────────────────── */
+.milestone-list { display: flex; flex-direction: column; gap: 0; position: relative; }
+.milestone-list::before {
+  content: ""; position: absolute; left: 6px; top: 8px; bottom: 0;
+  width: 1px; background: var(--border);
+}
+.ms-item { display: flex; gap: 1.4rem; align-items: flex-start; padding-bottom: 1.8rem; }
+.ms-dot {
+  width: 13px; height: 13px; border-radius: 50%; flex-shrink: 0; margin-top: 5px;
+  background: var(--surface2); border: 1px solid var(--border2); z-index: 1;
+}
+.ms-year { font-family: var(--mono); font-size: 0.68rem; color: var(--muted2); margin-bottom: 0.2rem; }
+.ms-item h4 { font-size: 0.86rem; font-weight: 700; margin-bottom: 0.2rem; }
+.ms-item p  { font-size: 0.78rem; color: var(--muted); line-height: 1.65; }
+
+/* ── PLATFORM CARDS (Bug Bounty section) ─────────── */
+.ach-platform-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 1.2rem;
+}
+.ach-platform-card {
+  background: var(--surface); border: 1px solid var(--border);
+  padding: 1.4rem 1.3rem; display: flex; flex-direction: column; gap: 0.7rem;
+  text-decoration: none; color: inherit;
+  transition: background var(--ease), border-color var(--ease);
+  position: relative; overflow: hidden;
+}
+.ach-platform-card::before {
+  content: ""; position: absolute; top: 0; left: 0; right: 0; height: 2px;
+  background: var(--border2); transition: background var(--ease);
+}
+.ach-platform-card:hover { background: var(--surface2); border-color: var(--border2); text-decoration: none; }
+.ach-platform-card:hover::before { background: var(--white); }
+.ach-platform-top {
+  display: flex; align-items: center; justify-content: space-between;
+}
+.ach-platform-logo {
+  width: 40px; height: 40px; background: var(--surface2); border: 1px solid var(--border);
+  border-radius: 8px; display: flex; align-items: center; justify-content: center;
+}
+.ach-platform-logo svg {
+  width: 18px; height: 18px; stroke: var(--muted2);
+  transition: stroke var(--ease);
+}
+.ach-platform-card:hover .ach-platform-logo svg { stroke: var(--muted); }
+.ach-platform-arrow {
+  font-size: 0.9rem; color: var(--muted2);
+  transition: transform var(--ease), color var(--ease);
+}
+.ach-platform-card:hover .ach-platform-arrow { transform: translate(2px, -2px); color: var(--muted); }
+.ach-platform-name { font-size: 0.92rem; font-weight: 700; color: var(--text); }
+.ach-platform-desc { font-size: 0.77rem; color: var(--muted); line-height: 1.65; flex: 1; }
+.ach-platform-tags { display: flex; flex-wrap: wrap; gap: 0.35rem; margin-top: auto; }

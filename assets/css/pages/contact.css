@@ -1,0 +1,22 @@
+/* ═══════════════════════════════════════════════════
+   Contact page — layout & component styles
+═══════════════════════════════════════════════════ */
+
+/* ── CONTACT FORM CARD ───────────────────────────── */
+.contact-form-card {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 10px; padding: 2rem; position: relative; overflow: hidden;
+}
+.contact-form-card::before {
+  content: ""; position: absolute; top: 0; left: 0; right: 0; height: 1px;
+  background: var(--border2);
+}
+.contact-form-card h3 { font-size: 1rem; font-weight: 700; margin-bottom: 1.5rem; }
+
+/* ── CONTACT INFO CARDS ──────────────────────────── */
+.contact-info-card {
+  background: var(--surface); border: 1px solid var(--border); border-radius: 9px;
+  padding: 1.1rem 1.2rem; display: flex; align-items: flex-start; gap: 1rem;
+  transition: border-color var(--ease);
+}
+.contact-info-card:hover { border-color: var(--border2); }

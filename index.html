@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Darshak Patel — B.Tech CSE Cybersecurity student specializing in ethical hacking, web app pentesting, and AI security." />
+  <title>Darshak Patel | Cybersecurity Portfolio</title>
+  <link rel="stylesheet" href="assets/css/style.css" />
+</head>
+<body>
+
+<canvas id="particles"></canvas>
+
+<!-- ════════════════════════ NAV ════════════════════════ -->
+<nav>
+  <a href="index.html" class="nav-logo">
+    <span class="bracket">[</span>dp<span class="bracket">]</span>
+  </a>
+  <ul class="nav-links">
+    <li><a href="about.html">about</a></li>
+    <li><a href="expertise.html">expertise</a></li>
+    <li><a href="certifications.html">certifications</a></li>
+    <li><a href="achievements.html">achievements</a></li>
+    <li><a href="tools.html">tools</a></li>
+    <li><a href="resources.html">resources</a></li>
+    <li><a href="blog.html">blog</a></li>
+    <li><a href="contact.html">contact</a></li>
+  </ul>
+  <a href="mailto:your@email.com" class="nav-cta">Hire Me</a>
+  <div class="nav-hamburger" aria-label="menu">
+    <span></span><span></span><span></span>
+  </div>
+</nav>
+
+<!-- ════════════════════════ HERO ═══════════════════════ -->
+<section id="hero">
+  <div class="hero-inner">
+
+    <!-- Left -->
+    <div class="hero-left">
+      <div class="hero-eyebrow">Available for Internships &amp; Collaborations</div>
+      <h1 class="hero-name">Darshak Patel</h1>
+      <div class="hero-role">
+        I'm a <span class="typed" id="typed"></span><span class="cursor"></span>
+      </div>
+      <p class="hero-desc">
+        B.Tech CSE (Cybersecurity) student mastering ethical hacking, web app pentesting,
+        and AI security. I find vulnerabilities — before attackers do.
+      </p>
+      <div class="hero-actions">
+        <a href="resources.html" class="btn btn-primary">Explore Resources</a>
+        <a href="blog.html" class="btn btn-outline">Read My Blog</a>
+        <a href="contact.html" class="btn btn-ghost">Get in Touch</a>
+      </div>
+      <div class="hero-tags">
+        <span class="hero-tag">Ethical Hacking</span>
+        <span class="hero-tag">Web App Security</span>
+        <span class="hero-tag">AI Security</span>
+      </div>
+    </div>
+
+    <!-- Right: Terminal -->
+    <div class="hero-terminal">
+      <div class="term-bar">
+        <span class="term-dot r"></span>
+        <span class="term-dot y"></span>
+        <span class="term-dot g"></span>
+        <span class="term-title">darshak@security:~</span>
+      </div>
+      <div class="term-body" id="term-body"></div>
+    </div>
+
+  </div>
+</section>
+
+<!-- ════════════════════ STATS STRIP ════════════════════ -->
+<div class="stats-strip">
+  <div class="stats-inner">
+    <div class="stat-item">
+      <span class="stat-num" data-target="4">0</span>
+      <span class="stat-lbl">Security Domains</span>
+    </div>
+    <div class="stat-item">
+      <span class="stat-num" data-target="16">0</span>
+      <span class="stat-lbl">Curated Resources</span>
+    </div>
+    <div class="stat-item">
+      <span class="stat-num" data-target="6">0</span>
+      <span class="stat-lbl">Blog Posts</span>
+    </div>
+    <div class="stat-item">
+      <span class="stat-num" data-target="100">0</span>
+      <span class="stat-lbl">% Passion</span>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════ ABOUT ══════════════════════ -->
+<section id="about">
+  <div class="container">
+    <p class="section-label">about me</p>
+    <h2 class="section-title">Who I Am</h2>
+    <div class="about-wrap">
+      <div class="about-body">
+        <p>
+          I'm <strong>Darshak Patel</strong>, a B.Tech CSE (Cybersecurity) student driven by curiosity
+          about how digital systems break — and how to make them unbreakable. I pursue hands-on learning
+          through CTF competitions, lab environments, and open-source security research.
+        </p>
+        <p>
+          My work spans three high-impact domains: ethical hacking, web application pentesting,
+          and AI/LLM security research. Understanding how attackers
+          think is the only true path to building resilient defenses.
+        </p>
+        <p>
+          Actively seeking <strong>internships</strong>, bug bounty collaborations, and mentorship
+          to grow from student to professional security practitioner.
+        </p>
+        <div class="tag-cloud">
+          <span class="tag">Penetration Testing</span>
+          <span class="tag">OWASP Top 10</span>
+          <span class="tag">Burp Suite</span>
+          <span class="tag">Python</span>
+          <span class="tag">Bash</span>
+          <span class="tag">LLM Red Teaming</span>
+          <span class="tag">CTF Player</span>
+          <span class="tag">Wireshark</span>
+          <span class="tag">Nmap</span>
+          <span class="tag">Linux</span>
+        </div>
+      </div>
+
+      <!-- Domain rows with SVG icons -->
+      <div class="domain-grid">
+        <div class="domain-row">
+          <span class="domain-num">01</span>
+          <div>
+            <h4>Ethical Hacking</h4>
+            <p>Network pentesting, privilege escalation, lateral movement, and red team fundamentals.</p>
+          </div>
+        </div>
+        <div class="domain-row">
+          <span class="domain-num">02</span>
+          <div>
+            <h4>Web App Testing</h4>
+            <p>SQLi, XSS, SSRF, IDOR, auth bypass, API security — full OWASP coverage.</p>
+          </div>
+        </div>
+        <div class="domain-row">
+          <span class="domain-num">03</span>
+          <div>
+            <h4>AI / LLM Security</h4>
+            <p>Prompt injection, jailbreaks, adversarial inputs, agent data exfiltration vectors.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ════════════════════ EXPERTISE ══════════════════════ -->
+<section id="expertise" class="alt-bg">
+  <div class="container">
+    <p class="section-label">what I do</p>
+    <h2 class="section-title">Areas of Expertise</h2>
+    <p class="section-sub">Four security disciplines where I research, learn, and build real practical skills.</p>
+    <div class="exp-grid">
+
+      <div class="exp-card">
+        <div class="exp-icon-wrap">
+          <!-- terminal / hacking icon -->
+          <svg viewBox="0 0 24 24"><polyline points="4 17 10 11 4 5"/><line x1="12" y1="19" x2="20" y2="19"/></svg>
+        </div>
+        <h3>Ethical Hacking</h3>
+        <p>Systematic exploitation using structured red team methodology — recon, exploitation, post-exploitation, and full reporting.</p>
+      </div>
+
+      <div class="exp-card">
+        <div class="exp-icon-wrap">
+          <!-- globe / web icon -->
+          <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+        </div>
+        <h3>Web App Security</h3>
+        <p>Manual and automated web/API testing covering every OWASP category — logic flaws, auth bypasses, injection points.</p>
+      </div>
+
+      <div class="exp-card">
+        <div class="exp-icon-wrap">
+          <!-- cpu / AI icon -->
+          <svg viewBox="0 0 24 24"><rect x="9" y="9" width="6" height="6" rx="1"/><path d="M9 3H15M9 21H15M3 9V15M21 9V15M3 3l3 3M21 3l-3 3M3 21l3-3M21 21l-3-3"/></svg>
+        </div>
+        <h3>AI / LLM Security</h3>
+        <p>Red teaming AI-powered apps — prompt injection chains, jailbreak techniques, model inversion, and agent exploitation.</p>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ════════════════════ RESOURCES ══════════════════════ -->
+<section id="resources">
+  <div class="container">
+    <p class="section-label">knowledge base</p>
+    <h2 class="section-title">Security Resources</h2>
+    <p class="section-sub">Curated tools, platforms, references, and research across all three security domains.</p>
+
+    <div class="filter-row">
+      <button class="filt-btn active" onclick="filterRes('all',this)">All</button>
+      <button class="filt-btn" onclick="filterRes('hacking',this)">Hacking</button>
+      <button class="filt-btn" onclick="filterRes('webapp',this)">Web App</button>
+      <button class="filt-btn" onclick="filterRes('ai',this)">AI Security</button>
+    </div>
+
+    <div class="res-grid" id="res-grid">
+
+      <!-- HACKING -->
+      <div class="res-card" data-cat="hacking">
+        <div class="res-top"><span class="rbadge rb-r">Hacking</span><span class="rtype">Platform</span></div>
+        <h4>Hack The Box</h4>
+        <p>Hands-on labs for penetration testing, reverse engineering, and CTF challenges from beginner to pro.</p>
+        <a href="https://hackthebox.com" target="_blank" rel="noopener" class="rlink">Visit <svg viewBox="0 0 24 24"><line x1="7" y1="17" x2="17" y2="7"/><polyline points="7 7 17 7 17 17"/></svg></a>
+      </div>
+      <div class="res-card" data-cat="hacking">
+        <div class="res-top"><span class="rbadge rb-r">Hacking</span><span class="rtype">Platform</span></div>
+        <h4>TryHackMe</h4>
+        <p>Guided learning paths for offensive &amp; defensive security. Great for beginners and intermediate hackers.</p>
+        <a href="https://tryhackme.com" target="_blank" rel="noopener" class="rlink">Visit <svg viewBox="0 0 24 24"><line x1="7" y1="17" x2="17" y2="7"/><polyline points="7 7 17 7 17 17"/></svg></a>
+      </div>
+      <div class="res-card" data-cat="hacking">
+        <div class="res-top"><span class="rbadge rb-r">Hacking</span><span class="rtype">Framework</span></div>
+        <h4>Metasploit Framework</h4>
+        <p>The world's most used penetration testing framework — essential for exploit development and post-exploitation.</p>
+        <a href="https://metasploit.com" target="_blank" rel="noopener" class="rlink">Visit <svg viewBox="0 0 24 24"><line x1="7" y1="17" x2="17" y2="7"/><polyline points="7 7 17 7 17 17"/></svg></a>
+      </div>
+      <div class="res-card" data-cat="hacking">
+        <div class="res-top"><span class="rbadge rb-r">Hacking</span><span class="rtype">Cheatsheet</span></div>
+        <h4>GTFOBins</h4>
+        <p>Curated Unix binaries that can bypass security restrictions and escalate privileges.</p>
+        <a href="https://gtfobins.github.io" target="_blank" rel="noopener" class="rlink">Visit <svg viewBox="0 0 24 24"><line x1="7" y1="17" x2="17" y2="7"/><polyline points="7 7 17 7 17 17"/></svg></a>
+      </div>
+
+      <!-- WEB APP -->
+      <div class="res-card" data-cat="webapp">
+        <div class="res-top"><span class="rbadge rb-b">Web App</span><span class="rtype">Standard</span></div>
+        <h4>OWASP Top 10</h4>
+        <p>The definitive reference for the ten most critical web application security risks.</p>
+        <a href="https://owasp.org/www-project-top-ten/" target="_blank" rel="noopener" class="rlink">Visit <svg viewBox="0 0 24 24"><line x1="7" y1="17" x2="17" y2="7"/><polyline points="7 7 17 7 17 17"/></svg></a>
+      </div>
+      <div class="res-card" data-cat="webapp">
+        <div class="res-top"><span class="rbadge rb-b">Web App</span><span class="rtype">Tool</span></div>
+        <h4>Burp Suite</h4>
+        <p>Industry-standard web proxy for intercepting, modifying, scanning, and replaying HTTP/S traffic.</p>
+        <a href="https://portswigger.net/burp" target="_blank" rel="noopener" class="rlink">Visit <svg viewBox="0 0 24 24"><line x1="7" y1="17" x2="17" y2="7"/><polyline points="7 7 17 7 17 17"/></svg></a>
+      </div>
+      <div class="res-card" data-cat="webapp">
+        <div class="res-top"><span class="rbadge rb-b">Web App</span><span class="rtype">Labs</span></div>
+        <h4>PortSwigger Web Academy</h4>
+        <p>Free, practical labs covering every major web vulnerability class from SQLi to HTTP request smuggling.</p>
+        <a href="https://portswigger.net/web-security" target="_blank" rel="noopener" class="rlink">Visit <svg viewBox="0 0 24 24"><line x1="7" y1="17" x2="17" y2="7"/><polyline points="7 7 17 7 17 17"/></svg></a>
+      </div>
+      <div class="res-card" data-cat="webapp">
+        <div class="res-top"><span class="rbadge rb-b">Web App</span><span class="rtype">Methodology</span></div>
+        <h4>HackTricks Web</h4>
+        <p>Extensive book of hacking techniques, bypasses, and methodology notes maintained by the community.</p>
+        <a href="https://book.hacktricks.xyz" target="_blank" rel="noopener" class="rlink">Visit <svg viewBox="0 0 24 24"><line x1="7" y1="17" x2="17" y2="7"/><polyline points="7 7 17 7 17 17"/></svg></a>
+      </div>
+
+      <!-- AI SECURITY -->
+      <div class="res-card" data-cat="ai">
+        <div class="res-top"><span class="rbadge rb-y">AI Security</span><span class="rtype">Reference</span></div>
+        <h4>OWASP LLM Top 10</h4>
+        <p>The 10 most critical security risks for LLM applications — prompt injection, insecure output, data leakage.</p>
+        <a href="https://owasp.org/www-project-top-10-for-large-language-model-applications/" target="_blank" rel="noopener" class="rlink">Visit <svg viewBox="0 0 24 24"><line x1="7" y1="17" x2="17" y2="7"/><polyline points="7 7 17 7 17 17"/></svg></a>
+      </div>
+      <div class="res-card" data-cat="ai">
+        <div class="res-top"><span class="rbadge rb-y">AI Security</span><span class="rtype">Framework</span></div>
+        <h4>MITRE ATLAS</h4>
+        <p>Adversarial Threat Landscape for AI Systems — a knowledge base of adversarial ML tactics and techniques.</p>
+        <a href="https://atlas.mitre.org" target="_blank" rel="noopener" class="rlink">Visit <svg viewBox="0 0 24 24"><line x1="7" y1="17" x2="17" y2="7"/><polyline points="7 7 17 7 17 17"/></svg></a>
+      </div>
+      <div class="res-card" data-cat="ai">
+        <div class="res-top"><span class="rbadge rb-y">AI Security</span><span class="rtype">Tool</span></div>
+        <h4>Garak</h4>
+        <p>Open-source LLM vulnerability scanner — probes models for prompt injection, jailbreaks, and info leakage.</p>
+        <a href="https://github.com/NVIDIA/garak" target="_blank" rel="noopener" class="rlink">Visit <svg viewBox="0 0 24 24"><line x1="7" y1="17" x2="17" y2="7"/><polyline points="7 7 17 7 17 17"/></svg></a>
+      </div>
+      <div class="res-card" data-cat="ai">
+        <div class="res-top"><span class="rbadge rb-y">AI Security</span><span class="rtype">Research</span></div>
+        <h4>Lakera AI Blog</h4>
+        <p>In-depth research on prompt injection, LLM security architecture, and real-world AI attack case studies.</p>
+        <a href="https://www.lakera.ai/blog" target="_blank" rel="noopener" class="rlink">Visit <svg viewBox="0 0 24 24"><line x1="7" y1="17" x2="17" y2="7"/><polyline points="7 7 17 7 17 17"/></svg></a>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════ BLOG TEASER ══════════════════════ -->
+<section id="blog-teaser" class="alt-bg" style="text-align:center;">
+  <div class="container">
+    <p class="section-label" style="justify-content:center;">latest thoughts</p>
+    <h2 class="section-title">From the Blog</h2>
+    <p class="section-sub" style="margin:0 auto 2.5rem;">Security write-ups, research breakdowns, and learning notes.</p>
+    <a href="blog.html" class="btn btn-primary">View All Posts</a>
+  </div>
+</section>
+
+<!-- ════════════════════ CONTACT ════════════════════════ -->
+<section id="contact">
+  <div class="container">
+    <div class="contact-section-grid">
+
+      <!-- Left: heading + description + CTA -->
+      <div class="contact-section-left">
+        <p class="section-label">get in touch</p>
+        <h2 class="section-title">Let's Build Something Secure</h2>
+        <p class="contact-section-desc">
+          I'm actively looking for internships, bug bounty collaborations, and
+          security research partnerships. If you have an opportunity or just want
+          to talk security — reach out.
+        </p>
+        <a href="contact.html" class="btn btn-primary" style="align-self:flex-start;">Send a Message</a>
+      </div>
+
+      <!-- Right: availability card + social links -->
+      <div class="contact-section-right">
+        <div class="contact-wrap">
+          <div style="display:flex;align-items:center;gap:0.5rem;margin-bottom:0.9rem;">
+            <span class="avail-dot"></span>
+            <span style="font-size:0.78rem;color:var(--muted);font-weight:500;">Currently open to opportunities</span>
+          </div>
+          <h3 style="font-size:1rem;font-weight:700;margin-bottom:0.4rem;">Open to Opportunities</h3>
+          <p class="sub">
+            Available for internships, bug bounty collaborations, research partnerships,
+            and security consultations.
+          </p>
+          <div class="clinks">
+            <a href="mailto:darshakkanani444@gmail.com" class="clink">
+              <svg viewBox="0 0 24 24"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+              Email
+            </a>
+            <a href="https://twitter.com/Darshak_Patel_" target="_blank" rel="noopener" class="clink">
+              <svg viewBox="0 0 24 24"><path d="M23 3a10.9 10.9 0 0 1-3.14 1.53 4.48 4.48 0 0 0-7.86 3v1A10.66 10.66 0 0 1 3 4s-4 9 5 13a11.64 11.64 0 0 1-7 2c9 5 20 0 20-11.5a4.5 4.5 0 0 0-.08-.83A7.72 7.72 0 0 0 23 3z"/></svg>
+              Twitter
+            </a>
+            <a href="https://github.com/darshakkanani" target="_blank" rel="noopener" class="clink">
+              <svg viewBox="0 0 24 24"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"/></svg>
+              GitHub
+            </a>
+            <a href="https://linkedin.com/in/darshak-kanani" target="_blank" rel="noopener" class="clink">
+              <svg viewBox="0 0 24 24"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"/><rect x="2" y="9" width="4" height="12"/><circle cx="4" cy="4" r="2"/></svg>
+              LinkedIn
+            </a>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════ FOOTER ═══════════════════════ -->
+<footer>
+  <p>© 2025 <span class="f-name">Darshak Patel</span> · B.Tech CSE Cybersecurity</p>
+  <div class="f-links">
+    <a href="index.html">Home</a>
+    <a href="about.html">About</a>
+    <a href="expertise.html">Expertise</a>
+    <a href="certifications.html">Certifications</a>
+    <a href="achievements.html">Achievements</a>
+    <a href="tools.html">Tools</a>
+    <a href="resources.html">Resources</a>
+    <a href="blog.html">Blog</a>
+    <a href="contact.html">Contact</a>
+  </div>
+</footer>
+
+<script src="assets/js/main.js"></script>
+<script src="assets/js/pages/index.js"></script>
+</body>
+</html>

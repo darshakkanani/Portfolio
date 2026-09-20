@@ -1,0 +1,103 @@
+/* ═══════════════════════════════════════════════════
+   methodology.css — personal methodology page styles
+═══════════════════════════════════════════════════ */
+
+/* ── Phase index bar ─────────────────────────────── */
+.mth-index {
+  display: flex; align-items: center; gap: 1rem;
+  flex-wrap: wrap; margin-bottom: 2.5rem;
+  padding: 1rem 1.2rem;
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 8px;
+}
+.mth-index-label {
+  font-family: var(--mono); font-size: 0.67rem; color: var(--muted2);
+  text-transform: uppercase; letter-spacing: 1.5px; white-space: nowrap;
+}
+.mth-index-pills { display: flex; flex-wrap: wrap; gap: 0.4rem; }
+.mth-pill {
+  font-family: var(--mono); font-size: 0.68rem; color: var(--muted2);
+  border: 1px solid var(--border); border-radius: 4px;
+  padding: 0.2rem 0.65rem; white-space: nowrap;
+  transition: border-color var(--ease), color var(--ease);
+}
+.mth-pill:hover { border-color: var(--border2); color: var(--muted); text-decoration: none; }
+
+/* ── Phase block ─────────────────────────────────── */
+.mth-phase {
+  padding: 3rem 0;
+  position: relative;
+}
+.mth-phase + .mth-phase::before {
+  content: "";
+  display: block;
+  position: absolute;
+  top: 0; left: 50%;
+  transform: translateX(-50%);
+  width: 60%;
+  height: 1px;
+  background: linear-gradient(to right, transparent, var(--border), transparent);
+}
+
+/* ── Phase header ────────────────────────────────── */
+.mth-phase-header {
+  display: flex; align-items: center; gap: 1.2rem; margin-bottom: 2rem;
+}
+.mth-num {
+  font-family: var(--mono); font-size: 0.7rem; color: var(--muted2);
+  border: 1px solid var(--border); border-radius: 5px;
+  padding: 0.3rem 0.6rem; flex-shrink: 0;
+}
+.mth-phase-title {
+  font-size: 1.4rem; font-weight: 800; letter-spacing: -0.5px; color: var(--text);
+}
+.mth-phase-sub {
+  font-family: var(--mono); font-size: 0.68rem; color: var(--muted2);
+  letter-spacing: 1.5px; text-transform: uppercase; margin-top: 0.2rem;
+}
+
+/* ── Phase body — two columns ────────────────────── */
+.mth-phase-body {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 3.5rem; align-items: start;
+}
+@media (max-width: 860px) { .mth-phase-body { grid-template-columns: 1fr; gap: 1.5rem; } }
+
+/* ── Description text ────────────────────────────── */
+.mth-desc p {
+  color: var(--muted); margin-bottom: 0.85rem;
+  line-height: 1.8; font-size: 0.88rem;
+}
+
+/* ── Step cards ──────────────────────────────────── */
+.mth-steps { display: flex; flex-direction: column; gap: 0.5rem; }
+.mth-step {
+  display: flex; align-items: flex-start; gap: 0.75rem;
+  background: var(--surface2); border: 1px solid var(--border);
+  border-radius: 7px; padding: 0.8rem 1rem;
+  font-size: 0.8rem; color: var(--muted);
+  transition: border-color var(--ease);
+}
+.mth-step:hover { border-color: var(--border2); }
+.mth-step-icon {
+  width: 20px; height: 20px; flex-shrink: 0; margin-top: 1px;
+  display: flex; align-items: center; justify-content: center;
+}
+.mth-step-icon svg {
+  width: 13px; height: 13px; stroke: var(--muted2); fill: none;
+  stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;
+}
+.mth-step strong {
+  color: var(--text); display: block;
+  font-size: 0.82rem; margin-bottom: 0.1rem; font-weight: 600;
+}
+
+/* ── Tools row ───────────────────────────────────── */
+.mth-tools {
+  margin-top: 1.5rem; padding-top: 1.2rem;
+  border-top: 1px solid var(--border);
+}
+.mth-tools-label {
+  font-family: var(--mono); font-size: 0.67rem; color: var(--muted2);
+  text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 0.6rem;
+}
+.mth-tools-chips { display: flex; flex-wrap: wrap; gap: 0.4rem; }

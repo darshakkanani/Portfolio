@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Darshak Patel's personal AI / LLM security methodology — threat modelling, prompt injection, jailbreaks, model inversion, and responsible disclosure." />
+  <title>AI / LLM Security Methodology | Darshak Patel</title>
+  <link rel="stylesheet" href="assets/css/style.css" />
+  <link rel="stylesheet" href="assets/css/pages/methodology.css" />
+</head>
+<body>
+
+<canvas id="particles"></canvas>
+
+<nav>
+  <a href="index.html" class="nav-logo"><span class="bracket">[</span>dp<span class="bracket">]</span></a>
+  <ul class="nav-links">
+    <li><a href="about.html">about</a></li>
+    <li><a href="expertise.html">expertise</a></li>
+    <li><a href="certifications.html">certifications</a></li>
+    <li><a href="achievements.html">achievements</a></li>
+    <li><a href="tools.html">tools</a></li>
+    <li><a href="resources.html" class="active">resources</a></li>
+    <li><a href="blog.html">blog</a></li>
+    <li><a href="contact.html">contact</a></li>
+  </ul>
+  <a href="mailto:your@email.com" class="nav-cta">Hire Me</a>
+  <div class="nav-hamburger"><span></span><span></span><span></span></div>
+</nav>
+
+<div class="page-header">
+  <p class="section-label">AI / LLM security</p>
+  <h1 class="section-title">My AI Security Methodology</h1>
+  <p class="section-sub">A systematic, phase-driven approach to testing AI-powered applications — from threat modelling and prompt injection to model-level attacks and responsible disclosure.</p>
+</div>
+
+<section class="cert-page-body">
+  <div class="container">
+
+    <div class="reports-page-back">
+      <a href="resources.html" class="reports-back-link">
+        <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
+        Back to Resources
+      </a>
+    </div>
+
+    <!-- ── PHASE INDEX ─────────────────────────────── -->
+    <div class="mth-index reveal">
+      <p class="mth-index-label">Phases</p>
+      <div class="mth-index-pills">
+        <a href="#phase-1" class="mth-pill">01 · Threat Modelling</a>
+        <a href="#phase-2" class="mth-pill">02 · Reconnaissance</a>
+        <a href="#phase-3" class="mth-pill">03 · Prompt Injection</a>
+        <a href="#phase-4" class="mth-pill">04 · Model-Level Attacks</a>
+        <a href="#phase-5" class="mth-pill">05 · Application-Layer Testing</a>
+        <a href="#phase-6" class="mth-pill">06 · Reporting & Disclosure</a>
+      </div>
+    </div>
+
+    <!-- ══════════════════════════════════════════════
+         PHASE 01 — THREAT MODELLING
+    ══════════════════════════════════════════════ -->
+    <div class="mth-phase reveal" id="phase-1">
+      <div class="mth-phase-header">
+        <span class="mth-num">01</span>
+        <div>
+          <h2 class="mth-phase-title">Threat Modelling</h2>
+          <p class="mth-phase-sub">ARCHITECTURE REVIEW · TRUST BOUNDARIES · ATTACK SURFACE</p>
+        </div>
+      </div>
+      <div class="mth-phase-body">
+        <div class="mth-desc">
+          <p>Before sending a single prompt I map the entire AI system — its components, data flows, trust boundaries, and integration points. Understanding the architecture determines every attack path that follows.</p>
+          <p>I align findings against OWASP LLM Top 10 and MITRE ATLAS from the start, so every phase maps to a documented risk class.</p>
+        </div>
+        <div class="mth-steps">
+          <div class="mth-step">
+            <div class="mth-step-icon"><svg viewBox="0 0 24 24"><rect x="9" y="9" width="6" height="6" rx="1"/><path d="M9 3H15M9 21H15M3 9V15M21 9V15M3 3l3 3M21 3l-3 3M3 21l3-3M21 21l-3-3"/></svg></div>
+            <div><strong>System Architecture Mapping</strong>Identify model provider, prompt pipeline, retrieval sources (RAG), tool integrations, output handlers, and user trust levels.</div>
+          </div>
+          <div class="mth-step">
+            <div class="mth-step-icon"><svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div>
+            <div><strong>Trust Boundary Analysis</strong>Define what inputs the model accepts, which are user-controlled vs system-controlled, and where output is rendered or executed downstream.</div>
+          </div>
+          <div class="mth-step">
+            <div class="mth-step-icon"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></div>
+            <div><strong>OWASP LLM Top 10 Mapping</strong>Pre-map the application against all 10 LLM risk categories — prompt injection, insecure output handling, supply chain, excessive agency, and more.</div>
+          </div>
+          <div class="mth-step">
+            <div class="mth-step-icon"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></div>
+            <div><strong>System Prompt Discovery</strong>Attempt to surface the system prompt via leakage techniques, indirect prompting, and error message analysis — knowing instructions defines the attack surface.</div>
+          </div>
+        </div>
+      </div>
+      <div class="mth-tools">
+        <p class="mth-tools-label">References</p>
+        <div class="mth-tools-chips">
+          <span class="tool-chip">OWASP LLM Top 10</span><span class="tool-chip">MITRE ATLAS</span>
+          <span class="tool-chip">AI Threat Matrix</span><span class="tool-chip">STRIDE</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════════════════════════════════════════════
+         PHASE 02 — RECONNAISSANCE
+    ══════════════════════════════════════════════ -->
+    <div class="mth-phase reveal" id="phase-2">
+      <div class="mth-phase-header">
+        <span class="mth-num">02</span>
+        <div>
+          <h2 class="mth-phase-title">Reconnaissance</h2>
+          <p class="mth-phase-sub">MODEL FINGERPRINTING · API ENUMERATION · SUPPLY CHAIN</p>
+        </div>
+      </div>
+      <div class="mth-phase-body">
+        <div class="mth-desc">
+          <p>Identify the underlying model, version, provider, and any third-party plugins or tools the application exposes. Supply-chain weaknesses and outdated model versions often yield the most impactful findings.</p>
+        </div>
+        <div class="mth-steps">
+          <div class="mth-step">
+            <div class="mth-step-icon"><svg viewBox="0 0 24 24"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg></div>
+            <div><strong>Model Fingerprinting</strong>Use knowledge-boundary probes, training-data artefacts, and distinctive response patterns to identify the underlying base model and version.</div>
+          </div>
+          <div class="mth-step">
+            <div class="mth-step-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg></div>
+            <div><strong>API & Endpoint Enumeration</strong>Discover exposed inference endpoints, streaming endpoints, and function-calling schemas. Check for unauthenticated access and verbose error messages.</div>
+          </div>
+          <div class="mth-step">
+            <div class="mth-step-icon"><svg viewBox="0 0 24 24"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg></div>
+            <div><strong>Plugin & Tool Inventory</strong>Enumerate all tools, plugins, and external integrations the model can call — each integration is a potential pivot point for privilege escalation or data exfiltration.</div>
+          </div>
+          <div class="mth-step">
+            <div class="mth-step-icon"><svg viewBox="0 0 24 24"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></svg></div>
+            <div><strong>RAG & Knowledge Base Recon</strong>If the application uses retrieval-augmented generation, probe data sources for over-exposure, indirect injection vectors, and sensitive document leakage.</div>
+          </div>
+        </div>
+      </div>
+      <div class="mth-tools">
+        <p class="mth-tools-label">Tools</p>
+        <div class="mth-tools-chips">
+          <span class="tool-chip">Burp Suite</span><span class="tool-chip">Postman</span>
+          <span class="tool-chip">LLM Fuzzer</span><span class="tool-chip">Garak</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════════════════════════════════════════════
+         PHASE 03 — PROMPT INJECTION
+    ══════════════════════════════════════════════ -->
+    <div class="mth-phase reveal" id="phase-3">
+      <div class="mth-phase-header">
+        <span class="mth-num">03</span>
+        <div>
+          <h2 class="mth-phase-title">Prompt Injection</h2>
+          <p class="mth-phase-sub">DIRECT · INDIRECT · JAILBREAKS · ROLE MANIPULATION</p>
+        </div>
+      </div>
+      <div class="mth-phase-body">
+        <div class="mth-desc">
+          <p>Prompt injection is the primary attack class for LLM applications. I test both direct injection (user input overrides instructions) and indirect injection (malicious content ingested from external sources), as well as alignment-bypass jailbreaks.</p>
+        </div>
+        <div class="mth-steps">
+          <div class="mth-step">
+            <div class="mth-step-icon"><svg viewBox="0 0 24 24"><polyline points="4 17 10 11 4 5"/><line x1="12" y1="19" x2="20" y2="19"/></svg></div>
+            <div><strong>Direct Prompt Injection</strong>Inject instructions into user-controlled fields to override system prompts, exfiltrate instructions, and alter model behaviour — "Ignore previous instructions and…" variants.</div>
+          </div>
+          <div class="mth-step">
+            <div class="mth-step-icon"><svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></div>
+            <div><strong>Indirect Prompt Injection</strong>Embed malicious instructions in documents, web pages, emails, or database entries that the model retrieves and processes — the model acts on attacker-controlled content without user awareness.</div>
+          </div>
+          <div class="mth-step">
+            <div class="mth-step-icon"><svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></div>
+            <div><strong>Jailbreaks & Alignment Bypasses</strong>Role-play framing, hypothetical scenarios, DAN-style prompts, token smuggling, and language-switching to bypass safety filters and content policies.</div>
+          </div>
+          <div class="mth-step">
+            <div class="mth-step-icon"><svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/></svg></div>
+            <div><strong>System Prompt Exfiltration</strong>Extract confidential system instructions via indirect leakage, token-by-token completion, and translation / encoding tricks.</div>
+          </div>
+        </div>
+      </div>
+      <div class="mth-tools">
+        <p class="mth-tools-label">Tools</p>
+        <div class="mth-tools-chips">
+          <span class="tool-chip">Garak</span><span class="tool-chip">PromptBench</span>
+          <span class="tool-chip">Burp Suite</span><span class="tool-chip">Custom scripts</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════════════════════════════════════════════
+         PHASE 04 — MODEL-LEVEL ATTACKS
+    ══════════════════════════════════════════════ -->
+    <div class="mth-phase reveal" id="phase-4">
+      <div class="mth-phase-header">
+        <span class="mth-num">04</span>
+        <div>
+          <h2 class="mth-phase-title">Model-Level Attacks</h2>
+          <p class="mth-phase-sub">DATA EXTRACTION · INVERSION · MEMBERSHIP INFERENCE</p>
+        </div>
+      </div>
+      <div class="mth-phase-body">
+        <div class="mth-desc">
+          <p>Beyond prompt manipulation, I probe for attacks that target the model itself — extracting training data, inferring membership of sensitive records, and assessing insecure output handling that can lead to code execution or SSRF downstream.</p>
+        </div>
+        <div class="mth-steps">
+          <div class="mth-step">
+            <div class="mth-step-icon"><svg viewBox="0 0 24 24"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></svg></div>
+            <div><strong>Training Data Extraction</strong>Use repeated, targeted completions and memorisation probes to surface verbatim training data — PII, API keys, or proprietary content inadvertently memorised.</div>
+          </div>
+          <div class="mth-step">
+            <div class="mth-step-icon"><svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div>
+            <div><strong>Membership Inference</strong>Determine whether specific records (user data, documents) were included in fine-tuning datasets — relevant for privacy compliance and data breach assessment.</div>
+          </div>
+          <div class="mth-step">
+            <div class="mth-step-icon"><svg viewBox="0 0 24 24"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg></div>
+            <div><strong>Insecure Output Handling</strong>Test whether model-generated content (markdown, HTML, code, shell commands) is rendered or executed unsanitised downstream — leading to XSS, SSRF, RCE, or SQL injection.</div>
+          </div>
+          <div class="mth-step">
+            <div class="mth-step-icon"><svg viewBox="0 0 24 24"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg></div>
+            <div><strong>Hallucination & Overreliance</strong>Assess how confidently the model fabricates facts, citations, or code — and whether the application blindly trusts and acts on those outputs without validation.</div>
+          </div>
+        </div>
+      </div>
+      <div class="mth-tools">
+        <p class="mth-tools-label">Tools</p>
+        <div class="mth-tools-chips">
+          <span class="tool-chip">Garak</span><span class="tool-chip">Lakera Guard</span>
+          <span class="tool-chip">Custom Python</span><span class="tool-chip">Burp Suite</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════════════════════════════════════════════
+         PHASE 05 — APPLICATION-LAYER TESTING
+    ══════════════════════════════════════════════ -->
+    <div class="mth-phase reveal" id="phase-5">
+      <div class="mth-phase-header">
+        <span class="mth-num">05</span>
+        <div>
+          <h2 class="mth-phase-title">Application-Layer Testing</h2>
+          <p class="mth-phase-sub">EXCESSIVE AGENCY · AUTHZ · RATE LIMITING · SUPPLY CHAIN</p>
+        </div>
+      </div>
+      <div class="mth-phase-body">
+        <div class="mth-desc">
+          <p>The surrounding application is as important as the model itself. I test every integration point — tool calls, agentic actions, API access controls, rate limits, and third-party model or plugin supply chains.</p>
+        </div>
+        <div class="mth-steps">
+          <div class="mth-step">
+            <div class="mth-step-icon"><svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></div>
+            <div><strong>Excessive Agency Testing</strong>Verify the model's granted permissions are least-privilege — test whether tool calls can be abused to read/write files, send emails, execute code, or access unauthorised resources.</div>
+          </div>
+          <div class="mth-step">
+            <div class="mth-step-icon"><svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg></div>
+            <div><strong>Authorisation & Multi-Tenancy</strong>In multi-user deployments, test whether conversation context, memory, or tool outputs can be accessed across user sessions or tenant boundaries.</div>
+          </div>
+          <div class="mth-step">
+            <div class="mth-step-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg></div>
+            <div><strong>Rate Limiting & DoS</strong>Check for missing rate limits on inference endpoints — automated prompt flooding can exhaust quotas, degrade service, or inflate costs for the operator.</div>
+          </div>
+          <div class="mth-step">
+            <div class="mth-step-icon"><svg viewBox="0 0 24 24"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg></div>
+            <div><strong>Supply Chain & Plugin Risk</strong>Evaluate third-party model providers, fine-tuning pipelines, and plugins for backdoors, data exfiltration risks, and insecure dependencies (LLM10: Model Theft).</div>
+          </div>
+        </div>
+      </div>
+      <div class="mth-tools">
+        <p class="mth-tools-label">Tools</p>
+        <div class="mth-tools-chips">
+          <span class="tool-chip">Burp Suite</span><span class="tool-chip">FFUF</span>
+          <span class="tool-chip">Postman</span><span class="tool-chip">Nuclei</span><span class="tool-chip">Custom Python</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════════════════════════════════════════════
+         PHASE 06 — REPORTING & DISCLOSURE
+    ══════════════════════════════════════════════ -->
+    <div class="mth-phase reveal" id="phase-6">
+      <div class="mth-phase-header">
+        <span class="mth-num">06</span>
+        <div>
+          <h2 class="mth-phase-title">Reporting &amp; Disclosure</h2>
+          <p class="mth-phase-sub">FINDINGS · IMPACT · REMEDIATION · RESPONSIBLE DISCLOSURE</p>
+        </div>
+      </div>
+      <div class="mth-phase-body">
+        <div class="mth-desc">
+          <p>AI security findings require extra care in communication — the non-deterministic nature of LLMs means reproduction steps must include exact prompts, model versions, and temperature settings. I follow coordinated responsible disclosure for all AI findings.</p>
+        </div>
+        <div class="mth-steps">
+          <div class="mth-step">
+            <div class="mth-step-icon"><svg viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg></div>
+            <div><strong>Severity Rating</strong>Map each finding to OWASP LLM Top 10 and CVSS v3.1 — account for non-determinism, model version specificity, and real-world exploitability in the rating.</div>
+          </div>
+          <div class="mth-step">
+            <div class="mth-step-icon"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg></div>
+            <div><strong>Finding Structure</strong>Title → Severity → OWASP LLM Category → Summary → Exact Prompt / Steps to Reproduce → PoC Output → Impact → Remediation → References.</div>
+          </div>
+          <div class="mth-step">
+            <div class="mth-step-icon"><svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div>
+            <div><strong>Remediation Guidance</strong>Concrete mitigations — input/output validation, prompt hardening, principle of least privilege for tool access, content filtering, and model versioning strategies.</div>
+          </div>
+          <div class="mth-step">
+            <div class="mth-step-icon"><svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></div>
+            <div><strong>Responsible Disclosure</strong>Follow coordinated disclosure timelines — notify the vendor privately, allow reasonable remediation time, and publish only after a fix is in place or the agreed embargo expires.</div>
+          </div>
+        </div>
+      </div>
+      <div class="mth-tools">
+        <p class="mth-tools-label">Report structure</p>
+        <div class="mth-tools-chips">
+          <span class="tool-chip">Executive Summary</span><span class="tool-chip">Scope</span>
+          <span class="tool-chip">Findings (OWASP LLM)</span><span class="tool-chip">Exact Prompts</span>
+          <span class="tool-chip">Impact</span><span class="tool-chip">Remediation</span>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<footer>
+  <p>© 2025 <span class="f-name">Darshak Patel</span> · B.Tech CSE Cybersecurity</p>
+  <div class="f-links">
+    <a href="index.html">Home</a>
+    <a href="about.html">About</a>
+    <a href="expertise.html">Expertise</a>
+    <a href="certifications.html">Certifications</a>
+    <a href="achievements.html">Achievements</a>
+    <a href="tools.html">Tools</a>
+    <a href="resources.html">Resources</a>
+    <a href="blog.html">Blog</a>
+    <a href="contact.html">Contact</a>
+  </div>
+</footer>
+
+<script src="assets/js/main.js"></script>
+<script src="assets/js/pages/methodology.js"></script>
+</body>
+</html>

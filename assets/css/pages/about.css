@@ -1,0 +1,141 @@
+/* ═══════════════════════════════════════════════════
+   About page — layout & component styles
+═══════════════════════════════════════════════════ */
+
+/* ── HERO / FULL-WIDTH LAYOUT ────────────────────── */
+.about-hero {
+  padding: 100px 3rem 0;
+  position: relative; z-index: 1;
+}
+.about-hero-inner {
+  max-width: 1400px; margin: 0 auto;
+  display: grid; grid-template-columns: 320px 1fr;
+  gap: 3rem; align-items: start;
+}
+
+/* ── STICKY SIDEBAR ──────────────────────────────── */
+.about-sidebar {
+  position: sticky; top: 76px;
+}
+.profile-card {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 12px; padding: 2rem 1.6rem; text-align: center;
+}
+.profile-avatar {
+  width: 110px; height: 110px; border-radius: 50%;
+  margin: 0 auto 1.2rem;
+  background: var(--surface2); border: 2px solid var(--border);
+  overflow: hidden; flex-shrink: 0;
+}
+.profile-avatar img {
+  width: 100%; height: 100%;
+  object-fit: cover; object-position: center top;
+  display: block; border-radius: 50%;
+  filter: grayscale(20%) contrast(1.05);
+  transition: filter 0.3s ease;
+}
+.profile-avatar img:hover { filter: grayscale(0%) contrast(1); }
+.profile-name { font-size: 1.05rem; font-weight: 800; margin-bottom: 0.25rem; }
+.profile-role { font-family: var(--mono); font-size: 0.72rem; color: var(--muted2); margin-bottom: 1.1rem; }
+.profile-status {
+  display: inline-flex; align-items: center; gap: 0.4rem;
+  background: var(--surface2); border: 1px solid var(--border);
+  color: var(--muted); font-size: 0.72rem;
+  padding: 0.28rem 0.85rem; border-radius: 99px; margin-bottom: 1.5rem;
+}
+.profile-links { display: flex; flex-direction: column; gap: 0.5rem; }
+.profile-link {
+  display: flex; align-items: center; gap: 0.65rem;
+  background: var(--surface2); border: 1px solid var(--border);
+  border-radius: 7px; padding: 0.55rem 0.9rem;
+  font-size: 0.78rem; color: var(--muted2);
+  transition: border-color var(--ease), color var(--ease);
+  overflow: hidden; white-space: nowrap; text-overflow: ellipsis;
+}
+.profile-link:hover { border-color: var(--border2); color: var(--muted); text-decoration: none; }
+.profile-link svg { width: 13px; height: 13px; stroke: currentColor; fill: none; stroke-width: 1.8; flex-shrink: 0; }
+.profile-link span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+/* ── MAIN CONTENT ────────────────────────────────── */
+.about-main { padding-bottom: 6rem; }
+.about-header {
+  padding-bottom: 2.5rem; margin-bottom: 2.5rem;
+  border-bottom: 1px solid var(--border);
+}
+.about-header .section-label { margin-bottom: 0.5rem; }
+.about-header h1 {
+  font-size: clamp(2rem, 4vw, 3rem);
+  font-weight: 900; letter-spacing: -1.5px;
+  line-height: 1.05; margin-bottom: 0.8rem;
+}
+.about-header p {
+  color: var(--muted); font-size: 0.95rem; line-height: 1.75;
+  max-width: 640px;
+}
+
+/* ── TWO-COLUMN CONTENT GRID ─────────────────────── */
+.about-content-grid {
+  display: grid; grid-template-columns: 1fr 1fr;
+  gap: 2.5rem; margin-bottom: 2.5rem;
+}
+.about-skills-row {
+  border-top: 1px solid var(--border); padding-top: 2.5rem;
+}
+
+/* ── BIO BLOCKS ──────────────────────────────────── */
+.bio-label {
+  font-family: var(--mono); font-size: 0.68rem; color: var(--muted2);
+  letter-spacing: 2px; text-transform: uppercase; margin-bottom: 1rem;
+  display: flex; align-items: center; gap: 0.5rem;
+}
+.bio-label::before { content: "—"; color: var(--border2); }
+.bio-block p { color: var(--muted); margin-bottom: 0.75rem; line-height: 1.8; font-size: 0.88rem; }
+.bio-block p strong { color: var(--text); font-weight: 600; }
+.bio-block p em { color: var(--text); }
+
+/* ── TIMELINE ────────────────────────────────────── */
+.timeline { display: flex; flex-direction: column; position: relative; }
+.timeline::before {
+  content: ""; position: absolute; left: 6px; top: 8px; bottom: 0;
+  width: 1px; background: var(--border);
+}
+.tl-item { display: flex; gap: 1.2rem; align-items: flex-start; padding-bottom: 1.6rem; }
+.tl-dot {
+  width: 13px; height: 13px; border-radius: 50%; flex-shrink: 0; margin-top: 4px;
+  background: var(--surface2); border: 1px solid var(--border2); z-index: 1;
+}
+.tl-year { font-family: var(--mono); font-size: 0.67rem; color: var(--muted2); margin-bottom: 0.15rem; }
+.tl-item h4 { font-size: 0.84rem; font-weight: 700; margin-bottom: 0.15rem; }
+.tl-item p { font-size: 0.77rem; color: var(--muted); line-height: 1.6; }
+
+/* ── SKILL BARS ──────────────────────────────────── */
+.skill-grid {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 1.4rem 3rem;
+}
+
+/* ── RESPONSIVE ──────────────────────────────────── */
+@media (max-width: 1100px) {
+  .about-hero-inner { grid-template-columns: 280px 1fr; gap: 2.5rem; }
+}
+@media (max-width: 860px) {
+  .about-hero { padding: 88px 2rem 0; }
+  .about-hero-inner { grid-template-columns: 1fr; gap: 2rem; }
+  .about-sidebar { position: static; }
+  .profile-card {
+    display: grid; grid-template-columns: auto 1fr;
+    gap: 1.5rem; text-align: left; align-items: start;
+  }
+  .profile-avatar { margin: 0; }
+  .profile-status { display: inline-flex; }
+}
+@media (max-width: 680px) {
+  .about-hero { padding: 80px 1.2rem 0; }
+  .about-content-grid { grid-template-columns: 1fr; gap: 2rem; }
+  .skill-grid { grid-template-columns: 1fr; }
+  .profile-card { grid-template-columns: 1fr; text-align: center; }
+  .profile-avatar { margin: 0 auto; }
+}
+@media (max-width: 480px) {
+  .about-hero-inner { gap: 1.5rem; }
+  .about-header h1 { font-size: 1.9rem; }
+}

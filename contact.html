@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Contact Darshak Patel — available for internships, bug bounty collaborations, security research, and consultations." />
+  <title>Contact | Darshak Patel</title>
+  <link rel="stylesheet" href="assets/css/style.css" />
+  <link rel="stylesheet" href="assets/css/pages/contact.css" />
+</head>
+<body>
+
+<canvas id="particles"></canvas>
+
+<nav>
+  <a href="index.html" class="nav-logo"><span class="bracket">[</span>dp<span class="bracket">]</span></a>
+  <ul class="nav-links">
+    <li><a href="about.html">about</a></li>
+    <li><a href="expertise.html">expertise</a></li>
+    <li><a href="certifications.html">certifications</a></li>
+    <li><a href="achievements.html">achievements</a></li>
+    <li><a href="tools.html">tools</a></li>
+    <li><a href="resources.html">resources</a></li>
+    <li><a href="blog.html">blog</a></li>
+    <li><a href="contact.html" class="active">contact</a></li>
+  </ul>
+  <a href="mailto:your@email.com" class="nav-cta">Hire Me</a>
+  <div class="nav-hamburger"><span></span><span></span><span></span></div>
+</nav>
+
+<div class="page-header">
+  <p class="section-label">get in touch</p>
+  <h1 class="section-title">Let's Build Something Secure</h1>
+  <p class="section-sub">Available for internships, bug bounty collaborations, security reviews, research partnerships, and mentorship.</p>
+</div>
+
+<section class="cert-page-body">
+  <div class="container">
+    <div class="contact-page-grid">
+
+      <!-- LEFT: Form -->
+      <div>
+        <div class="contact-form-card reveal">
+          <h3>Send a Message</h3>
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">Name</label>
+              <input type="text" class="form-input" placeholder="Your name" />
+            </div>
+            <div class="form-group">
+              <label class="form-label">Email</label>
+              <input type="email" class="form-input" placeholder="your@email.com" />
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Subject</label>
+            <input type="text" class="form-input" placeholder="Internship opportunity / Collaboration / etc." />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Message</label>
+            <textarea class="form-textarea" placeholder="Tell me about your project, opportunity, or question..."></textarea>
+          </div>
+          <button class="form-submit" onclick="handleSubmit()">Send Message</button>
+          <p class="form-note">I typically respond within 24 hours.</p>
+          <div class="form-success" id="form-success">
+            Message sent — I'll get back to you shortly.
+          </div>
+        </div>
+      </div>
+
+      <!-- RIGHT: Info -->
+      <div>
+        <div class="contact-info reveal">
+
+          <div style="display:flex;align-items:center;gap:0.5rem;margin-bottom:1rem;">
+            <span class="avail-dot"></span>
+            <span style="font-size:0.8rem;color:var(--muted);font-weight:500;">Currently open to opportunities</span>
+          </div>
+
+          <!-- Email -->
+          <div class="contact-info-card">
+            <div class="ci-icon">
+              <svg viewBox="0 0 24 24"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+            </div>
+            <div>
+              <div class="ci-label">Email</div>
+              <div class="ci-value"><a href="mailto:darshakkanani444@gmail.com">darshakkanani444@gmail.com</a></div>
+            </div>
+          </div>
+
+          <!-- Location -->
+          <div class="contact-info-card">
+            <div class="ci-icon">
+              <svg viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+            </div>
+            <div>
+              <div class="ci-label">Location</div>
+              <div class="ci-value">India</div>
+            </div>
+          </div>
+
+          <!-- Response time -->
+          <div class="contact-info-card">
+            <div class="ci-icon">
+              <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            </div>
+            <div>
+              <div class="ci-label">Response Time</div>
+              <div class="ci-value">Within 24 hours</div>
+            </div>
+          </div>
+
+          <!-- Social grid -->
+          <div style="margin-top:0.5rem;">
+            <p style="font-family:var(--mono);font-size:0.67rem;color:var(--muted2);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:0.8rem;">Find Me Online</p>
+            <div class="social-grid">
+              <a href="https://github.com/darshakkanani" target="_blank" rel="noopener" class="social-btn">
+                <svg viewBox="0 0 24 24"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"/></svg>
+                <div><div class="social-name">GitHub</div><div class="social-handle">@darshakkanani</div></div>
+              </a>
+              <a href="https://linkedin.com/in/darshak-kanani" target="_blank" rel="noopener" class="social-btn">
+                <svg viewBox="0 0 24 24"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"/><rect x="2" y="9" width="4" height="12"/><circle cx="4" cy="4" r="2"/></svg>
+                <div><div class="social-name">LinkedIn</div><div class="social-handle">/in/darshak-kanani</div></div>
+              </a>
+              <a href="https://twitter.com/Darshak_Patel_" target="_blank" rel="noopener" class="social-btn">
+                <svg viewBox="0 0 24 24"><path d="M23 3a10.9 10.9 0 0 1-3.14 1.53 4.48 4.48 0 0 0-7.86 3v1A10.66 10.66 0 0 1 3 4s-4 9 5 13a11.64 11.64 0 0 1-7 2c9 5 20 0 20-11.5a4.5 4.5 0 0 0-.08-.83A7.72 7.72 0 0 0 23 3z"/></svg>
+                <div><div class="social-name">Twitter</div><div class="social-handle">@Darshak_Patel_</div></div>
+              </a>
+              <a href="https://hackerone.com/darshakkanani_1" target="_blank" rel="noopener" class="social-btn">
+                <!-- HackerOne: h|1 — tall left bar, shorter right bar (exact logo mark) -->
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="8" y1="4" x2="8" y2="20"/><line x1="8" y1="12" x2="13" y2="12"/><line x1="13" y1="4" x2="13" y2="20"/><line x1="17" y1="8" x2="17" y2="20"/></svg>
+                <div><div class="social-name">HackerOne</div><div class="social-handle">@darshakkanani_1</div></div>
+              </a>
+              <a href="https://bugcrowd.com/h/hydr0g6n" target="_blank" rel="noopener" class="social-btn">
+                <!-- BugCrowd: lowercase b inside hexagon -->
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 20.5 6.5 20.5 17.5 12 22 3.5 17.5 3.5 6.5"/><path d="M9 6v12M9 12.5c0 0 1-1.5 3-1.5s3 1.5 3 3.5-1 3-3 3-3-1.5-3-3.5"/></svg>
+                <div><div class="social-name">BugCrowd</div><div class="social-handle">@hydr0g6n</div></div>
+              </a>
+              <a href="https://bugbounty.meta.com/profile/1321083667757330" target="_blank" rel="noopener" class="social-btn">
+                <!-- Meta: figure-8 / infinity loop (Meta logo form) -->
+                <svg viewBox="0 0 24 24"><path d="M4 12c0-2.5 1.5-4.5 3.5-4.5 1.2 0 2.2.7 3.3 2.2L12 11l1.2-1.3C14.3 8.2 15.3 7.5 16.5 7.5 18.5 7.5 20 9.5 20 12s-1.5 4.5-3.5 4.5c-1.2 0-2.2-.7-3.3-2.2L12 13l-1.2 1.3C9.7 15.8 8.7 16.5 7.5 16.5 5.5 16.5 4 14.5 4 12z" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                <div><div class="social-name">Meta Bug Bounty</div><div class="social-handle">@1321083667757330</div></div>
+              </a>
+              <a href="https://hackthebox.com/profile/yourhandle" target="_blank" rel="noopener" class="social-btn">
+                <!-- Hack The Box: hexagon (HTB's signature shape) -->
+                <svg viewBox="0 0 24 24"><polygon points="12 2 21.5 7 21.5 17 12 22 2.5 17 2.5 7"/><line x1="12" y1="2" x2="12" y2="22"/><line x1="2.5" y1="7" x2="21.5" y2="17"/><line x1="21.5" y1="7" x2="2.5" y2="17"/></svg>
+                <div><div class="social-name">Hack The Box</div><div class="social-handle">@yourhandle</div></div>
+              </a>
+              <a href="https://tryhackme.com/p/hydr0g6n" target="_blank" rel="noopener" class="social-btn">
+                <!-- TryHackMe: flag on pole (CTF / learning platform) -->
+                <svg viewBox="0 0 24 24"><line x1="4" y1="3" x2="4" y2="21"/><path d="M4 5l14 4-14 4"/></svg>
+                <div><div class="social-name">TryHackMe</div><div class="social-handle">@hydr0g6n</div></div>
+              </a>
+            </div>
+          </div>
+
+          <!-- Open to -->
+          <div style="margin-top:1rem;">
+            <p style="font-family:var(--mono);font-size:0.67rem;color:var(--muted2);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:0.8rem;">Open To</p>
+            <div class="open-grid">
+              <div class="open-card"><strong>Internships</strong>Security engineering or research roles</div>
+              <div class="open-card"><strong>Bug Bounty</strong>Collaborative hunting partnerships</div>
+              <div class="open-card"><strong>Security Reviews</strong>Web app and API security audits</div>
+              <div class="open-card"><strong>Research</strong>AI security &amp; red teaming collabs</div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<footer>
+  <p>© 2025 <span class="f-name">Darshak Patel</span> · B.Tech CSE Cybersecurity</p>
+  <div class="f-links">
+    <a href="index.html">Home</a>
+    <a href="about.html">About</a>
+    <a href="expertise.html">Expertise</a>
+    <a href="certifications.html">Certifications</a>
+    <a href="achievements.html">Achievements</a>
+    <a href="tools.html">Tools</a>
+    <a href="resources.html">Resources</a>
+    <a href="blog.html">Blog</a>
+    <a href="contact.html">Contact</a>
+  </div>
+</footer>
+
+<script src="assets/js/main.js"></script>
+<script src="assets/js/pages/contact.js"></script>
+</body>
+</html>

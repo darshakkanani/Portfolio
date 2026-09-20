@@ -1,0 +1,141 @@
+/* ═══════════════════════════════════════════════════
+   Certifications page — layout & component styles
+═══════════════════════════════════════════════════ */
+
+/* ── SECTION STRUCTURE ───────────────────────────── */
+.cert-section { margin-bottom: 3.5rem; }
+.cert-section-heading {
+  display: flex; align-items: center; gap: 1rem; margin-bottom: 1.5rem;
+}
+.cert-section-heading h2 { font-size: 1rem; font-weight: 700; }
+.cert-section-heading .cert-divider { flex: 1; height: 1px; background: var(--border); }
+
+/* ── SHARED CARD GRID ────────────────────────────── */
+.cert-big-grid,
+.course-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 1.2rem;
+}
+
+/* ── SHARED CARD BASE ────────────────────────────── */
+.cert-big-card,
+.course-card {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 8px; padding: 1.4rem 1.3rem;
+  display: flex; flex-direction: column; gap: 0.75rem;
+  transition: background var(--ease), border-color var(--ease);
+  position: relative; overflow: hidden;
+}
+.cert-big-card::after,
+.course-card::after {
+  content: ""; position: absolute; bottom: 0; left: 0; right: 0; height: 1px;
+  background: var(--border2); transform: scaleX(0); transform-origin: left;
+  transition: transform 0.3s;
+}
+.cert-big-card:hover,
+.course-card:hover { background: var(--surface2); border-color: var(--border2); }
+.cert-big-card:hover::after,
+.course-card:hover::after { transform: scaleX(1); }
+
+/* ── SHARED CARD TOP ROW (icon + badge) ──────────── */
+.card-top {
+  display: flex; align-items: flex-start; justify-content: space-between; gap: 0.6rem;
+}
+.card-icon {
+  width: 36px; height: 36px; background: var(--surface2); border: 1px solid var(--border);
+  border-radius: 8px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+}
+.card-icon svg { width: 16px; height: 16px; stroke: var(--muted2); fill: none; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+.cert-big-card:hover .card-icon svg,
+.course-card:hover .card-icon svg { stroke: var(--muted); }
+
+.card-badge {
+  font-family: var(--mono); font-size: 0.62rem; color: var(--muted2);
+  border: 1px solid var(--border); border-radius: 4px;
+  padding: 0.12rem 0.45rem; white-space: nowrap; align-self: flex-start; flex-shrink: 0;
+}
+
+/* ── SHARED CARD CONTENT ─────────────────────────── */
+.card-title { font-size: 0.88rem; font-weight: 700; line-height: 1.35; }
+.card-desc  { font-size: 0.76rem; color: var(--muted); line-height: 1.65; flex: 1; }
+.card-link  {
+  display: inline-flex; align-items: center; gap: 0.25rem;
+  font-size: 0.72rem; color: var(--muted2); font-weight: 500;
+  transition: color var(--ease); margin-top: auto; align-self: flex-start;
+}
+.card-link:hover { color: var(--white); text-decoration: none; }
+.card-link svg { width: 11px; height: 11px; stroke: currentColor; fill: none; stroke-width: 2; transition: transform var(--ease); }
+.card-link:hover svg { transform: translate(2px, -2px); }
+
+@media (max-width: 640px) {
+  .cert-big-grid,
+  .course-grid { grid-template-columns: 1fr; }
+}
+
+/* ── PDF CERTIFICATE MODAL ───────────────────────── */
+.cert-modal-backdrop {
+  position: fixed; inset: 0; z-index: 1000;
+  background: rgba(0, 0, 0, 0.82);
+  display: flex; align-items: center; justify-content: center;
+  padding: 1.5rem;
+  opacity: 0; pointer-events: none;
+  transition: opacity 0.25s ease;
+}
+.cert-modal-backdrop.open {
+  opacity: 1; pointer-events: all;
+}
+.cert-modal {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 10px; width: 100%; max-width: 900px;
+  max-height: 92vh; display: flex; flex-direction: column;
+  overflow: hidden;
+  transform: translateY(16px); transition: transform 0.25s ease;
+}
+.cert-modal-backdrop.open .cert-modal {
+  transform: translateY(0);
+}
+.cert-modal-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0.85rem 1.2rem; border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+.cert-modal-title {
+  font-size: 0.84rem; font-weight: 700; color: var(--text);
+}
+.cert-modal-actions {
+  display: flex; align-items: center; gap: 0.5rem;
+}
+.cert-modal-download {
+  font-family: var(--mono); font-size: 0.68rem; color: var(--muted2);
+  border: 1px solid var(--border); border-radius: 5px;
+  padding: 0.25rem 0.7rem; transition: color var(--ease), border-color var(--ease);
+  text-decoration: none; display: inline-flex; align-items: center; gap: 0.3rem;
+}
+.cert-modal-download:hover { color: var(--white); border-color: var(--border2); text-decoration: none; }
+.cert-modal-download svg { width: 11px; height: 11px; stroke: currentColor; fill: none; stroke-width: 2; }
+.cert-modal-close {
+  width: 28px; height: 28px; border-radius: 6px;
+  background: var(--surface2); border: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; color: var(--muted2);
+  transition: color var(--ease), border-color var(--ease);
+}
+.cert-modal-close:hover { color: var(--white); border-color: var(--border2); }
+.cert-modal-close svg { width: 14px; height: 14px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; }
+.cert-modal-body {
+  flex: 1; overflow: hidden; min-height: 0;
+  background: #1a1a1a;
+}
+.cert-modal-body iframe {
+  width: 100%; height: 100%; border: none; display: block;
+  min-height: 520px;
+}
+.cert-modal-placeholder {
+  width: 100%; min-height: 520px;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 1rem; color: var(--muted);
+}
+.cert-modal-placeholder svg { width: 40px; height: 40px; stroke: var(--border2); fill: none; stroke-width: 1.2; stroke-linecap: round; stroke-linejoin: round; }
+.cert-modal-placeholder p { font-size: 0.82rem; text-align: center; max-width: 280px; line-height: 1.6; }
+.cert-modal-placeholder code { font-family: var(--mono); font-size: 0.72rem; color: var(--border2); background: var(--surface2); border: 1px solid var(--border); border-radius: 4px; padding: 0.15rem 0.5rem; }

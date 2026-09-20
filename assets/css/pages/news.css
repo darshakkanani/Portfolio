@@ -1,0 +1,122 @@
+/* ═══════════════════════════════════════════════════
+   news.css — cybersecurity news page styles
+═══════════════════════════════════════════════════ */
+
+/* ── Category tabs ───────────────────────────────── */
+.news-tabs {
+  display: flex; flex-wrap: wrap; gap: 0.4rem; margin-bottom: 1.2rem;
+}
+.news-tab {
+  background: transparent; border: 1px solid var(--border);
+  border-radius: 4px; padding: 0.22rem 0.75rem;
+  font-family: var(--mono); font-size: 0.68rem; color: var(--muted2);
+  cursor: pointer; transition: border-color var(--ease), color var(--ease), background var(--ease);
+}
+.news-tab:hover { border-color: var(--border2); color: var(--muted); }
+.news-tab.active { border-color: var(--border2); color: var(--text); background: var(--surface2); }
+
+/* ── Sources bar ─────────────────────────────────── */
+.news-sources-bar {
+  display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap;
+  margin-bottom: 2rem; padding: 0.75rem 1rem;
+  background: var(--surface); border: 1px solid var(--border); border-radius: 7px;
+}
+.news-sources-label {
+  font-family: var(--mono); font-size: 0.65rem; color: var(--muted2);
+  text-transform: uppercase; letter-spacing: 1.2px; white-space: nowrap;
+}
+.news-sources-list { display: flex; flex-wrap: wrap; gap: 0.35rem; }
+.news-source-pill {
+  font-family: var(--mono); font-size: 0.65rem; color: var(--muted2);
+  border: 1px solid var(--border); border-radius: 3px; padding: 0.15rem 0.5rem;
+  transition: border-color var(--ease), color var(--ease);
+}
+.news-source-pill:hover { border-color: var(--border2); color: var(--muted); text-decoration: none; }
+
+/* ── Loading / error ─────────────────────────────── */
+.news-loading {
+  padding: 2rem; text-align: center;
+  font-family: var(--mono); font-size: 0.72rem; color: var(--muted2);
+  letter-spacing: 1px;
+}
+.news-error {
+  padding: 1.5rem; text-align: center;
+  font-family: var(--mono); font-size: 0.72rem; color: var(--muted2);
+  border: 1px dashed var(--border); border-radius: 7px;
+  margin-bottom: 1.5rem;
+}
+
+/* ── News grid (live feed cards) ─────────────────── */
+.news-grid {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(280px,1fr));
+  gap: 0.75rem; margin-bottom: 2.5rem;
+}
+.news-card {
+  background: var(--surface2); border: 1px solid var(--border);
+  border-radius: 8px; padding: 1rem 1.1rem;
+  display: flex; flex-direction: column; gap: 0.5rem;
+  transition: border-color var(--ease); height: 100%;
+}
+.news-card:hover { border-color: var(--border2); }
+.news-card-top {
+  display: flex; align-items: center; justify-content: space-between; gap: 0.5rem;
+}
+.news-card-source {
+  font-family: var(--mono); font-size: 0.64rem; color: var(--muted2);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.news-card-date {
+  font-family: var(--mono); font-size: 0.62rem; color: var(--muted2);
+  opacity: 0.6; white-space: nowrap; flex-shrink: 0;
+}
+.news-card-title {
+  font-size: 0.82rem; font-weight: 600; color: var(--text); line-height: 1.45;
+  display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden;
+}
+.news-card-cat {
+  font-family: var(--mono); font-size: 0.6rem;
+  border: 1px solid var(--border); border-radius: 3px;
+  padding: 0.1rem 0.4rem; color: var(--muted2); width: fit-content;
+}
+.news-card-link {
+  font-family: var(--mono); font-size: 0.65rem; color: var(--muted2);
+  text-decoration: none; margin-top: auto; padding-top: 0.5rem;
+  border-top: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: space-between;
+}
+.news-card-link:hover { color: var(--muted); text-decoration: none; }
+
+/* ── Section label ───────────────────────────────── */
+.news-section-label {
+  font-family: var(--mono); font-size: 0.67rem; color: var(--muted2);
+  text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 1rem;
+}
+
+/* ── Curated source cards grid ───────────────────── */
+.news-curated { margin-top: 1rem; }
+.news-curated-grid {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(280px,1fr));
+  gap: 1px;
+}
+.news-source-card {
+  background: var(--surface); border: 1px solid var(--border);
+  padding: 1.4rem; display: flex; flex-direction: column; gap: 0.5rem;
+  transition: background var(--ease); height: 100%; text-decoration: none;
+}
+.news-source-card:hover { background: var(--surface2); text-decoration: none; }
+.nsc-top { display: flex; align-items: center; justify-content: space-between; }
+.nsc-badge {
+  font-family: var(--mono); font-size: 0.65rem; text-transform: uppercase;
+  letter-spacing: 1px; padding: 0.15rem 0.5rem; border-radius: 3px; font-weight: 700;
+  background: var(--surface2); color: var(--muted2); border: 1px solid var(--border);
+}
+.nsc-type { font-family: var(--mono); font-size: 0.67rem; color: var(--muted2); text-transform: uppercase; letter-spacing: 0.8px; }
+.news-source-card h4 { font-size: 0.88rem; font-weight: 700; color: var(--text); line-height: 1.3; }
+.news-source-card p { font-size: 0.78rem; color: var(--muted); flex: 1; line-height: 1.65; }
+.nsc-link { font-size: 0.77rem; color: var(--muted); font-weight: 500; margin-top: 0.3rem; }
+.news-source-card:hover .nsc-link { color: var(--white); }
+
+/* ── Responsive ──────────────────────────────────── */
+@media (max-width: 600px) {
+  .news-grid, .news-curated-grid { grid-template-columns: 1fr; }
+}

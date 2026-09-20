@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Curated cybersecurity resources — ethical hacking, web app testing, and AI security tools and references." />
+  <title>Resources | Darshak Patel</title>
+  <link rel="stylesheet" href="assets/css/style.css" />
+</head>
+<body>
+
+<canvas id="particles"></canvas>
+
+<nav>
+  <a href="index.html" class="nav-logo"><span class="bracket">[</span>dp<span class="bracket">]</span></a>
+  <ul class="nav-links">
+    <li><a href="about.html">about</a></li>
+    <li><a href="expertise.html">expertise</a></li>
+    <li><a href="certifications.html">certifications</a></li>
+    <li><a href="achievements.html">achievements</a></li>
+    <li><a href="tools.html">tools</a></li>
+    <li><a href="resources.html" class="active">resources</a></li>
+    <li><a href="blog.html">blog</a></li>
+    <li><a href="contact.html">contact</a></li>
+  </ul>
+  <a href="mailto:your@email.com" class="nav-cta">Hire Me</a>
+  <div class="nav-hamburger"><span></span><span></span><span></span></div>
+</nav>
+
+<div class="page-header">
+  <p class="section-label">knowledge base</p>
+  <h1 class="section-title">Security Resources</h1>
+  <p class="section-sub">Curated tools, platforms, references, and research across all four security domains — hand-picked and constantly updated.</p>
+</div>
+
+<section class="cert-page-body">
+  <div class="container">
+
+    <!-- Controls -->
+    <div class="res-controls">
+      <div class="filter-row" style="margin:0;">
+        <button class="filt-btn active" onclick="filterRes('all',this)">All <span style="font-family:var(--mono);font-size:0.72rem;">(15)</span></button>
+          <button class="filt-btn" onclick="filterRes('hacking',this)">Hacking <span style="font-family:var(--mono);font-size:0.72rem;">(5)</span></button>
+          <button class="filt-btn" onclick="filterRes('webapp',this)">Web App <span style="font-family:var(--mono);font-size:0.72rem;">(5)</span></button>
+          <button class="filt-btn" onclick="filterRes('ai',this)">AI Security <span style="font-family:var(--mono);font-size:0.72rem;">(5)</span></button>
+      </div>
+      <input type="text" class="res-page-search" id="res-search" placeholder="Search resources..." />
+    </div>
+
+    <div id="no-res" class="no-res">No resources found. Try a different keyword.</div>
+
+    <!-- ── HACKING ── -->
+    <div class="res-cat-heading" data-cat-group="hacking">
+      <div class="res-cat-icon">
+        <!-- terminal icon -->
+        <svg viewBox="0 0 24 24"><polyline points="4 17 10 11 4 5"/><line x1="12" y1="19" x2="20" y2="19"/></svg>
+      </div>
+      <div><h2>Ethical Hacking</h2><p>Platforms, frameworks, and references for offensive security learning</p></div>
+      <div class="res-cat-divider"></div>
+    </div>
+    <div class="res-grid" id="res-grid">
+      <div class="res-card" data-cat="hacking">
+        <div class="res-top"><span class="rbadge rb-r">Hacking</span><span class="rtype">Platform</span></div>
+        <h4>Hack The Box</h4>
+        <p>Hands-on labs for penetration testing, reverse engineering, and CTF challenges from beginner to advanced.</p>
+        <a href="https://hackthebox.com" target="_blank" rel="noopener" class="rlink">Visit <svg viewBox="0 0 24 24"><line x1="7" y1="17" x2="17" y2="7"/><polyline points="7 7 17 7 17 17"/></svg></a>
+      </div>
+      <div class="res-card" data-cat="hacking">
+        <div class="res-top"><span class="rbadge rb-r">Hacking</span><span class="rtype">Platform</span></div>
+        <h4>TryHackMe</h4>
+        <p>Guided learning paths for offensive &amp; defensive security. Perfect for beginners with structured room-based learning.</p>
+        <a href="https://tryhackme.com" target="_blank" rel="noopener" class="rlink">Visit <svg viewBox="0 0 24 24"><line x1="7" y1="17" x2="17" y2="7"/><polyline points="7 7 17 7 17 17"/></svg></a>
+      </div>
+      <div class="res-card" data-cat="hacking">
+        <div class="res-top"><span class="rbadge rb-r">Hacking</span><span class="rtype">Framework</span></div>
+        <h4>Metasploit Framework</h4>
+        <p>The world's most used penetration testing framework. Essential for exploit development, payload delivery, and post-exploitation.</p>
+        <a href="https://metasploit.com" target="_blank" rel="noopener" class="rlink">Visit <svg viewBox="0 0 24 24"><line x1="7" y1="17" x2="17" y2="7"/><polyline points="7 7 17 7 17 17"/></svg></a>
+      </div>
+      <div class="res-card" data-cat="hacking">
+        <div class="res-top"><span class="rbadge rb-r">Hacking</span><span class="rtype">Cheatsheet</span></div>
+        <h4>GTFOBins</h4>
+        <p>Curated Unix binaries that can bypass local security restrictions. Your go-to for privilege escalation via trusted system binaries.</p>
+        <a href="https://gtfobins.github.io" target="_blank" rel="noopener" class="rlink">Visit <svg viewBox="0 0 24 24"><line x1="7" y1="17" x2="17" y2="7"/><polyline points="7 7 17 7 17 17"/></svg></a>
+      </div>
+      <div class="res-card" data-cat="hacking">
+        <div class="res-top"><span class="rbadge rb-r">Hacking</span><span class="rtype">Methodology</span></div>
+        <h4>My Ethical Hacking Methodology</h4>
+        <p>My personal step-by-step offensive security methodology — recon, scanning, exploitation, privilege escalation, and post-exploitation.</p>
+        <a href="hacking-methodology.html" class="rlink">View Methodology <svg viewBox="0 0 24 24"><line x1="7" y1="17" x2="17" y2="7"/><polyline points="7 7 17 7 17 17"/></svg></a>
+      </div>
+    </div>
+
+    <!-- ── WEB APP ── -->
+    <div class="res-cat-heading" data-cat-group="webapp">
+      <div class="res-cat-icon">
+        <!-- globe icon -->
+        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+      </div>
+      <div><h2>Web App Security</h2><p>Standards, proxies, labs, and methodologies for web and API testing</p></div>
+      <div class="res-cat-divider"></div>
+    </div>
+    <div class="res-grid">
+      <div class="res-card" data-cat="webapp">
+        <div class="res-top"><span class="rbadge rb-b">Web App</span><span class="rtype">Standard</span></div>
+        <h4>OWASP Top 10</h4>
+        <p>The definitive reference for the ten most critical web application security risks — updated every 3–4 years by the community.</p>
+        <a href="https://owasp.org/www-project-top-ten/" target="_blank" rel="noopener" class="rlink">Visit <svg viewBox="0 0 24 24"><line x1="7" y1="17" x2="17" y2="7"/><polyline points="7 7 17 7 17 17"/></svg></a>
+      </div>
+      <div class="res-card" data-cat="webapp">
+        <div class="res-top"><span class="rbadge rb-b">Web App</span><span class="rtype">Tool</span></div>
+        <h4>Burp Suite</h4>
+        <p>Industry-standard web proxy for intercepting, modifying, scanning, and replaying HTTP/S requests. The pentester's Swiss army knife.</p>
+        <a href="https://portswigger.net/burp" target="_blank" rel="noopener" class="rlink">Visit <svg viewBox="0 0 24 24"><line x1="7" y1="17" x2="17" y2="7"/><polyline points="7 7 17 7 17 17"/></svg></a>
+      </div>
+      <div class="res-card" data-cat="webapp">
+        <div class="res-top"><span class="rbadge rb-b">Web App</span><span class="rtype">Labs</span></div>
+        <h4>PortSwigger Web Academy</h4>
+        <p>Free interactive labs covering every major web vulnerability class — SQLi to HTTP request smuggling — with theory and practice.</p>
+        <a href="https://portswigger.net/web-security" target="_blank" rel="noopener" class="rlink">Visit <svg viewBox="0 0 24 24"><line x1="7" y1="17" x2="17" y2="7"/><polyline points="7 7 17 7 17 17"/></svg></a>
+      </div>
+      <div class="res-card" data-cat="webapp">
+        <div class="res-top"><span class="rbadge rb-b">Web App</span><span class="rtype">Methodology</span></div>
+        <h4>HackTricks Web</h4>
+        <p>Vast community-maintained book of web hacking techniques, payloads, bypasses, and methodology notes.</p>
+        <a href="https://book.hacktricks.xyz" target="_blank" rel="noopener" class="rlink">Visit <svg viewBox="0 0 24 24"><line x1="7" y1="17" x2="17" y2="7"/><polyline points="7 7 17 7 17 17"/></svg></a>
+      </div>
+      <div class="res-card" data-cat="webapp">
+        <div class="res-top"><span class="rbadge rb-b">Web App</span><span class="rtype">Methodology</span></div>
+        <h4>My Web App Testing Methodology</h4>
+        <p>My personal step-by-step approach to web application security testing — recon, enumeration, attack surface mapping, exploitation, and reporting.</p>
+        <a href="methodology.html" class="rlink">View Methodology <svg viewBox="0 0 24 24"><line x1="7" y1="17" x2="17" y2="7"/><polyline points="7 7 17 7 17 17"/></svg></a>
+      </div>
+    </div>
+
+    <!-- ── AI SECURITY ── -->
+    <div class="res-cat-heading" data-cat-group="ai">
+      <div class="res-cat-icon">
+        <!-- cpu / AI icon -->
+        <svg viewBox="0 0 24 24"><rect x="9" y="9" width="6" height="6" rx="1"/><path d="M9 3H15M9 21H15M3 9V15M21 9V15M3 3l3 3M21 3l-3 3M3 21l3-3M21 21l-3-3"/></svg>
+      </div>
+      <div><h2>AI / LLM Security</h2><p>Frameworks, scanners, and research for securing AI-powered applications</p></div>
+      <div class="res-cat-divider"></div>
+    </div>
+    <div class="res-grid">
+      <div class="res-card" data-cat="ai">
+        <div class="res-top"><span class="rbadge rb-y">AI Security</span><span class="rtype">Standard</span></div>
+        <h4>OWASP LLM Top 10</h4>
+        <p>The 10 most critical security risks for LLM-powered applications — prompt injection, insecure output handling, data leakage, and more.</p>
+        <a href="https://owasp.org/www-project-top-10-for-large-language-model-applications/" target="_blank" rel="noopener" class="rlink">Visit <svg viewBox="0 0 24 24"><line x1="7" y1="17" x2="17" y2="7"/><polyline points="7 7 17 7 17 17"/></svg></a>
+      </div>
+      <div class="res-card" data-cat="ai">
+        <div class="res-top"><span class="rbadge rb-y">AI Security</span><span class="rtype">Framework</span></div>
+        <h4>MITRE ATLAS</h4>
+        <p>Adversarial Threat Landscape for AI Systems — adversarial ML tactics and techniques, modelled after MITRE ATT&amp;CK.</p>
+        <a href="https://atlas.mitre.org" target="_blank" rel="noopener" class="rlink">Visit <svg viewBox="0 0 24 24"><line x1="7" y1="17" x2="17" y2="7"/><polyline points="7 7 17 7 17 17"/></svg></a>
+      </div>
+      <div class="res-card" data-cat="ai">
+        <div class="res-top"><span class="rbadge rb-y">AI Security</span><span class="rtype">Scanner</span></div>
+        <h4>Garak</h4>
+        <p>Open-source LLM vulnerability scanner by NVIDIA. Probes models for prompt injection, jailbreaks, hallucination, and data leakage.</p>
+        <a href="https://github.com/NVIDIA/garak" target="_blank" rel="noopener" class="rlink">Visit <svg viewBox="0 0 24 24"><line x1="7" y1="17" x2="17" y2="7"/><polyline points="7 7 17 7 17 17"/></svg></a>
+      </div>
+      <div class="res-card" data-cat="ai">
+        <div class="res-top"><span class="rbadge rb-y">AI Security</span><span class="rtype">Research</span></div>
+        <h4>Lakera AI Blog</h4>
+        <p>Cutting-edge research on prompt injection, LLM security architecture, and real-world AI application attack case studies.</p>
+        <a href="https://www.lakera.ai/blog" target="_blank" rel="noopener" class="rlink">Visit <svg viewBox="0 0 24 24"><line x1="7" y1="17" x2="17" y2="7"/><polyline points="7 7 17 7 17 17"/></svg></a>
+      </div>
+      <div class="res-card" data-cat="ai">
+        <div class="res-top"><span class="rbadge rb-y">AI Security</span><span class="rtype">Methodology</span></div>
+        <h4>My AI / LLM Security Methodology</h4>
+        <p>My personal approach to testing AI-powered applications — threat modelling, prompt injection, jailbreaks, model inversion, and responsible disclosure.</p>
+        <a href="ai-methodology.html" class="rlink">View Methodology <svg viewBox="0 0 24 24"><line x1="7" y1="17" x2="17" y2="7"/><polyline points="7 7 17 7 17 17"/></svg></a>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<footer>
+  <p>© 2025 <span class="f-name">Darshak Patel</span> · B.Tech CSE Cybersecurity</p>
+  <div class="f-links">
+    <a href="index.html">Home</a>
+    <a href="about.html">About</a>
+    <a href="expertise.html">Expertise</a>
+    <a href="certifications.html">Certifications</a>
+    <a href="achievements.html">Achievements</a>
+    <a href="tools.html">Tools</a>
+    <a href="resources.html">Resources</a>
+    <a href="blog.html">Blog</a>
+    <a href="contact.html">Contact</a>
+  </div>
+</footer>
+
+<script src="assets/js/main.js"></script>
+<script src="assets/js/pages/resources.js"></script>
+</body>
+</html>
