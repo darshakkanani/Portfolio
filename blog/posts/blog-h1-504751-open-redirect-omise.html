@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Open Redirect on Omise — HackerOne report #504751. How an unvalidated redirect parameter on a payment platform enabled post-login phishing." />
+  <title>Open Redirect on Omise — HackerOne #504751 | Blog — Darshak Patel</title>
+  <link rel="stylesheet" href="../../assets/css/style.css" />
+  <link rel="stylesheet" href="../../assets/css/pages/post.css" />
+</head>
+<body>
+
+<div class="read-progress" id="read-progress"></div>
+<canvas id="particles"></canvas>
+
+<nav>
+  <a href="../../index.html" class="nav-logo">
+    <span class="bracket">[</span>dp<span class="bracket">]</span>
+  </a>
+  <ul class="nav-links">
+    <li><a href="../../pages/about.html">about</a></li>
+    <li><a href="../../pages/expertise.html">expertise</a></li>
+    <li><a href="../../pages/certifications.html">certifications</a></li>
+    <li><a href="../../pages/achievements.html">achievements</a></li>
+    <li><a href="../../pages/tools.html">tools</a></li>
+    <li><a href="../../pages/resources.html">resources</a></li>
+    <li><a href="../index.html" class="active">blog</a></li>
+    <li><a href="../../pages/contact.html">contact</a></li>
+  </ul>
+  <a href="mailto:your@email.com" class="nav-cta">Hire Me</a>
+  <div class="nav-hamburger" aria-label="menu">
+    <span></span><span></span><span></span>
+  </div>
+</nav>
+
+<div class="post-wrap">
+
+  <!-- ── Hero ── -->
+  <div class="post-hero" data-vuln="open-redirect">
+    <div class="post-hero-inner">
+      <a href="../index.html" class="post-back">← Back to Blog</a>
+      <div class="post-vuln-badge">⤷ Open Redirect</div>
+      <div class="post-meta">
+        <span class="post-tag">Bug Bounty</span>
+        <span class="post-tag">Web App</span>
+        <span class="post-tag" data-sev="medium">Medium</span>
+        <span class="post-meta-sep">·</span>
+        <span>Jun 10, 2025</span>
+        <span class="post-meta-sep">·</span>
+        <span>7 min read</span>
+      </div>
+      <h1 class="post-h1">Open Redirect on Omise — HackerOne #504751</h1>
+      <p class="post-sub">How an unvalidated redirect parameter on Omise's payment platform let attackers craft trusted-domain phishing links — and why open redirects on payment gateways carry outsized real-world risk.</p>
+      <div class="post-stats">
+        <div class="post-stat">
+          <span class="post-stat-label">Program</span>
+          <span class="post-stat-value">Omise</span>
+        </div>
+        <div class="post-stat">
+          <span class="post-stat-label">Report</span>
+          <span class="post-stat-value">#504751</span>
+        </div>
+        <div class="post-stat">
+          <span class="post-stat-label">Severity</span>
+          <span class="post-stat-value">Medium</span>
+        </div>
+        <div class="post-stat">
+          <span class="post-stat-label">Class</span>
+          <span class="post-stat-value">CWE-601</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="post-body">
+    <a href="https://hackerone.com/reports/504751" target="_blank" rel="noopener" class="post-source">
+      ↗ HackerOne Report #504751 — Omise
+    </a>
+    <p class="post-attr">Independent educational breakdown of a publicly disclosed report. Credit for the original finding belongs to its researcher.</p>
+  </div>
+
+  <div class="post-layout">
+
+    <aside class="post-toc">
+      <div class="toc-label">Contents</div>
+      <ul class="toc-list">
+        <li><a href="#background">Background</a></li>
+        <li><a href="#bug">The Bug</a></li>
+        <li><a href="#attack">Attack Flow</a></li>
+        <li><a href="#poc">Proof of Concept</a></li>
+        <li><a href="#impact">Impact</a></li>
+        <li><a href="#fix">The Fix</a></li>
+        <li><a href="#hunting">How to Hunt It</a></li>
+        <li><a href="#refs">References</a></li>
+      </ul>
+    </aside>
+
+    <article class="post-article">
+
+      <h2 id="background">Background — What Is Omise?</h2>
+      <p><strong>Omise</strong> is a Southeast Asian payment gateway used by thousands of merchants to process card payments online. Its dashboard and API handle sensitive financial data — which makes any redirect vulnerability especially dangerous: a convincing phishing page can harvest merchant API keys or card credentials.</p>
+
+      <h2 id="bug">The Bug</h2>
+      <p>Omise's web application accepted a redirect-destination parameter in its login flow to send users back to the page they came from after signing in. The parameter value was reflected into a <code>Location</code> response header <strong>without checking whether the destination was internal or external</strong>.</p>
+
+      <div class="post-code">
+        <div class="post-code-header">
+          <div class="post-code-dots"><span></span><span></span><span></span></div>
+          <span class="post-code-label">Vulnerable vs. normal usage</span>
+        </div>
+        <pre><code><span class="cc"># Normal — return user to dashboard after login</span>
+<span class="cf">https://dashboard.omise.co/signin</span>?<span class="cv">redirect_to</span>=<span class="cok">/dashboard</span>
+
+<span class="cc"># Exploited — attacker substitutes an external URL</span>
+<span class="cf">https://dashboard.omise.co/signin</span>?<span class="cv">redirect_to</span>=<span class="ch">https://evil.com/fake-omise</span></code></pre>
+      </div>
+
+      <p>After authentication the server issues a <code>302 Found</code> to <code>evil.com</code> — no warning, no interstitial. The URL still shows <code>dashboard.omise.co</code> up until the redirect fires.</p>
+
+      <div class="post-note"><strong>Payment platform context matters.</strong> Landing a victim on a fake Omise page right after they've authenticated is the ideal moment to harvest API keys, account passwords, or card data — trust is at its peak.</div>
+
+      <h2 id="attack">Attack Flow</h2>
+      <ul>
+        <li><strong>1. Craft the URL.</strong> Attacker sets <code>redirect_to</code> to their clone site. Link domain is <code>dashboard.omise.co</code> — passes every URL-hover check and email scanner.</li>
+        <li><strong>2. Distribute it.</strong> Via phishing email, support-impersonation message, or forum post. The Omise domain makes it credible even to security-aware merchants.</li>
+        <li><strong>3. Victim logs in normally.</strong> Real Omise signin form, real credentials, successful auth — nothing looks wrong.</li>
+        <li><strong>4. Redirected to attacker's clone.</strong> Server 302s to <code>evil.com</code>. Clone prompts for "session re-confirm" or "second factor" — harvesting credentials or API keys from a fully trusting merchant.</li>
+      </ul>
+
+      <h2 id="poc">Proof of Concept</h2>
+      <p>No tooling required — just a browser:</p>
+      <div class="post-code">
+        <div class="post-code-header">
+          <div class="post-code-dots"><span></span><span></span><span></span></div>
+          <span class="post-code-label">PoC — browser only</span>
+        </div>
+        <pre><code><span class="cc"># 1. Visit while logged out:</span>
+<span class="cf">https://dashboard.omise.co/signin</span>?<span class="cv">redirect_to</span>=<span class="ch">https://example.com</span>
+
+<span class="cc"># 2. Log in with valid credentials.</span>
+
+<span class="cc"># 3. Server responds:</span>
+<span class="ck">HTTP/1.1 302 Found</span>
+<span class="cv">Location:</span> <span class="ch">https://example.com</span>
+
+<span class="cc"># 4. Browser follows — victim lands on external site.</span></code></pre>
+      </div>
+
+      <h2 id="impact">Impact</h2>
+      <ul>
+        <li><strong>Credential and API key phishing</strong> — post-login redirect to a clone at the exact moment the victim trusts the session.</li>
+        <li><strong>Domain reputation abuse</strong> — attacker borrows Omise's trusted domain to defeat URL-hover checks and email security scanners.</li>
+        <li><strong>OAuth token theft</strong> — if Omise uses OAuth flows with the same redirect parameter, an open redirect chains to steal access tokens.</li>
+        <li><strong>Bypasses security-aware users</strong> — even technical merchants who check URLs before clicking are fooled because the domain is genuine.</li>
+      </ul>
+      <div class="post-note" data-type="warn"><strong>Why "just Medium" undersells it:</strong> On a payment platform, a successful phish can directly yield financial fraud — stolen API keys can charge cards, issue refunds, or access transaction history.</div>
+
+      <h2 id="fix">The Fix</h2>
+      <p>Only permit relative paths in redirect parameters — reject anything containing a scheme or a protocol-relative URL (<code>//evil.com</code>).</p>
+      <div class="post-code">
+        <div class="post-code-header">
+          <div class="post-code-dots"><span></span><span></span><span></span></div>
+          <span class="post-code-label">Safe redirect validation</span>
+        </div>
+        <pre><code><span class="cc"># Vulnerable</span>
+redirect_to params[<span class="cs">:redirect_to</span>]
+
+<span class="cc"># Safe — relative paths only</span>
+<span class="cv">dest</span> = params[<span class="cs">:redirect_to</span>].to_s
+<span class="cv">safe</span> = (<span class="cv">dest</span>.start_with?(<span class="cs">"/"</span>) &amp;&amp; !<span class="cv">dest</span>.start_with?(<span class="cs">"//"</span>)) ? <span class="cv">dest</span> : <span class="cs">"/"</span>
+redirect_to <span class="cv">safe</span>
+
+<span class="cc"># Rails 7+ — url_from() rejects off-host URLs</span>
+redirect_to url_from(params[<span class="cs">:redirect_to</span>]) || root_path</code></pre>
+      </div>
+
+      <h2 id="hunting">How to Hunt Open Redirects</h2>
+      <ul>
+        <li><strong>Parameter names:</strong> <code>redirect_to</code>, <code>redirect</code>, <code>return</code>, <code>next</code>, <code>url</code>, <code>dest</code>, <code>continue</code>, <code>goto</code>, <code>target</code>.</li>
+        <li><strong>Login and logout flows first</strong> — post-auth redirects are highest value.</li>
+        <li><strong>Bypass payloads</strong> for naive filters: <code>//evil.com</code>, <code>\/\/evil.com</code>, <code>https:evil.com</code>, <code>https://omise.co@evil.com</code>.</li>
+        <li><strong>Check OAuth <code>redirect_uri</code></strong> — partial open redirects chain with OAuth to steal tokens.</li>
+        <li><strong>Automate with ffuf</strong> — wordlist of redirect param names against every 301/302 endpoint.</li>
+      </ul>
+
+      <hr class="post-divider" />
+
+      <h2 id="refs">References</h2>
+      <ul class="post-refs">
+        <li><a href="https://hackerone.com/reports/504751" target="_blank" rel="noopener">[1] HackerOne Report #504751 — Open Redirect on Omise</a></li>
+        <li><a href="https://portswigger.net/kb/issues/00500100_open-redirection-reflected" target="_blank" rel="noopener">[2] PortSwigger — Open Redirection</a></li>
+        <li><a href="https://cheatsheetseries.owasp.org/cheatsheets/Unvalidated_Redirects_and_Forwards_Cheat_Sheet.html" target="_blank" rel="noopener">[3] OWASP — Unvalidated Redirects and Forwards</a></li>
+        <li><a href="https://api.rubyonrails.org/classes/ActionController/Redirecting.html" target="_blank" rel="noopener">[4] Rails — url_from() safe redirect helper</a></li>
+      </ul>
+
+      <div class="post-nav">
+        <a href="./blog-h1-57163-open-redirect-hackerone.html" class="post-nav-link">
+          <span class="post-nav-dir">← Previous Post</span>
+          <span class="post-nav-title">Open Redirect on HackerOne #57163</span>
+        </a>
+        <a href="./blog-h1-1627974-idor-dod-vendor.html" class="post-nav-link next">
+          <span class="post-nav-dir">Next Post →</span>
+          <span class="post-nav-title">IDOR on U.S. DoD Vendor Portal #1627974</span>
+        </a>
+      </div>
+
+    </article>
+  </div>
+
+</div>
+
+<footer>
+  <p>© 2025 <span class="f-name">Darshak Patel</span> · B.Tech CSE Cybersecurity</p>
+  <div class="f-links">
+    <a href="../../index.html">Home</a>
+    <a href="../../pages/about.html">About</a>
+    <a href="../../pages/expertise.html">Expertise</a>
+    <a href="../../pages/certifications.html">Certifications</a>
+    <a href="../../pages/achievements.html">Achievements</a>
+    <a href="../../pages/tools.html">Tools</a>
+    <a href="../../pages/resources.html">Resources</a>
+    <a href="../index.html">Blog</a>
+    <a href="../../pages/contact.html">Contact</a>
+  </div>
+</footer>
+
+<script src="../../assets/js/main.js"></script>
+<script>
+  (function () {
+    const bar = document.getElementById('read-progress');
+    function update() {
+      const h = document.documentElement;
+      const pct = (h.scrollTop / (h.scrollHeight - h.clientHeight)) * 100;
+      bar.style.width = Math.min(pct, 100) + '%';
+    }
+    window.addEventListener('scroll', update, { passive: true });
+    update();
+  })();
+  (function () {
+    const links = document.querySelectorAll('.toc-list a');
+    const headings = Array.from(document.querySelectorAll('.post-article h2[id]'));
+    if (!links.length || !headings.length) return;
+    function onScroll() {
+      const top = window.scrollY + 100;
+      let active = headings[0];
+      for (const h of headings) { if (h.offsetTop <= top) active = h; }
+      links.forEach(l => l.classList.toggle('active', l.getAttribute('href') === '#' + active.id));
+    }
+    window.addEventListener('scroll', onScroll, { passive: true });
+    onScroll();
+  })();
+</script>
+</body>
+</html>

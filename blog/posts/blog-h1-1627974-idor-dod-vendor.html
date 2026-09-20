@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="IDOR on U.S. Dept of Defense Vendor Portal — HackerOne #1627974. How a missing authorization check on a delete endpoint let any authenticated user brute-force and delete other companies." />
+  <title>IDOR on U.S. DoD Vendor Portal — HackerOne #1627974 | Blog — Darshak Patel</title>
+  <link rel="stylesheet" href="../../assets/css/style.css" />
+  <link rel="stylesheet" href="../../assets/css/pages/post.css" />
+</head>
+<body>
+
+<div class="read-progress" id="read-progress"></div>
+<canvas id="particles"></canvas>
+
+<nav>
+  <a href="../../index.html" class="nav-logo">
+    <span class="bracket">[</span>dp<span class="bracket">]</span>
+  </a>
+  <ul class="nav-links">
+    <li><a href="../../pages/about.html">about</a></li>
+    <li><a href="../../pages/expertise.html">expertise</a></li>
+    <li><a href="../../pages/certifications.html">certifications</a></li>
+    <li><a href="../../pages/achievements.html">achievements</a></li>
+    <li><a href="../../pages/tools.html">tools</a></li>
+    <li><a href="../../pages/resources.html">resources</a></li>
+    <li><a href="../index.html" class="active">blog</a></li>
+    <li><a href="../../pages/contact.html">contact</a></li>
+  </ul>
+  <a href="mailto:your@email.com" class="nav-cta">Hire Me</a>
+  <div class="nav-hamburger" aria-label="menu">
+    <span></span><span></span><span></span>
+  </div>
+</nav>
+
+<div class="post-wrap">
+
+  <!-- ── Hero ── -->
+  <div class="post-hero" data-vuln="idor">
+    <div class="post-hero-inner">
+      <a href="../index.html" class="post-back">← Back to Blog</a>
+      <div class="post-vuln-badge">⬡ IDOR</div>
+      <div class="post-meta">
+        <span class="post-tag">Bug Bounty</span>
+        <span class="post-tag">Web App</span>
+        <span class="post-tag" data-sev="high">High</span>
+        <span class="post-meta-sep">·</span>
+        <span>Jun 20, 2025</span>
+        <span class="post-meta-sep">·</span>
+        <span>7 min read</span>
+      </div>
+      <h1 class="post-h1">IDOR on U.S. DoD Vendor Portal — HackerOne #1627974</h1>
+      <p class="post-sub">How a missing authorization check on a delete endpoint in a U.S. Department of Defense vendor portal allowed any authenticated user to brute-force sequential company IDs and delete other organizations' records.</p>
+      <div class="post-stats">
+        <div class="post-stat">
+          <span class="post-stat-label">Program</span>
+          <span class="post-stat-value">HtUS (DoD)</span>
+        </div>
+        <div class="post-stat">
+          <span class="post-stat-label">Report</span>
+          <span class="post-stat-value">#1627974</span>
+        </div>
+        <div class="post-stat">
+          <span class="post-stat-label">Severity</span>
+          <span class="post-stat-value">High</span>
+        </div>
+        <div class="post-stat">
+          <span class="post-stat-label">Class</span>
+          <span class="post-stat-value">CWE-639</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="post-body">
+    <a href="https://hackerone.com/reports/1627974" target="_blank" rel="noopener" class="post-source">
+      ↗ HackerOne Report #1627974 — U.S. Dept of Defense
+    </a>
+    <p class="post-attr">Independent educational breakdown of a publicly disclosed report. All redacted details (███) are as-disclosed. Credit for the original finding belongs to its researcher.</p>
+  </div>
+
+  <div class="post-layout">
+
+    <aside class="post-toc">
+      <div class="toc-label">Contents</div>
+      <ul class="toc-list">
+        <li><a href="#what">What Is IDOR?</a></li>
+        <li><a href="#context">The Target</a></li>
+        <li><a href="#bug">The Bug</a></li>
+        <li><a href="#attack">Attack Flow</a></li>
+        <li><a href="#poc">Proof of Concept</a></li>
+        <li><a href="#impact">Impact</a></li>
+        <li><a href="#fix">The Fix</a></li>
+        <li><a href="#hunting">How to Hunt It</a></li>
+        <li><a href="#refs">References</a></li>
+      </ul>
+    </aside>
+
+    <article class="post-article">
+
+      <h2 id="what">What Is IDOR?</h2>
+      <p><strong>Insecure Direct Object Reference (IDOR)</strong> is when an application uses a user-controlled identifier — an ID in a URL, form field, or JSON body — to access or modify a resource without verifying that the requesting user actually owns or has permission to act on it.</p>
+      <p>The fix is one server-side check: "does this user own this object?" But that check is missing far more often than it should be, making IDOR one of the most consistently rewarded bug classes in bug bounty programs.</p>
+
+      <h2 id="context">The Target</h2>
+      <p>The affected application is a <strong>vendor portal on a U.S. Department of Defense asset</strong> — part of the <em>Hack the US (HtUS)</em> program. The portal allows vendors to register companies, manage profiles, and interact with DoD procurement workflows. Because this is a government system, unauthorized deletion of vendor records has real operational consequences beyond a typical commercial target.</p>
+      <div class="post-note">The report redacts the specific subdomain and endpoint paths with ███ as required by the DoD disclosure policy. The vulnerability class and reproduction steps are fully public.</div>
+
+      <h2 id="bug">The Bug</h2>
+      <p>The vendor portal exposed a <strong>delete company</strong> endpoint. When a user created a company, the application assigned it a numeric ID. The delete request sent that ID directly as a parameter — and the server performed the deletion <strong>without checking whether the authenticated user owned the company being deleted</strong>.</p>
+      <p>Because company IDs were sequential integers, an attacker could simply increment the ID in the request to target any other company on the platform.</p>
+
+      <div class="post-code">
+        <div class="post-code-header">
+          <div class="post-code-dots"><span></span><span></span><span></span></div>
+          <span class="post-code-label">Vulnerable delete request — concept</span>
+        </div>
+        <pre><code><span class="cc"># Attacker's own company — works as expected</span>
+<span class="ck">DELETE</span> <span class="cf">/████/Vendor/Companies/delete</span>
+<span class="cv">companyId</span>=<span class="cok">1042</span>   <span class="cc">← attacker's own ID</span>
+
+<span class="cc"># Same request, different ID — also works (no auth check)</span>
+<span class="ck">DELETE</span> <span class="cf">/████/Vendor/Companies/delete</span>
+<span class="cv">companyId</span>=<span class="ch">1043</span>   <span class="cc">← victim's company, deleted without authorization</span></code></pre>
+      </div>
+
+      <h2 id="attack">Attack Flow</h2>
+      <ul>
+        <li><strong>1. Register a vendor account.</strong> Attacker signs up on the portal at the public registration endpoint and creates their own company. This gives them a valid session and a known company ID.</li>
+        <li><strong>2. Capture the delete request.</strong> Attacker deletes their own company, intercepting the request in Burp Suite to observe the <code>companyId</code> parameter.</li>
+        <li><strong>3. Brute-force other IDs.</strong> Attacker replays the delete request with incrementing <code>companyId</code> values. Each successful response deletes another organization's company record — no further interaction needed.</li>
+        <li><strong>4. Mass deletion.</strong> Because IDs are sequential and there is no rate limiting or ownership check, the attacker can enumerate and delete every company on the platform in a scripted loop.</li>
+      </ul>
+
+      <h2 id="poc">Proof of Concept</h2>
+      <p>The reporter reproduced the issue with these steps:</p>
+      <ul>
+        <li>Navigate to the vendor registration page and create an account.</li>
+        <li>Go to the Companies section and register a new company.</li>
+        <li>Intercept the delete request for your own company and note the <code>companyId</code> value.</li>
+        <li>Change <code>companyId</code> to a different integer and resend — another company is deleted.</li>
+      </ul>
+
+      <div class="post-code">
+        <div class="post-code-header">
+          <div class="post-code-dots"><span></span><span></span><span></span></div>
+          <span class="post-code-label">Burp Repeater — ID manipulation</span>
+        </div>
+        <pre><code><span class="cc"># Original request (own company)</span>
+<span class="ck">POST</span> <span class="cf">/████/Vendor/Companies/Delete</span> <span class="ck">HTTP/1.1</span>
+<span class="ck">Cookie:</span> <span class="cs">session=attacker_session_token</span>
+<span class="ck">Content-Type:</span> application/x-www-form-urlencoded
+
+<span class="cv">companyId</span>=<span class="cok">1042</span>&amp;<span class="cv">__RequestVerificationToken</span>=<span class="cs">...</span>
+
+<span class="cc"># Modified — targeting victim's company</span>
+<span class="cv">companyId</span>=<span class="ch">1041</span>   <span class="cc">← response: 200 OK, company deleted</span>
+<span class="cv">companyId</span>=<span class="ch">1043</span>   <span class="cc">← response: 200 OK, company deleted</span>
+<span class="cv">companyId</span>=<span class="ch">1044</span>   <span class="cc">← response: 200 OK, company deleted</span></code></pre>
+      </div>
+
+      <div class="post-note"><strong>No CSRF protection bypass needed.</strong> The application used a CSRF token but it was tied to the session, not the resource — changing only <code>companyId</code> while keeping the valid session token was sufficient.</div>
+
+      <h2 id="impact">Impact</h2>
+      <ul>
+        <li><strong>Unauthorized deletion of any vendor company</strong> — any registered user can permanently delete records belonging to other organizations.</li>
+        <li><strong>Platform-wide disruption</strong> — sequential IDs and no rate limiting means a single attacker can script the deletion of all companies in minutes.</li>
+        <li><strong>Government procurement impact</strong> — on a DoD portal, deleting vendor records can disrupt active contracts, bids, and procurement workflows — consequences extend beyond just data loss.</li>
+        <li><strong>No victim interaction required</strong> — purely server-side; the victim company never receives any notification or prompt.</li>
+      </ul>
+      <div class="post-note" data-type="warn"><strong>Why this is High and not Medium:</strong> The combination of a destructive action (delete, not just read), sequential IDs, no rate limit, and a government target pushes this well above a typical information-disclosure IDOR.</div>
+
+      <h2 id="fix">The Fix</h2>
+      <p>The fix is a single server-side ownership check before executing any delete:</p>
+      <div class="post-code">
+        <div class="post-code-header">
+          <div class="post-code-dots"><span></span><span></span><span></span></div>
+          <span class="post-code-label">Server-side fix — pseudocode</span>
+        </div>
+        <pre><code><span class="cc"># Vulnerable — no ownership check</span>
+<span class="cv">def</span> <span class="cf">delete_company</span>(company_id, current_user):
+    Company.find(company_id).delete()
+
+<span class="cc"># Secure — verify ownership before acting</span>
+<span class="cv">def</span> <span class="cf">delete_company</span>(company_id, current_user):
+    company = Company.find(company_id)
+    <span class="ck">if</span> company.<span class="cf">owner_id</span> != current_user.<span class="cf">id</span>:
+        <span class="ck">raise</span> Forbidden(<span class="cs">"Not your company"</span>)
+    company.<span class="cf">delete</span>()</code></pre>
+      </div>
+      <p>Additional hardening worth applying alongside the ownership check:</p>
+      <ul>
+        <li><strong>Use non-sequential IDs</strong> — UUIDs or random tokens make brute-force enumeration impractical even if an IDOR is missed.</li>
+        <li><strong>Rate-limit destructive endpoints</strong> — cap delete requests per session/IP to limit blast radius if a bypass is found.</li>
+        <li><strong>Audit logs</strong> — log every delete with the requesting user so anomalous bulk-deletion is detectable.</li>
+      </ul>
+
+      <h2 id="hunting">How to Hunt IDOR on Delete Endpoints</h2>
+      <ul>
+        <li><strong>Two accounts, same platform.</strong> Create two accounts (A and B). With account A, perform an action that generates an ID — create a post, company, order, etc. Capture the ID. With account B, try to delete it.</li>
+        <li><strong>Watch every ID in requests.</strong> Numeric IDs in URLs (<code>/companies/1042/delete</code>), POST bodies (<code>companyId=1042</code>), and JSON payloads (<code>{"id": 1042}</code>) are all candidates.</li>
+        <li><strong>Destructive actions first.</strong> Delete, transfer-ownership, and archive endpoints have the highest impact and are often under-tested compared to read endpoints.</li>
+        <li><strong>Burp Intruder for enumeration.</strong> With a valid session, send the delete request to Intruder and fuzz the ID parameter over a range. Filter for 200/204 vs. 403/404 to identify successful cross-user deletions.</li>
+        <li><strong>Test after apparent rate limiting.</strong> Some apps return 403 for sequential IDs but allow access after slight delays or from different IPs — worth verifying.</li>
+      </ul>
+
+      <div class="post-code">
+        <div class="post-code-header">
+          <div class="post-code-dots"><span></span><span></span><span></span></div>
+          <span class="post-code-label">ffuf — ID brute-force check</span>
+        </div>
+        <pre><code><span class="cc"># Fuzz companyId from 1 to 2000, look for 200 responses</span>
+ffuf -u <span class="cf">"https://target.com/Vendor/Companies/Delete"</span> \
+     -X POST \
+     -H <span class="cs">"Cookie: session=YOUR_SESSION"</span> \
+     -d <span class="cs">"companyId=FUZZ&amp;__RequestVerificationToken=TOKEN"</span> \
+     -w <span class="cv">&lt;(seq 1 2000)</span> \
+     -mc <span class="cn">200</span></code></pre>
+      </div>
+
+      <hr class="post-divider" />
+
+      <h2 id="refs">References</h2>
+      <ul class="post-refs">
+        <li><a href="https://hackerone.com/reports/1627974" target="_blank" rel="noopener">[1] HackerOne Report #1627974 — IDOR on U.S. Dept of Defense (HtUS)</a></li>
+        <li><a href="https://owasp.org/www-project-web-security-testing-guide/latest/4-Web_Application_Security_Testing/05-Authorization_Testing/04-Testing_for_Insecure_Direct_Object_References" target="_blank" rel="noopener">[2] OWASP WSTG — Testing for Insecure Direct Object References</a></li>
+        <li><a href="https://portswigger.net/web-security/access-control/idor" target="_blank" rel="noopener">[3] PortSwigger — Insecure Direct Object References (IDOR)</a></li>
+        <li><a href="https://cheatsheetseries.owasp.org/cheatsheets/Insecure_Direct_Object_Reference_Prevention_Cheat_Sheet.html" target="_blank" rel="noopener">[4] OWASP — IDOR Prevention Cheat Sheet</a></li>
+      </ul>
+
+      <div class="post-nav">
+        <a href="./blog-h1-504751-open-redirect-omise.html" class="post-nav-link">
+          <span class="post-nav-dir">← Previous Post</span>
+          <span class="post-nav-title">Open Redirect on Omise #504751</span>
+        </a>
+        <a href="./blog-h1-966949-idor-yelp-locid.html" class="post-nav-link next">
+          <span class="post-nav-dir">Next Post →</span>
+          <span class="post-nav-title">IDOR on Yelp — locid #966949</span>
+        </a>
+      </div>
+
+    </article>
+  </div>
+
+</div>
+
+<footer>
+  <p>© 2025 <span class="f-name">Darshak Patel</span> · B.Tech CSE Cybersecurity</p>
+  <div class="f-links">
+    <a href="../../index.html">Home</a>
+    <a href="../../pages/about.html">About</a>
+    <a href="../../pages/expertise.html">Expertise</a>
+    <a href="../../pages/certifications.html">Certifications</a>
+    <a href="../../pages/achievements.html">Achievements</a>
+    <a href="../../pages/tools.html">Tools</a>
+    <a href="../../pages/resources.html">Resources</a>
+    <a href="../index.html">Blog</a>
+    <a href="../../pages/contact.html">Contact</a>
+  </div>
+</footer>
+
+<script src="../../assets/js/main.js"></script>
+<script>
+  (function () {
+    const bar = document.getElementById('read-progress');
+    function update() {
+      const h = document.documentElement;
+      const pct = (h.scrollTop / (h.scrollHeight - h.clientHeight)) * 100;
+      bar.style.width = Math.min(pct, 100) + '%';
+    }
+    window.addEventListener('scroll', update, { passive: true });
+    update();
+  })();
+  (function () {
+    const links = document.querySelectorAll('.toc-list a');
+    const headings = Array.from(document.querySelectorAll('.post-article h2[id]'));
+    if (!links.length || !headings.length) return;
+    function onScroll() {
+      const top = window.scrollY + 100;
+      let active = headings[0];
+      for (const h of headings) { if (h.offsetTop <= top) active = h; }
+      links.forEach(l => l.classList.toggle('active', l.getAttribute('href') === '#' + active.id));
+    }
+    window.addEventListener('scroll', onScroll, { passive: true });
+    onScroll();
+  })();
+</script>
+</body>
+</html>

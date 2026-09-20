@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Darshak Patel's security blog — write-ups, research notes, and breakdowns on ethical hacking, web app security, and AI security." />
+  <title>Blog | Darshak Patel — Cybersecurity</title>
+  <link rel="stylesheet" href="../assets/css/style.css" />
+  <link rel="stylesheet" href="../assets/css/pages/blog.css" />
+</head>
+<body>
+
+<canvas id="particles"></canvas>
+
+<!-- ════════════════════════ NAV ════════════════════════ -->
+<nav>
+  <a href="../index.html" class="nav-logo">
+    <span class="bracket">[</span>dp<span class="bracket">]</span>
+  </a>
+  <ul class="nav-links">
+    <li><a href="../pages/about.html">about</a></li>
+    <li><a href="../pages/expertise.html">expertise</a></li>
+    <li><a href="../pages/certifications.html">certifications</a></li>
+    <li><a href="../pages/achievements.html">achievements</a></li>
+    <li><a href="../pages/tools.html">tools</a></li>
+    <li><a href="../pages/resources.html">resources</a></li>
+    <li><a href="./index.html" class="active">blog</a></li>
+    <li><a href="../pages/contact.html">contact</a></li>
+  </ul>
+  <a href="mailto:your@email.com" class="nav-cta">Hire Me</a>
+  <div class="nav-hamburger" aria-label="menu">
+    <span></span><span></span><span></span>
+  </div>
+</nav>
+
+<!-- ════════════════════ PAGE HEADER ════════════════════ -->
+<div class="page-header" style="position:relative;z-index:1;">
+  <div class="container" style="position:relative;z-index:1;">
+    <p class="section-label" style="justify-content:center;">security insights</p>
+    <h1 class="section-title" style="text-align:center;max-width:100%;">The Security Lab Blog</h1>
+    <p class="section-sub" style="text-align:center;margin:0 auto 2rem;">
+      Write-ups, research breakdowns, vulnerability deep-dives, and learning notes
+      from a cybersecurity student in the trenches.
+    </p>
+    <div class="blog-stats">
+      <div class="bs-item"><span class="bs-num">5</span><span class="bs-label">Posts</span></div>
+      <div class="bs-item"><span class="bs-num">3</span><span class="bs-label">Sections</span></div>
+      <div class="bs-item"><span class="bs-num">+</span><span class="bs-label">Learning</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════ BLOG CONTROLS ═══════════════════ -->
+<div class="blog-controls" id="blog-controls">
+  <div class="filter-row" style="margin:0;">
+    <button class="filt-btn active" data-section="all">All</button>
+    <button class="filt-btn" data-section="hacking">Hacking</button>
+    <button class="filt-btn" data-section="webapp">Web App</button>
+    <button class="filt-btn" data-section="ai">AI Security</button>
+  </div>
+  <input type="text" id="blog-search" class="blog-search" placeholder="Search posts…" />
+</div>
+
+<!-- ════════════════════ BLOG BODY ═══════════════════════ -->
+<div class="blog-body-wrap" id="blog-body">
+
+  <!-- ╔══════════════════════════════════════════╗
+       ║  SECTION 1 — HACKING                    ║
+       ╚══════════════════════════════════════════╝ -->
+  <section class="blog-section" data-section="hacking" id="section-hacking">
+    <div class="bs-header">
+      <div class="bs-header-left">
+        <span class="bs-section-tag">01</span>
+        <div>
+          <h2 class="bs-section-title">Hacking</h2>
+          <p class="bs-section-desc">Recon, exploitation techniques, CTF write-ups, and offensive security concepts.</p>
+        </div>
+      </div>
+      <span class="bs-post-count" id="count-hacking">0 posts</span>
+    </div>
+
+    <div class="vuln-grid">
+
+      <!-- ── Recon & OSINT ── (placeholder — no posts yet) -->
+      <div class="vuln-card vuln-card--empty" data-vuln="recon">
+        <button class="vuln-card-head" aria-expanded="false" disabled>
+          <div class="vuln-card-left">
+            <span class="vuln-icon">🔍</span>
+            <div>
+              <div class="vuln-name">Recon &amp; OSINT</div>
+              <div class="vuln-desc">Passive &amp; active recon, subdomain enumeration, footprinting.</div>
+            </div>
+          </div>
+          <div class="vuln-card-right">
+            <span class="vuln-post-badge vuln-post-badge--soon">Coming soon</span>
+          </div>
+        </button>
+      </div>
+
+      <!-- ── Privilege Escalation ── (placeholder) -->
+      <div class="vuln-card vuln-card--empty" data-vuln="privesc">
+        <button class="vuln-card-head" aria-expanded="false" disabled>
+          <div class="vuln-card-left">
+            <span class="vuln-icon">⬆</span>
+            <div>
+              <div class="vuln-name">Privilege Escalation</div>
+              <div class="vuln-desc">Linux &amp; Windows privesc, misconfigurations, SUID/sudo abuse.</div>
+            </div>
+          </div>
+          <div class="vuln-card-right">
+            <span class="vuln-post-badge vuln-post-badge--soon">Coming soon</span>
+          </div>
+        </button>
+      </div>
+
+    </div><!-- /vuln-grid -->
+  </section>
+
+  <!-- ╔══════════════════════════════════════════╗
+       ║  SECTION 2 — WEB APP                    ║
+       ╚══════════════════════════════════════════╝ -->
+  <section class="blog-section" data-section="webapp" id="section-webapp">
+    <div class="bs-header">
+      <div class="bs-header-left">
+        <span class="bs-section-tag">02</span>
+        <div>
+          <h2 class="bs-section-title">Web App Security</h2>
+          <p class="bs-section-desc">OWASP Top 10, bug bounty write-ups, and web vulnerability deep-dives.</p>
+        </div>
+      </div>
+      <span class="bs-post-count" id="count-webapp">0 posts</span>
+    </div>
+
+    <div class="vuln-grid">
+
+      <!-- ── Open Redirect ── -->
+      <div class="vuln-card" data-vuln="open-redirect">
+        <button class="vuln-card-head" aria-expanded="false">
+          <div class="vuln-card-left">
+            <span class="vuln-icon">↩</span>
+            <div>
+              <div class="vuln-name">Open Redirect</div>
+              <div class="vuln-desc">Unvalidated redirect parameters abused for phishing, password reset poisoning &amp; OAuth token theft.</div>
+            </div>
+          </div>
+          <div class="vuln-card-right">
+            <span class="vuln-post-badge">2 posts</span>
+            <span class="vuln-chevron">›</span>
+          </div>
+        </button>
+        <div class="vuln-posts" hidden>
+          <a class="vp-item" href="./posts/blog-h1-504751-open-redirect-omise.html"
+             data-section="webapp" data-vuln="open-redirect"
+             data-title="Open Redirect on Omise — HackerOne #504751"
+             data-tags="open redirect omise payment phishing login">
+            <div class="vp-meta">
+              <span class="vp-badge bb">Bug Bounty</span>
+              <span class="vp-date">Jun 10, 2025</span>
+              <span class="vp-time">7 min</span>
+            </div>
+            <div class="vp-title">Open Redirect on Omise — HackerOne #504751</div>
+            <p class="vp-excerpt">How an unvalidated redirect parameter on Omise's payment platform let attackers craft trusted-domain phishing links — and why open redirects on payment gateways carry outsized real-world risk.</p>
+            <span class="vp-arrow">→</span>
+          </a>
+          <a class="vp-item" href="./posts/blog-h1-57163-open-redirect-hackerone.html"
+             data-section="webapp" data-vuln="open-redirect"
+             data-title="Open Redirect on HackerOne.com — HackerOne #57163"
+             data-tags="open redirect hackerone phishing login">
+            <div class="vp-meta">
+              <span class="vp-badge bb">Bug Bounty</span>
+              <span class="vp-date">Jun 14, 2025</span>
+              <span class="vp-time">6 min</span>
+            </div>
+            <div class="vp-title">Open Redirect on HackerOne.com — HackerOne #57163</div>
+            <p class="vp-excerpt">How an unvalidated <code>redirect_to</code> on HackerOne's own login flow weaponised a trusted domain for phishing — and why "just Medium" open redirects are a force multiplier.</p>
+            <span class="vp-arrow">→</span>
+          </a>
+        </div>
+      </div>
+
+      <!-- ── XSS ── (placeholder) -->
+      <div class="vuln-card vuln-card--empty" data-vuln="xss">
+        <button class="vuln-card-head" aria-expanded="false" disabled>
+          <div class="vuln-card-left">
+            <span class="vuln-icon">&#60;/&#62;</span>
+            <div>
+              <div class="vuln-name">Cross-Site Scripting (XSS)</div>
+              <div class="vuln-desc">Reflected, stored, and DOM-based XSS — payloads, bypass techniques, and real-world cases.</div>
+            </div>
+          </div>
+          <div class="vuln-card-right">
+            <span class="vuln-post-badge vuln-post-badge--soon">Coming soon</span>
+          </div>
+        </button>
+      </div>
+
+      <!-- ── SQL Injection ── (placeholder) -->
+      <div class="vuln-card vuln-card--empty" data-vuln="sqli">
+        <button class="vuln-card-head" aria-expanded="false" disabled>
+          <div class="vuln-card-left">
+            <span class="vuln-icon">🗄</span>
+            <div>
+              <div class="vuln-name">SQL Injection</div>
+              <div class="vuln-desc">Classic, blind, and time-based SQLi — from detection to full DB dump.</div>
+            </div>
+          </div>
+          <div class="vuln-card-right">
+            <span class="vuln-post-badge vuln-post-badge--soon">Coming soon</span>
+          </div>
+        </button>
+      </div>
+
+      <!-- ── SSRF ── (placeholder) -->
+      <div class="vuln-card vuln-card--empty" data-vuln="ssrf">
+        <button class="vuln-card-head" aria-expanded="false" disabled>
+          <div class="vuln-card-left">
+            <span class="vuln-icon">🌐</span>
+            <div>
+              <div class="vuln-name">SSRF</div>
+              <div class="vuln-desc">Server-Side Request Forgery — internal port scanning, cloud IMDS, and bypass techniques.</div>
+            </div>
+          </div>
+          <div class="vuln-card-right">
+            <span class="vuln-post-badge vuln-post-badge--soon">Coming soon</span>
+          </div>
+        </button>
+      </div>
+
+      <!-- ── CSRF ── (placeholder) -->
+      <div class="vuln-card vuln-card--empty" data-vuln="csrf">
+        <button class="vuln-card-head" aria-expanded="false" disabled>
+          <div class="vuln-card-left">
+            <span class="vuln-icon">🔄</span>
+            <div>
+              <div class="vuln-name">CSRF</div>
+              <div class="vuln-desc">Cross-Site Request Forgery — token bypass, SameSite pitfalls, and real-world exploits.</div>
+            </div>
+          </div>
+          <div class="vuln-card-right">
+            <span class="vuln-post-badge vuln-post-badge--soon">Coming soon</span>
+          </div>
+        </button>
+      </div>
+
+      <!-- ── IDOR ── -->
+      <div class="vuln-card" data-vuln="idor">
+        <button class="vuln-card-head" aria-expanded="false">
+          <div class="vuln-card-left">
+            <span class="vuln-icon">🔓</span>
+            <div>
+              <div class="vuln-name">IDOR</div>
+              <div class="vuln-desc">Insecure Direct Object References — access control failures and horizontal privilege escalation.</div>
+            </div>
+          </div>
+          <div class="vuln-card-right">
+            <span class="vuln-post-badge">3 posts</span>
+            <span class="vuln-chevron">›</span>
+          </div>
+        </button>
+        <div class="vuln-posts" hidden>
+          <a class="vp-item" href="./posts/blog-h1-1627974-idor-dod-vendor.html"
+             data-section="webapp" data-vuln="idor"
+             data-title="IDOR on U.S. DoD Vendor Portal — HackerOne #1627974"
+             data-tags="idor dod vendor portal access control privilege escalation bug bounty">
+            <div class="vp-meta">
+              <span class="vp-badge bb">Bug Bounty</span>
+              <span class="vp-date">Jun 16, 2025</span>
+              <span class="vp-time">7 min</span>
+            </div>
+            <div class="vp-title">IDOR on U.S. DoD Vendor Portal — HackerOne #1627974</div>
+            <p class="vp-excerpt">How sequential company IDs and a missing ownership check on a U.S. Department of Defense vendor portal let any authenticated user delete another company's account — a textbook IDOR with real national-security stakes.</p>
+            <span class="vp-arrow">→</span>
+          </a>
+          <a class="vp-item" href="./posts/blog-h1-966949-idor-yelp-locid.html"
+             data-section="webapp" data-vuln="idor"
+             data-title="IDOR in locid Parameter on Yelp — HackerOne #966949"
+             data-tags="idor yelp locid location profile access control informational">
+            <div class="vp-meta">
+              <span class="vp-badge bb">Bug Bounty</span>
+              <span class="vp-date">Jun 20, 2025</span>
+              <span class="vp-time">6 min</span>
+            </div>
+            <div class="vp-title">IDOR in locid Parameter on Yelp — HackerOne #966949</div>
+            <p class="vp-excerpt">How modifying the <code>locid</code> parameter on Yelp's profile location endpoint exposed arbitrary database records — and why Yelp triaged it as informational when the leaked data couldn't be tied to a specific user.</p>
+            <span class="vp-arrow">→</span>
+          </a>
+          <a class="vp-item" href="./posts/blog-h1-1073420-idor-topcoder-email.html"
+             data-section="webapp" data-vuln="idor"
+             data-title="IDOR Exposes User Email & PII via Forum API on Topcoder — HackerOne #1073420"
+             data-tags="idor topcoder forum email pii watch thread api user enumeration lab45">
+            <div class="vp-meta">
+              <span class="vp-badge bb">Bug Bounty</span>
+              <span class="vp-date">Jun 21, 2025</span>
+              <span class="vp-time">7 min</span>
+            </div>
+            <div class="vp-title">IDOR Exposes User Email &amp; PII via Forum API on Topcoder — HackerOne #1073420</div>
+            <p class="vp-excerpt">How clicking "Watch Thread" on Topcoder's forum triggered an API call that leaked the email, name, and user ID of any registered user — no authorization check, fully enumerable via sequential integer IDs.</p>
+            <span class="vp-arrow">→</span>
+          </a>
+        </div>
+      </div>
+
+      <!-- ── Authentication Flaws ── (placeholder) -->
+      <div class="vuln-card vuln-card--empty" data-vuln="auth">
+        <button class="vuln-card-head" aria-expanded="false" disabled>
+          <div class="vuln-card-left">
+            <span class="vuln-icon">🔑</span>
+            <div>
+              <div class="vuln-name">Authentication Flaws</div>
+              <div class="vuln-desc">Broken auth, session fixation, JWT attacks, and password reset abuse.</div>
+            </div>
+          </div>
+          <div class="vuln-card-right">
+            <span class="vuln-post-badge vuln-post-badge--soon">Coming soon</span>
+          </div>
+        </button>
+      </div>
+
+    </div><!-- /vuln-grid -->
+  </section>
+
+  <!-- ╔══════════════════════════════════════════╗
+       ║  SECTION 3 — AI SECURITY                ║
+       ╚══════════════════════════════════════════╝ -->
+  <section class="blog-section" data-section="ai" id="section-ai">
+    <div class="bs-header">
+      <div class="bs-header-left">
+        <span class="bs-section-tag">03</span>
+        <div>
+          <h2 class="bs-section-title">AI Security</h2>
+          <p class="bs-section-desc">LLM jailbreaks, prompt injection, model poisoning, and emerging AI attack surfaces.</p>
+        </div>
+      </div>
+      <span class="bs-post-count" id="count-ai">0 posts</span>
+    </div>
+
+    <div class="vuln-grid">
+
+      <!-- ── Prompt Injection ── (placeholder) -->
+      <div class="vuln-card vuln-card--empty" data-vuln="prompt-injection">
+        <button class="vuln-card-head" aria-expanded="false" disabled>
+          <div class="vuln-card-left">
+            <span class="vuln-icon">💬</span>
+            <div>
+              <div class="vuln-name">Prompt Injection</div>
+              <div class="vuln-desc">Direct &amp; indirect prompt injection — hijacking LLM instructions and tool calls.</div>
+            </div>
+          </div>
+          <div class="vuln-card-right">
+            <span class="vuln-post-badge vuln-post-badge--soon">Coming soon</span>
+          </div>
+        </button>
+      </div>
+
+      <!-- ── LLM Jailbreaks ── (placeholder) -->
+      <div class="vuln-card vuln-card--empty" data-vuln="jailbreak">
+        <button class="vuln-card-head" aria-expanded="false" disabled>
+          <div class="vuln-card-left">
+            <span class="vuln-icon">🔓</span>
+            <div>
+              <div class="vuln-name">LLM Jailbreaks</div>
+              <div class="vuln-desc">Safety bypass techniques, adversarial prompts, and alignment evasion.</div>
+            </div>
+          </div>
+          <div class="vuln-card-right">
+            <span class="vuln-post-badge vuln-post-badge--soon">Coming soon</span>
+          </div>
+        </button>
+      </div>
+
+      <!-- ── Model &amp; Data Poisoning ── (placeholder) -->
+      <div class="vuln-card vuln-card--empty" data-vuln="poisoning">
+        <button class="vuln-card-head" aria-expanded="false" disabled>
+          <div class="vuln-card-left">
+            <span class="vuln-icon">☠</span>
+            <div>
+              <div class="vuln-name">Model &amp; Data Poisoning</div>
+              <div class="vuln-desc">Training-time attacks, backdoors, and supply-chain risks in ML pipelines.</div>
+            </div>
+          </div>
+          <div class="vuln-card-right">
+            <span class="vuln-post-badge vuln-post-badge--soon">Coming soon</span>
+          </div>
+        </button>
+      </div>
+
+      <!-- ── RAG &amp; Tool Abuse ── (placeholder) -->
+      <div class="vuln-card vuln-card--empty" data-vuln="rag-abuse">
+        <button class="vuln-card-head" aria-expanded="false" disabled>
+          <div class="vuln-card-left">
+            <span class="vuln-icon">🤖</span>
+            <div>
+              <div class="vuln-name">RAG &amp; Agentic Abuse</div>
+              <div class="vuln-desc">Retrieval-augmented generation exploits, autonomous agent hijacking, and tool-call manipulation.</div>
+            </div>
+          </div>
+          <div class="vuln-card-right">
+            <span class="vuln-post-badge vuln-post-badge--soon">Coming soon</span>
+          </div>
+        </button>
+      </div>
+
+    </div><!-- /vuln-grid -->
+  </section>
+
+  <!-- ── No search results ── -->
+  <div class="no-results" id="no-results">
+    <p style="font-family:var(--mono);font-size:.8rem;color:var(--muted2);">[ no results ]</p>
+    <p style="margin-top:.5rem;font-size:.82rem;color:var(--muted);">No posts match that search. Try a different keyword.</p>
+  </div>
+
+</div><!-- /blog-body-wrap -->
+
+<!-- ════════════════════ NEWSLETTER ══════════════════════ -->
+<div class="newsletter container">
+  <h3>Stay in the Loop</h3>
+  <p>New write-ups, vulnerability notes, and research drops. No spam — ever.</p>
+  <div class="nl-form">
+    <input class="nl-input" type="email" placeholder="your@email.com" />
+    <button class="btn btn-primary" style="padding:.6rem 1.4rem;">Subscribe</button>
+  </div>
+</div>
+
+<!-- ══════════════════════ FOOTER ═══════════════════════ -->
+<footer>
+  <p>© 2025 <span class="f-name">Darshak Patel</span> · B.Tech CSE Cybersecurity</p>
+  <div class="f-links">
+    <a href="../index.html">Home</a>
+    <a href="../pages/about.html">About</a>
+    <a href="../pages/expertise.html">Expertise</a>
+    <a href="../pages/certifications.html">Certifications</a>
+    <a href="../pages/achievements.html">Achievements</a>
+    <a href="../pages/tools.html">Tools</a>
+    <a href="../pages/resources.html">Resources</a>
+    <a href="./index.html">Blog</a>
+    <a href="../pages/contact.html">Contact</a>
+  </div>
+</footer>
+
+<script src="../assets/js/main.js"></script>
+<script src="../assets/js/pages/blog.js"></script>
+</body>
+</html>

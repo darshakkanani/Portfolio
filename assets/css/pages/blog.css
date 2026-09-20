@@ -61,3 +61,287 @@
 }
 .nl-input::placeholder { color: var(--muted2); }
 .nl-input:focus { border-color: var(--border2); }
+
+/* ═══════════════════════════════════════════════════
+   BLOG — Sections / Vuln-cards / Post rows
+   Added for the 3-section layout
+═══════════════════════════════════════════════════ */
+
+/* ── Wrapper ─────────────────────────────────────── */
+.blog-body-wrap {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 0 3rem 5rem;
+}
+@media (max-width: 768px) { .blog-body-wrap { padding: 0 1.5rem 4rem; } }
+@media (max-width: 480px) { .blog-body-wrap { padding: 0 1.2rem 3rem; } }
+
+/* ── Section block ───────────────────────────────── */
+.blog-section {
+  margin-bottom: 4rem;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  overflow: hidden;
+}
+.blog-section[hidden] { display: none; }
+
+/* Section header bar */
+.bs-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1.4rem 1.6rem;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+}
+.bs-header-left {
+  display: flex;
+  align-items: center;
+  gap: 1.1rem;
+}
+.bs-section-tag {
+  font-family: var(--mono);
+  font-size: 0.62rem;
+  color: var(--muted2);
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 0.2rem 0.55rem;
+  letter-spacing: 1.5px;
+  flex-shrink: 0;
+}
+.bs-section-title {
+  font-size: 1.1rem;
+  font-weight: 800;
+  letter-spacing: -0.2px;
+  margin: 0 0 0.15rem;
+}
+.bs-section-desc {
+  font-size: 0.85rem;
+  color: var(--muted2);
+  margin: 0;
+  line-height: 1.5;
+}
+.bs-post-count {
+  font-family: var(--mono);
+  font-size: 0.75rem;
+  color: var(--muted2);
+  letter-spacing: 1px;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+/* Vuln card grid inside a section */
+.vuln-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+/* ── Vuln card ───────────────────────────────────── */
+.vuln-card {
+  border-bottom: 1px solid var(--border);
+}
+.vuln-card:last-child {
+  border-bottom: none;
+}
+
+/* Card header (clickable button) */
+.vuln-card-head {
+  width: 100%;
+  background: none;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1.1rem 1.6rem;
+  text-align: left;
+  transition: background var(--ease);
+  color: var(--text);
+}
+.vuln-card-head:hover { background: var(--surface2); }
+.vuln-card-head:disabled { cursor: default; }
+.vuln-card-head:disabled:hover { background: none; }
+
+.vuln-card-left {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex: 1;
+  min-width: 0;
+}
+.vuln-icon {
+  font-family: var(--mono);
+  font-size: 1rem;
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  color: var(--muted2);
+}
+.vuln-name {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: 0.15rem;
+}
+.vuln-desc {
+  font-size: 0.86rem;
+  color: var(--muted2);
+  line-height: 1.5;
+}
+
+.vuln-card-right {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  flex-shrink: 0;
+}
+.vuln-post-badge {
+  font-family: var(--mono);
+  font-size: 0.62rem;
+  color: #7c9ef8;
+  background: #3b82f60d;
+  border: 1px solid #3b82f630;
+  border-radius: 3px;
+  padding: 0.15rem 0.5rem;
+  white-space: nowrap;
+}
+.vuln-post-badge--soon {
+  color: var(--muted2);
+  background: var(--surface2);
+  border-color: var(--border);
+}
+.vuln-chevron {
+  font-family: var(--mono);
+  font-size: 1rem;
+  color: var(--muted2);
+  transition: transform 0.2s ease, color 0.2s ease;
+  display: inline-block;
+  line-height: 1;
+}
+.vuln-card-head[aria-expanded="true"] .vuln-chevron {
+  transform: rotate(90deg);
+  color: var(--text);
+}
+.vuln-card-head[aria-expanded="true"] { background: var(--surface2); }
+
+/* Expanded vuln card — posts panel */
+.vuln-posts {
+  border-top: 1px solid var(--border);
+  background: var(--bg);
+}
+.vuln-posts[hidden] { display: none; }
+
+/* Empty / coming-soon card */
+.vuln-card--empty .vuln-card-head { opacity: 0.6; }
+
+/* ── Post row inside a vuln card ─────────────────── */
+.vp-item {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  grid-template-rows: auto auto auto;
+  column-gap: 1.2rem;
+  padding: 1.1rem 1.6rem 1.1rem 2rem;
+  border-bottom: 1px solid var(--border);
+  text-decoration: none;
+  color: var(--text);
+  transition: background var(--ease);
+  position: relative;
+}
+.vp-item:last-child { border-bottom: none; }
+.vp-item:hover { background: var(--surface); }
+
+/* accent bar on hover */
+.vp-item::before {
+  content: "";
+  position: absolute;
+  left: 0; top: 0; bottom: 0;
+  width: 2px;
+  background: transparent;
+  transition: background var(--ease);
+}
+.vp-item:hover::before { background: #3b82f6; }
+
+.vp-meta {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+  margin-bottom: 0.35rem;
+  grid-column: 1;
+}
+.vp-badge {
+  font-family: var(--mono);
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  padding: 0.1rem 0.45rem;
+  border-radius: 3px;
+  border: 1px solid;
+}
+.vp-badge.bb {
+  color: #7c9ef8;
+  border-color: #3b82f633;
+  background: #3b82f608;
+}
+.vp-badge.research {
+  color: #a78bfa;
+  border-color: #7c5cd833;
+  background: #7c5cd808;
+}
+.vp-date, .vp-time {
+  font-family: var(--mono);
+  font-size: 0.75rem;
+  color: var(--muted2);
+}
+.vp-title {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--text);
+  line-height: 1.4;
+  margin-bottom: 0.3rem;
+  grid-column: 1;
+}
+.vp-excerpt {
+  font-size: 0.9rem;
+  color: var(--muted);
+  line-height: 1.65;
+  margin: 0;
+  grid-column: 1;
+}
+.vp-excerpt code {
+  font-family: var(--mono);
+  font-size: 0.83rem;
+  background: #3b82f60e;
+  border: 1px solid #3b82f625;
+  padding: 0.05rem 0.3rem;
+  border-radius: 3px;
+  color: #93c5fd;
+}
+.vp-arrow {
+  grid-column: 2;
+  grid-row: 1 / 4;
+  align-self: center;
+  font-family: var(--mono);
+  font-size: 0.9rem;
+  color: var(--muted2);
+  transition: color var(--ease), transform var(--ease);
+}
+.vp-item:hover .vp-arrow {
+  color: var(--white);
+  transform: translateX(3px);
+}
+
+/* ── Search highlight ────────────────────────────── */
+.vp-item.search-hidden { display: none; }
+.vuln-card.search-hidden { display: none; }
+.blog-section.search-hidden { display: none; }

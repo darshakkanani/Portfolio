@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Open Redirect on HackerOne.com — HackerOne report #57163. How an unvalidated redirect parameter on the platform itself enabled phishing via a trusted domain." />
+  <title>Open Redirect on HackerOne.com — HackerOne #57163 | Blog — Darshak Patel</title>
+  <link rel="stylesheet" href="../../assets/css/style.css" />
+  <link rel="stylesheet" href="../../assets/css/pages/post.css" />
+</head>
+<body>
+
+<div class="read-progress" id="read-progress"></div>
+<canvas id="particles"></canvas>
+
+<nav>
+  <a href="../../index.html" class="nav-logo">
+    <span class="bracket">[</span>dp<span class="bracket">]</span>
+  </a>
+  <ul class="nav-links">
+    <li><a href="../../pages/about.html">about</a></li>
+    <li><a href="../../pages/expertise.html">expertise</a></li>
+    <li><a href="../../pages/certifications.html">certifications</a></li>
+    <li><a href="../../pages/achievements.html">achievements</a></li>
+    <li><a href="../../pages/tools.html">tools</a></li>
+    <li><a href="../../pages/resources.html">resources</a></li>
+    <li><a href="../index.html" class="active">blog</a></li>
+    <li><a href="../../pages/contact.html">contact</a></li>
+  </ul>
+  <a href="mailto:your@email.com" class="nav-cta">Hire Me</a>
+  <div class="nav-hamburger" aria-label="menu">
+    <span></span><span></span><span></span>
+  </div>
+</nav>
+
+<div class="post-wrap">
+
+  <!-- ── Hero ── -->
+  <div class="post-hero" data-vuln="open-redirect">
+    <div class="post-hero-inner">
+      <a href="../index.html" class="post-back">← Back to Blog</a>
+      <div class="post-vuln-badge">⤷ Open Redirect</div>
+      <div class="post-meta">
+        <span class="post-tag">Bug Bounty</span>
+        <span class="post-tag">Web App</span>
+        <span class="post-tag" data-sev="medium">Medium</span>
+        <span class="post-meta-sep">·</span>
+        <span>Jun 14, 2025</span>
+        <span class="post-meta-sep">·</span>
+        <span>6 min read</span>
+      </div>
+      <h1 class="post-h1">Open Redirect on HackerOne.com — HackerOne #57163</h1>
+      <p class="post-sub">How an unvalidated <code>redirect_to</code> parameter on HackerOne's own login flow let attackers craft convincing phishing links under a fully trusted domain.</p>
+      <div class="post-stats">
+        <div class="post-stat">
+          <span class="post-stat-label">Program</span>
+          <span class="post-stat-value">HackerOne</span>
+        </div>
+        <div class="post-stat">
+          <span class="post-stat-label">Report</span>
+          <span class="post-stat-value">#57163</span>
+        </div>
+        <div class="post-stat">
+          <span class="post-stat-label">Severity</span>
+          <span class="post-stat-value">Medium</span>
+        </div>
+        <div class="post-stat">
+          <span class="post-stat-label">Class</span>
+          <span class="post-stat-value">CWE-601</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Source + Attribution ── -->
+  <div class="post-body">
+    <a href="https://hackerone.com/reports/57163" target="_blank" rel="noopener" class="post-source">
+      ↗ HackerOne Report #57163 — HackerOne Program
+    </a>
+    <p class="post-attr">Independent educational breakdown of a publicly disclosed report. Credit for the original finding belongs to its researcher.</p>
+  </div>
+
+  <!-- ── Layout ── -->
+  <div class="post-layout">
+
+    <aside class="post-toc">
+      <div class="toc-label">Contents</div>
+      <ul class="toc-list">
+        <li><a href="#what">What Is an Open Redirect?</a></li>
+        <li><a href="#bug">The Bug</a></li>
+        <li><a href="#attack">Attack Flow</a></li>
+        <li><a href="#poc">Proof of Concept</a></li>
+        <li><a href="#why">Why It Matters</a></li>
+        <li><a href="#fix">The Fix</a></li>
+        <li><a href="#hunting">How to Hunt It</a></li>
+        <li><a href="#refs">References</a></li>
+      </ul>
+    </aside>
+
+    <article class="post-article">
+
+      <h2 id="what">What Is an Open Redirect?</h2>
+      <p>An <strong>open redirect</strong> happens when an application accepts a user-controlled URL in a parameter and redirects the browser to it without validating whether the destination is safe. On its own it doesn't leak data or execute code — but it borrows the reputation of the hosting domain.</p>
+      <p>A link starting with <code>https://hackerone.com/</code> looks completely trustworthy in an email or Slack message. If that URL can silently forward the user to <code>https://evil.com/fake-login</code>, the attacker gets HackerOne's credibility for free.</p>
+
+      <h2 id="bug">The Bug on HackerOne.com</h2>
+      <p>HackerOne's login flow accepted a <code>redirect_to</code> parameter to send users back to the page they came from after signing in — a standard UX pattern. The problem: the destination URL was <strong>not validated against an allow-list of internal paths</strong>.</p>
+      <p>Any value — including a fully external URL — was accepted and acted upon after authentication, sending the just-logged-in user straight to an attacker-controlled page.</p>
+
+      <div class="post-code">
+        <div class="post-code-header">
+          <div class="post-code-dots"><span></span><span></span><span></span></div>
+          <span class="post-code-label">Vulnerable vs. normal usage</span>
+        </div>
+        <pre><code><span class="cc"># Normal — sends user back to their report after login</span>
+<span class="cf">https://hackerone.com/users/sign_in</span>?<span class="cv">redirect_to</span>=<span class="cok">/reports/57163</span>
+
+<span class="cc"># Exploited — external URL substituted by attacker</span>
+<span class="cf">https://hackerone.com/users/sign_in</span>?<span class="cv">redirect_to</span>=<span class="ch">https://evil.com/fake-h1</span></code></pre>
+      </div>
+
+      <h2 id="attack">Attack Flow</h2>
+      <ul>
+        <li><strong>1. Craft the URL.</strong> Attacker builds a link to HackerOne's real sign-in page with <code>redirect_to</code> set to their clone site. Domain is <code>hackerone.com</code> — passes every hover-check.</li>
+        <li><strong>2. Distribute it.</strong> Sent via email, DM, or a forum post. High click-through because the domain is genuine.</li>
+        <li><strong>3. Victim logs in normally.</strong> Lands on the real login form, enters real credentials, authenticates successfully — nothing looks wrong.</li>
+        <li><strong>4. Redirected to attacker's page.</strong> Server 302-redirects to <code>evil.com</code>. Clone prompts for "MFA" or "re-confirm" — harvesting credentials while the victim assumes they're still on HackerOne.</li>
+      </ul>
+
+      <h2 id="poc">Proof of Concept</h2>
+      <p>No tooling required — just a browser:</p>
+      <div class="post-code">
+        <div class="post-code-header">
+          <div class="post-code-dots"><span></span><span></span><span></span></div>
+          <span class="post-code-label">PoC — browser only</span>
+        </div>
+        <pre><code><span class="cc"># 1. Visit while logged out:</span>
+<span class="cf">https://hackerone.com/users/sign_in</span>?<span class="cv">redirect_to</span>=<span class="ch">https://example.com</span>
+
+<span class="cc"># 2. Log in with valid credentials.</span>
+
+<span class="cc"># 3. Server responds:</span>
+<span class="ck">HTTP/1.1 302 Found</span>
+<span class="cv">Location:</span> <span class="ch">https://example.com</span>
+
+<span class="cc"># 4. Browser follows — user lands on external site.</span></code></pre>
+      </div>
+
+      <div class="post-note">HackerOne is a security platform. Its users are trained to scrutinise URLs — an open redirect on this exact domain defeats that training, which is what makes it notable even at Medium severity.</div>
+
+      <h2 id="why">Why It Matters More Than the Rating</h2>
+      <p>Open redirects are almost always rated Medium and dismissed as low impact. Three scenarios where that breaks down:</p>
+      <ul>
+        <li><strong>OAuth / SSO chaining</strong> — an open redirect on the same domain as an OAuth client lets attackers steal access tokens by chaining the two flows.</li>
+        <li><strong>Post-login credential harvest</strong> — exactly this report. The user just typed their password and fully trusts the session.</li>
+        <li><strong>Referrer / CSP bypass</strong> — some apps whitelist same-origin referrers. An open redirect satisfies that check while landing the user on a malicious destination.</li>
+      </ul>
+
+      <h2 id="fix">The Fix</h2>
+      <p>Only allow relative paths in redirect parameters — reject anything with a scheme or external host.</p>
+      <div class="post-code">
+        <div class="post-code-header">
+          <div class="post-code-dots"><span></span><span></span><span></span></div>
+          <span class="post-code-label">Ruby on Rails — safe redirect</span>
+        </div>
+        <pre><code><span class="cc"># Vulnerable</span>
+redirect_to params[<span class="cs">:redirect_to</span>]
+
+<span class="cc"># Safe — relative paths only</span>
+<span class="cv">dest</span> = params[<span class="cs">:redirect_to</span>].to_s
+<span class="cv">safe</span> = <span class="cv">dest</span>.start_with?(<span class="cs">"/"</span>) &amp;&amp; !<span class="cv">dest</span>.start_with?(<span class="cs">"//"</span>) ? <span class="cv">dest</span> : <span class="cs">"/"</span>
+redirect_to <span class="cv">safe</span>
+
+<span class="cc"># Rails 7+ — url_from() rejects off-host URLs</span>
+redirect_to url_from(params[<span class="cs">:redirect_to</span>]) || root_path</code></pre>
+      </div>
+
+      <h2 id="hunting">How to Hunt Open Redirects</h2>
+      <ul>
+        <li><strong>Parameter names:</strong> <code>redirect_to</code>, <code>redirect</code>, <code>return</code>, <code>next</code>, <code>url</code>, <code>dest</code>, <code>continue</code>, <code>goto</code>, <code>target</code>.</li>
+        <li><strong>Login and logout flows first</strong> — post-auth redirects are the highest-value spot.</li>
+        <li><strong>Bypass payloads</strong> for naive filters: <code>//evil.com</code>, <code>\/\/evil.com</code>, <code>https:evil.com</code>, <code>https://hackerone.com@evil.com</code>.</li>
+        <li><strong>Check OAuth <code>redirect_uri</code></strong> — partial open redirects on the same domain chain with OAuth to steal tokens.</li>
+        <li><strong>Automate with ffuf</strong> — wordlist of redirect param names against every endpoint that issues a 301/302.</li>
+      </ul>
+      <div class="post-code">
+        <div class="post-code-header">
+          <div class="post-code-dots"><span></span><span></span><span></span></div>
+          <span class="post-code-label">ffuf — param name fuzzing</span>
+        </div>
+        <pre><code>ffuf -u <span class="cf">"https://target.com/login?FUZZ=https://evil.com"</span> \
+     -w redirect_params.txt -mc <span class="cn">302</span> -fr <span class="cs">"target.com"</span></code></pre>
+      </div>
+
+      <hr class="post-divider" />
+
+      <h2 id="refs">References</h2>
+      <ul class="post-refs">
+        <li><a href="https://hackerone.com/reports/57163" target="_blank" rel="noopener">[1] HackerOne Report #57163 — Open Redirect on hackerone.com</a></li>
+        <li><a href="https://portswigger.net/kb/issues/00500100_open-redirection-reflected" target="_blank" rel="noopener">[2] PortSwigger — Open Redirection</a></li>
+        <li><a href="https://cheatsheetseries.owasp.org/cheatsheets/Unvalidated_Redirects_and_Forwards_Cheat_Sheet.html" target="_blank" rel="noopener">[3] OWASP — Unvalidated Redirects and Forwards</a></li>
+        <li><a href="https://api.rubyonrails.org/classes/ActionController/Redirecting.html" target="_blank" rel="noopener">[4] Rails — url_from() safe redirect helper</a></li>
+      </ul>
+
+      <div class="post-nav">
+        <a href="../index.html" class="post-nav-link">
+          <span class="post-nav-dir">← All Posts</span>
+          <span class="post-nav-title">Back to Blog Index</span>
+        </a>
+        <a href="./blog-h1-504751-open-redirect-omise.html" class="post-nav-link next">
+          <span class="post-nav-dir">Next Post →</span>
+          <span class="post-nav-title">Open Redirect on Omise #504751</span>
+        </a>
+      </div>
+
+    </article>
+  </div>
+
+</div>
+
+<footer>
+  <p>© 2025 <span class="f-name">Darshak Patel</span> · B.Tech CSE Cybersecurity</p>
+  <div class="f-links">
+    <a href="../../index.html">Home</a>
+    <a href="../../pages/about.html">About</a>
+    <a href="../../pages/expertise.html">Expertise</a>
+    <a href="../../pages/certifications.html">Certifications</a>
+    <a href="../../pages/achievements.html">Achievements</a>
+    <a href="../../pages/tools.html">Tools</a>
+    <a href="../../pages/resources.html">Resources</a>
+    <a href="../index.html">Blog</a>
+    <a href="../../pages/contact.html">Contact</a>
+  </div>
+</footer>
+
+<script src="../../assets/js/main.js"></script>
+<script>
+  // Reading progress bar
+  (function () {
+    const bar = document.getElementById('read-progress');
+    function update() {
+      const h = document.documentElement;
+      const pct = (h.scrollTop / (h.scrollHeight - h.clientHeight)) * 100;
+      bar.style.width = Math.min(pct, 100) + '%';
+    }
+    window.addEventListener('scroll', update, { passive: true });
+    update();
+  })();
+  // ToC scroll spy
+  (function () {
+    const links = document.querySelectorAll('.toc-list a');
+    const headings = Array.from(document.querySelectorAll('.post-article h2[id]'));
+    if (!links.length || !headings.length) return;
+    function onScroll() {
+      const top = window.scrollY + 100;
+      let active = headings[0];
+      for (const h of headings) { if (h.offsetTop <= top) active = h; }
+      links.forEach(l => l.classList.toggle('active', l.getAttribute('href') === '#' + active.id));
+    }
+    window.addEventListener('scroll', onScroll, { passive: true });
+    onScroll();
+  })();
+</script>
+</body>
+</html>

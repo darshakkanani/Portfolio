@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="IDOR in locid parameter on Yelp — HackerOne #966949. How modifying a single parameter exposed arbitrary location records from Yelp's database, and why Yelp triaged it as informational." />
+  <title>IDOR in locid Parameter on Yelp — HackerOne #966949 | Blog — Darshak Patel</title>
+  <link rel="stylesheet" href="../../assets/css/style.css" />
+  <link rel="stylesheet" href="../../assets/css/pages/post.css" />
+</head>
+<body>
+
+<div class="read-progress" id="read-progress"></div>
+<canvas id="particles"></canvas>
+
+<nav>
+  <a href="../../index.html" class="nav-logo">
+    <span class="bracket">[</span>dp<span class="bracket">]</span>
+  </a>
+  <ul class="nav-links">
+    <li><a href="../../pages/about.html">about</a></li>
+    <li><a href="../../pages/expertise.html">expertise</a></li>
+    <li><a href="../../pages/certifications.html">certifications</a></li>
+    <li><a href="../../pages/achievements.html">achievements</a></li>
+    <li><a href="../../pages/tools.html">tools</a></li>
+    <li><a href="../../pages/resources.html">resources</a></li>
+    <li><a href="../index.html" class="active">blog</a></li>
+    <li><a href="../../pages/contact.html">contact</a></li>
+  </ul>
+  <a href="mailto:your@email.com" class="nav-cta">Hire Me</a>
+  <div class="nav-hamburger" aria-label="menu">
+    <span></span><span></span><span></span>
+  </div>
+</nav>
+
+<div class="post-wrap">
+
+  <!-- ── Hero ── -->
+  <div class="post-hero" data-vuln="idor">
+    <div class="post-hero-inner">
+      <a href="../index.html" class="post-back">← Back to Blog</a>
+      <div class="post-vuln-badge">⬡ IDOR</div>
+      <div class="post-meta">
+        <span class="post-tag">Bug Bounty</span>
+        <span class="post-tag">Web App</span>
+        <span class="post-tag" data-sev="info">Informational</span>
+        <span class="post-meta-sep">·</span>
+        <span>Jun 20, 2025</span>
+        <span class="post-meta-sep">·</span>
+        <span>6 min read</span>
+      </div>
+      <h1 class="post-h1">IDOR in locid Parameter on Yelp — HackerOne #966949</h1>
+      <p class="post-sub">How modifying a single <code>locid</code> parameter on Yelp's profile location endpoint exposed arbitrary location records from the database — and why Yelp triaged the finding as informational rather than a vulnerability.</p>
+      <div class="post-stats">
+        <div class="post-stat">
+          <span class="post-stat-label">Program</span>
+          <span class="post-stat-value">Yelp</span>
+        </div>
+        <div class="post-stat">
+          <span class="post-stat-label">Report</span>
+          <span class="post-stat-value">#966949</span>
+        </div>
+        <div class="post-stat">
+          <span class="post-stat-label">Triage</span>
+          <span class="post-stat-value">Informational</span>
+        </div>
+        <div class="post-stat">
+          <span class="post-stat-label">Reporter</span>
+          <span class="post-stat-value">@cocoh__23</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="post-body">
+    <a href="https://hackerone.com/reports/966949" target="_blank" rel="noopener" class="post-source">
+      ↗ HackerOne Report #966949 — Yelp
+    </a>
+    <p class="post-attr">Independent educational breakdown of a publicly disclosed report. Credit for the original finding belongs to @cocoh__23.</p>
+  </div>
+
+  <div class="post-layout">
+
+    <aside class="post-toc">
+      <div class="toc-label">Contents</div>
+      <ul class="toc-list">
+        <li><a href="#what">What Is IDOR?</a></li>
+        <li><a href="#context">The Target</a></li>
+        <li><a href="#bug">The Bug</a></li>
+        <li><a href="#poc">Proof of Concept</a></li>
+        <li><a href="#triage">Yelp's Triage Decision</a></li>
+        <li><a href="#debate">The Debate</a></li>
+        <li><a href="#hunting">How to Hunt It</a></li>
+        <li><a href="#refs">References</a></li>
+      </ul>
+    </aside>
+
+    <article class="post-article">
+
+      <h2 id="what">What Is IDOR?</h2>
+      <p><strong>Insecure Direct Object Reference (IDOR)</strong> occurs when an application uses a user-controlled identifier to access a resource without verifying the requesting user has permission to see or modify it. Change the ID, get someone else's data.</p>
+      <p>Not every IDOR is equal. Whether a finding qualifies as a security vulnerability depends on what data is exposed, whether it can be linked back to an individual, and what damage an attacker can do with it. Report #966949 sits squarely in that grey area.</p>
+
+      <h2 id="context">The Target</h2>
+      <p>Yelp is a platform where users post business reviews and maintain profiles. Part of that profile is a saved location — a city or neighbourhood the user associates with their account. The endpoint responsible for adding or editing that location is:</p>
+
+      <div class="post-code">
+        <div class="post-code-header">
+          <div class="post-code-dots"><span></span><span></span><span></span></div>
+          <span class="post-code-label">Target endpoint</span>
+        </div>
+        <pre><code>https://yelp.com/profile_location/add_or_edit</code></pre>
+      </div>
+
+      <p>The endpoint accepts a <code>locid</code> parameter — a numeric identifier that points to a location record stored in Yelp's database.</p>
+
+      <h2 id="bug">The Bug</h2>
+      <p>Researcher @cocoh__23 found that <strong>the <code>locid</code> parameter was not validated against the authenticated user's session</strong>. By supplying arbitrary integer values, they could retrieve location records that did not belong to them — data from Yelp's internal location table, exposed through a missing ownership check.</p>
+
+      <div class="post-code">
+        <div class="post-code-header">
+          <div class="post-code-dots"><span></span><span></span><span></span></div>
+          <span class="post-code-label">Vulnerable request — locid manipulation</span>
+        </div>
+        <pre><code><span class="cc"># Legitimate request — fetching your own location</span>
+<span class="ck">GET</span> <span class="cf">/profile_location/add_or_edit</span><span class="cv">?locid=</span><span class="cok">84201</span>
+<span class="ck">Cookie:</span> <span class="cs">session=user_a_session</span>
+
+<span class="cc"># Modified — reading a different location record</span>
+<span class="ck">GET</span> <span class="cf">/profile_location/add_or_edit</span><span class="cv">?locid=</span><span class="ch">84202</span>
+<span class="cc"># Response: returns location data for ID 84202 — no error, no auth check</span></code></pre>
+      </div>
+
+      <p>The server returned location information — city, neighbourhood, or address — stored under that ID with no check that the requesting user owned or was permitted to view it.</p>
+
+      <h2 id="poc">Proof of Concept</h2>
+      <ul>
+        <li>Log in to a Yelp account and navigate to the profile location editor.</li>
+        <li>Intercept the request to <code>/profile_location/add_or_edit</code> in Burp Suite and note the <code>locid</code> value.</li>
+        <li>Modify <code>locid</code> to an adjacent integer (e.g. <code>locid + 1</code>).</li>
+        <li>Observe: the response contains location data associated with a different record — accessible without owning it.</li>
+      </ul>
+
+      <div class="post-code">
+        <div class="post-code-header">
+          <div class="post-code-dots"><span></span><span></span><span></span></div>
+          <span class="post-code-label">Burp Repeater — iterating locid</span>
+        </div>
+        <pre><code><span class="cc"># Fuzz locid across a range to enumerate location records</span>
+<span class="ck">GET</span> /profile_location/add_or_edit<span class="cv">?locid=</span><span class="ch">FUZZ</span> HTTP/1.1
+<span class="ck">Host:</span> yelp.com
+<span class="ck">Cookie:</span> <span class="cs">session=YOUR_SESSION</span>
+
+<span class="cc"># All responses: 200 OK — location record returned for each valid ID</span></code></pre>
+      </div>
+
+      <div class="post-note"><strong>No account interaction needed from the victim.</strong> The data is read purely server-side — the affected user receives no notification.</div>
+
+      <h2 id="triage">Yelp's Triage Decision</h2>
+      <p>Yelp reviewed the report and closed it as <strong>informational — not a security vulnerability</strong>. Their reasoning:</p>
+      <ul>
+        <li>The location records returned by the endpoint <strong>do not identify which user they belong to</strong>. An attacker retrieving <code>locid=84202</code> gets a city name or address — not a username, email, or profile link.</li>
+        <li>Yelp compared this to finding a random address in a phone book — the data exists in a public or semi-public context and cannot on its own be tied to a specific individual without additional correlation.</li>
+        <li>Because no personal data is attributable to a specific user from this endpoint alone, Yelp determined the privacy risk did not meet their threshold for a reportable vulnerability.</li>
+      </ul>
+
+      <div class="post-note" data-type="tip"><strong>Yelp's position is reasonable.</strong> IDOR severity scales with what is exposed. Leaking an anonymised location record differs materially from leaking an email address, private message, or financial detail associated with a named account.</div>
+
+      <h2 id="debate">The Debate</h2>
+      <p>This report sits in a class that divides the bug bounty community. Here are both sides:</p>
+      <p><strong>Why it matters as a finding:</strong> the missing authorization check is real. An endpoint that returns any record for any ID without a session-ownership check is a structural access-control failure. If Yelp ever stores more sensitive data behind the same pattern, the vulnerability class is already present and exploitable. The fix — a single ownership check — is trivial and worth making regardless of current data sensitivity.</p>
+      <p><strong>Why the informational triage is defensible:</strong> severity in bug bounty is tied to demonstrable impact. If the data returned cannot be linked to a person, the practical harm to a user is near zero. Programs with limited triage bandwidth prioritise findings where there is a clear, immediate harm path — and location-only data without a user attribute doesn't clear that bar for most programs.</p>
+
+      <div class="post-note"><strong>Lesson for hunters:</strong> before reporting an IDOR, document exactly what data is leaked and whether it can be tied back to a real user. An IDOR that leaks user-attributed data (email, name, private content) will almost always be accepted. One that leaks contextless records may be closed as informational — know the distinction before you submit.</div>
+
+      <h2 id="hunting">How to Hunt IDOR on Profile Endpoints</h2>
+      <ul>
+        <li><strong>Map every ID-like parameter.</strong> Look for numeric or encoded values in query strings (<code>?locid=</code>, <code>?id=</code>), POST bodies, and URL paths. Any of them could point to a record.</li>
+        <li><strong>Two-account testing.</strong> Create accounts A and B. With account A, note the <code>locid</code> (or equivalent) tied to your profile. With account B, request that same ID. If you get data back — that's an IDOR candidate.</li>
+        <li><strong>Check what's actually returned.</strong> Before reporting, confirm what fields are in the response. User-attributed fields (email, username, private text) mean high impact. Generic/contextless data means lower impact — document it honestly.</li>
+        <li><strong>Look for write IDORs too.</strong> The endpoint is <code>add_or_edit</code> — not just read. Test whether you can <em>write</em> a location record belonging to another user by manipulating <code>locid</code> in a POST. Write IDORs are almost always accepted regardless of data sensitivity.</li>
+        <li><strong>Correlation attacks.</strong> Even if one field seems harmless, check whether combining it with other accessible endpoints lets you reconstruct a user identity. Programs care about the total picture, not just each field in isolation.</li>
+      </ul>
+
+      <div class="post-code">
+        <div class="post-code-header">
+          <div class="post-code-dots"><span></span><span></span><span></span></div>
+          <span class="post-code-label">ffuf — enumerate locid range</span>
+        </div>
+        <pre><code><span class="cc"># Fuzz locid from 80000 to 90000, filter for non-empty 200 responses</span>
+ffuf -u <span class="cf">"https://yelp.com/profile_location/add_or_edit?locid=FUZZ"</span> \
+     -H <span class="cs">"Cookie: session=YOUR_SESSION"</span> \
+     -w <span class="cv">&lt;(seq 80000 90000)</span> \
+     -mc <span class="cn">200</span> \
+     -fs <span class="cn">0</span></code></pre>
+      </div>
+
+      <hr class="post-divider" />
+
+      <h2 id="refs">References</h2>
+      <ul class="post-refs">
+        <li><a href="https://hackerone.com/reports/966949" target="_blank" rel="noopener">[1] HackerOne Report #966949 — IDOR in locid parameter on Yelp</a></li>
+        <li><a href="https://owasp.org/www-project-web-security-testing-guide/latest/4-Web_Application_Security_Testing/05-Authorization_Testing/04-Testing_for_Insecure_Direct_Object_References" target="_blank" rel="noopener">[2] OWASP WSTG — Testing for Insecure Direct Object References</a></li>
+        <li><a href="https://portswigger.net/web-security/access-control/idor" target="_blank" rel="noopener">[3] PortSwigger — Insecure Direct Object References (IDOR)</a></li>
+        <li><a href="https://cheatsheetseries.owasp.org/cheatsheets/Insecure_Direct_Object_Reference_Prevention_Cheat_Sheet.html" target="_blank" rel="noopener">[4] OWASP — IDOR Prevention Cheat Sheet</a></li>
+      </ul>
+
+      <div class="post-nav">
+        <a href="./blog-h1-1627974-idor-dod-vendor.html" class="post-nav-link">
+          <span class="post-nav-dir">← Previous Post</span>
+          <span class="post-nav-title">IDOR on U.S. DoD Vendor Portal #1627974</span>
+        </a>
+        <a href="../index.html" class="post-nav-link next">
+          <span class="post-nav-dir">All Posts →</span>
+          <span class="post-nav-title">Back to Blog Index</span>
+        </a>
+      </div>
+
+    </article>
+  </div>
+
+</div>
+
+<footer>
+  <p>© 2025 <span class="f-name">Darshak Patel</span> · B.Tech CSE Cybersecurity</p>
+  <div class="f-links">
+    <a href="../../index.html">Home</a>
+    <a href="../../pages/about.html">About</a>
+    <a href="../../pages/expertise.html">Expertise</a>
+    <a href="../../pages/certifications.html">Certifications</a>
+    <a href="../../pages/achievements.html">Achievements</a>
+    <a href="../../pages/tools.html">Tools</a>
+    <a href="../../pages/resources.html">Resources</a>
+    <a href="../index.html">Blog</a>
+    <a href="../../pages/contact.html">Contact</a>
+  </div>
+</footer>
+
+<script src="../../assets/js/main.js"></script>
+<script>
+  (function () {
+    const bar = document.getElementById('read-progress');
+    function update() {
+      const h = document.documentElement;
+      const pct = (h.scrollTop / (h.scrollHeight - h.clientHeight)) * 100;
+      bar.style.width = Math.min(pct, 100) + '%';
+    }
+    window.addEventListener('scroll', update, { passive: true });
+    update();
+  })();
+  (function () {
+    const links = document.querySelectorAll('.toc-list a');
+    const headings = Array.from(document.querySelectorAll('.post-article h2[id]'));
+    if (!links.length || !headings.length) return;
+    function onScroll() {
+      const top = window.scrollY + 100;
+      let active = headings[0];
+      for (const h of headings) { if (h.offsetTop <= top) active = h; }
+      links.forEach(l => l.classList.toggle('active', l.getAttribute('href') === '#' + active.id));
+    }
+    window.addEventListener('scroll', onScroll, { passive: true });
+    onScroll();
+  })();
+</script>
+</body>
+</html>
