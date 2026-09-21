@@ -22,20 +22,21 @@
   }
 
   /* ── 2. Vuln-card accordion ────────────────────── */
+
+  // Auto-expand all active (non-empty) vuln cards on load
+  document.querySelectorAll('.vuln-card:not(.vuln-card--empty)').forEach(card => {
+    const btn   = card.querySelector('.vuln-card-head');
+    const panel = card.querySelector('.vuln-posts');
+    if (btn && panel) {
+      btn.setAttribute('aria-expanded', 'true');
+      panel.hidden = false;
+    }
+  });
+
   document.querySelectorAll('.vuln-card-head:not([disabled])').forEach(btn => {
     btn.addEventListener('click', () => {
       const expanded = btn.getAttribute('aria-expanded') === 'true';
       const panel    = btn.nextElementSibling; // .vuln-posts
-
-      // Collapse all others in the same section (optional: remove for multi-open)
-      const section = btn.closest('.blog-section');
-      section.querySelectorAll('.vuln-card-head[aria-expanded="true"]').forEach(other => {
-        if (other !== btn) {
-          other.setAttribute('aria-expanded', 'false');
-          const p = other.nextElementSibling;
-          if (p) p.hidden = true;
-        }
-      });
 
       // Toggle clicked card
       btn.setAttribute('aria-expanded', String(!expanded));

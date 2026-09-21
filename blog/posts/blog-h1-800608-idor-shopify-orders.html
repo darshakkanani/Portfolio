@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="IDOR on U.S. Dept of Defense — HackerOne #800608. How changing a sequential search_id in a GET request deleted any user's saved searches on a DoD portal, with no authorization check." />
+  <title>IDOR: Delete Any User's Saved Searches on U.S. DoD Portal — HackerOne #800608 | Blog — Darshak Patel</title>
+  <link rel="stylesheet" href="../../assets/css/style.css" />
+  <link rel="stylesheet" href="../../assets/css/pages/post.css" />
+</head>
+<body>
+
+<div class="read-progress" id="read-progress"></div>
+<canvas id="particles"></canvas>
+
+<nav>
+  <a href="../../index.html" class="nav-logo">
+    <span class="bracket">[</span>dp<span class="bracket">]</span>
+  </a>
+  <ul class="nav-links">
+    <li><a href="../../pages/about.html">about</a></li>
+    <li><a href="../../pages/expertise.html">expertise</a></li>
+    <li><a href="../../pages/certifications.html">certifications</a></li>
+    <li><a href="../../pages/achievements.html">achievements</a></li>
+    <li><a href="../../pages/tools.html">tools</a></li>
+    <li><a href="../../pages/resources.html">resources</a></li>
+    <li><a href="../index.html" class="active">blog</a></li>
+    <li><a href="../../pages/contact.html">contact</a></li>
+  </ul>
+  <a href="mailto:your@email.com" class="nav-cta">Hire Me</a>
+  <div class="nav-hamburger" aria-label="menu">
+    <span></span><span></span><span></span>
+  </div>
+</nav>
+
+<div class="post-wrap">
+
+  <!-- ── Hero ── -->
+  <div class="post-hero" data-vuln="idor">
+    <div class="post-hero-inner">
+      <a href="../index.html" class="post-back">← Back to Blog</a>
+      <div class="post-vuln-badge">⬡ IDOR</div>
+      <div class="post-meta">
+        <span class="post-tag">Bug Bounty</span>
+        <span class="post-tag">Web App</span>
+        <span class="post-tag" data-sev="medium">Medium</span>
+        <span class="post-meta-sep">·</span>
+        <span>Jul 2, 2025</span>
+        <span class="post-meta-sep">·</span>
+        <span>7 min read</span>
+      </div>
+      <h1 class="post-h1">IDOR: Delete Any User's Saved Searches on U.S. DoD Portal — HackerOne #800608</h1>
+      <p class="post-sub">How changing a single sequential integer in a GET request deleted the saved search of any user on a U.S. Department of Defense portal — no ownership check, no authorization, no confirmation required.</p>
+      <div class="post-stats">
+        <div class="post-stat">
+          <span class="post-stat-label">Program</span>
+          <span class="post-stat-value">U.S. Dept of Defense</span>
+        </div>
+        <div class="post-stat">
+          <span class="post-stat-label">Report</span>
+          <span class="post-stat-value">#800608</span>
+        </div>
+        <div class="post-stat">
+          <span class="post-stat-label">Severity</span>
+          <span class="post-stat-value">Medium</span>
+        </div>
+        <div class="post-stat">
+          <span class="post-stat-label">Reporter</span>
+          <span class="post-stat-value">@ahmd_halabi</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="post-body">
+    <a href="https://hackerone.com/reports/800608" target="_blank" rel="noopener" class="post-source">
+      ↗ HackerOne Report #800608 — U.S. Dept of Defense
+    </a>
+    <p class="post-attr">Independent educational breakdown of a publicly disclosed report. Credit for the original finding belongs to @ahmd_halabi.</p>
+  </div>
+
+  <div class="post-layout">
+
+    <aside class="post-toc">
+      <div class="toc-label">Contents</div>
+      <ul class="toc-list">
+        <li><a href="#what">What Is IDOR?</a></li>
+        <li><a href="#context">The Target</a></li>
+        <li><a href="#discovery">How It Was Found</a></li>
+        <li><a href="#bug">The Bug</a></li>
+        <li><a href="#poc">Proof of Concept</a></li>
+        <li><a href="#impact">Real-World Impact</a></li>
+        <li><a href="#write-vs-read">Write IDOR vs Read IDOR</a></li>
+        <li><a href="#fix">The Fix</a></li>
+        <li><a href="#hunting">How to Hunt It</a></li>
+        <li><a href="#refs">References</a></li>
+      </ul>
+    </aside>
+
+    <article class="post-article">
+
+      <h2 id="what">What Is IDOR?</h2>
+      <p><strong>Insecure Direct Object Reference (IDOR)</strong> is an access control vulnerability where an application exposes an internal object identifier — a record ID, a file path, a search ID — to the client, and then fails to verify whether the requesting user actually owns or is permitted to act on that object.</p>
+      <p>IDOR exists in two flavours: <strong>read</strong> (accessing someone else's data) and <strong>write</strong> (modifying or deleting someone else's data). Write IDORs like this one are considered more impactful because the damage is immediate and often irreversible — data is gone, not just read.</p>
+      <p>This report is a clean example of a <strong>destructive write IDOR</strong>: no data is stolen, but an attacker with a list of sequential IDs can silently wipe every user's saved searches from the platform.</p>
+
+      <h2 id="context">The Target</h2>
+      <p>The program is the <strong>U.S. Department of Defense Vulnerability Disclosure Program</strong> — a public bug bounty program on HackerOne that covers a wide range of DoD web assets. Submitted on 20 February 2020 and disclosed publicly on 18 March 2022.</p>
+      <p>The specific feature involved is a <strong>Saved Searches</strong> functionality — a common pattern in enterprise portals, research platforms, and government systems where users can save queries or search filters and revisit them later. Each saved search has an internal numeric ID used to identify it in the database.</p>
+      <p>The delete endpoint followed this URL pattern (redacted by DoD in the disclosed report):</p>
+
+      <div class="post-code">
+        <div class="post-code-header">
+          <div class="post-code-dots"><span></span><span></span><span></span></div>
+          <span class="post-code-label">Delete saved search endpoint (redacted)</span>
+        </div>
+        <pre><code>https://<span class="ch">█████</span>/<span class="ch">█████████</span>/<span class="ch">█████████</span>=<span class="cv">{search_id}</span></code></pre>
+      </div>
+
+      <p>The <code>search_id</code> parameter is the identifier of the saved search to be deleted. It is passed as a query parameter in a <strong>GET request</strong> — meaning the destructive action happens simply by visiting a URL.</p>
+
+      <h2 id="discovery">How It Was Found</h2>
+      <p>@ahmd_halabi was testing the Saved Searches feature on the DoD portal. The standard workflow is:</p>
+      <ol>
+        <li>Perform a search and save it — this creates a saved search record with a unique ID.</li>
+        <li>Navigate to your Saved Searches page — a list of saved queries tied to your account.</li>
+        <li>Click delete on one of your saved searches — this fires the delete GET request with your <code>search_id</code>.</li>
+      </ol>
+      <p>@ahmd_halabi observed that the <code>search_id</code> was a <strong>sequential integer</strong> — IDs like <code>1042</code>, <code>1043</code>, <code>1044</code>. Sequential IDs in a delete endpoint are one of the clearest IDOR signals in bug bounty hunting. The researcher's question was simple: <em>what happens if I replace my search ID with someone else's?</em></p>
+
+      <div class="post-note" data-type="tip"><strong>Hunter's signal:</strong> sequential numeric IDs + a destructive action (delete, update, deactivate) = test this immediately. This combination is the most common pattern for high-value write IDORs. The server should always verify ownership before acting — if it doesn't, you have a finding.</div>
+
+      <h2 id="bug">The Bug</h2>
+      <p>The delete endpoint executed the deletion <strong>based solely on the <code>search_id</code> value in the URL</strong> — it never checked whether the authenticated user's session corresponded to the owner of that saved search.</p>
+      <p>The server performed the lookup: <em>"find the saved search with this ID"</em> — but skipped the check: <em>"does the current user own it?"</em>. That missing second step is the entire vulnerability.</p>
+
+      <div class="post-code">
+        <div class="post-code-header">
+          <div class="post-code-dots"><span></span><span></span><span></span></div>
+          <span class="post-code-label">Vulnerable flow — missing ownership check</span>
+        </div>
+        <pre><code><span class="cc"># Attacker deletes their own saved search (legitimate)</span>
+<span class="ck">GET</span> <span class="cf">/█████/█████████</span><span class="cv">?search_id=</span><span class="cok">1042</span> HTTP/1.1
+<span class="ck">Cookie:</span> <span class="cs">session=ATTACKER_SESSION</span>
+<span class="cc"># → 200 OK — attacker's search #1042 deleted ✓</span>
+
+<span class="cc"># Attacker changes search_id to a victim's ID</span>
+<span class="ck">GET</span> <span class="cf">/█████/█████████</span><span class="cv">?search_id=</span><span class="ch">1043</span> HTTP/1.1
+<span class="ck">Cookie:</span> <span class="cs">session=ATTACKER_SESSION</span>
+<span class="cc"># → 200 OK — victim's search #1043 deleted ✗ (bug)</span>
+<span class="cc"># Server never asked: "does ATTACKER_SESSION own search 1043?"</span></code></pre>
+      </div>
+
+      <p>Because the IDs are sequential, an attacker doesn't need to know any victim's username, email, or account details. They just iterate the number — <code>1043</code>, <code>1044</code>, <code>1045</code> — and every valid ID gets deleted.</p>
+
+      <h2 id="poc">Proof of Concept</h2>
+      <p>The researcher's reproduction steps were:</p>
+      <ol>
+        <li>Log in to the DoD portal and navigate to <strong>Saved Searches</strong>.</li>
+        <li>Create a saved search. Intercept the resulting delete request URL in Burp Suite — note the <code>search_id</code> value.</li>
+        <li>Identify the <code>search_id</code> of a saved search belonging to a different test account (either by creating one with Account B, or simply decrementing the integer by 1).</li>
+        <li>While authenticated as Account A, send the delete GET request with Account B's <code>search_id</code>.</li>
+        <li><strong>Result:</strong> Account B's saved search is deleted. Account A's session was never verified as the owner.</li>
+      </ol>
+      <p>The researcher also noted they uploaded a video demonstrating the issue — showing the full delete flow, the ID substitution, and the confirmation that the victim's saved search disappears.</p>
+
+      <div class="post-code">
+        <div class="post-code-header">
+          <div class="post-code-dots"><span></span><span></span><span></span></div>
+          <span class="post-code-label">Mass deletion — brute-forcing sequential IDs with curl</span>
+        </div>
+        <pre><code><span class="cc"># Iterate over a range of search IDs — deletes every valid saved search</span>
+<span class="ck">for</span> id <span class="ck">in</span> $(seq <span class="cn">1000</span> <span class="cn">2000</span>); <span class="ck">do</span>
+  curl -s -b <span class="cs">"session=ATTACKER_SESSION"</span> \
+    <span class="cf">"https://████/█████████/█████████?search_id=${id}"</span>
+<span class="ck">done</span>
+
+<span class="cc"># Every 200 response = a saved search deleted from a victim's account</span>
+<span class="cc"># No target-specific knowledge required — sequential IDs enumerate themselves</span></code></pre>
+      </div>
+
+      <div class="post-note"><strong>No victim interaction needed.</strong> This is a server-side operation. The victim receives no notification that their saved search was deleted. The damage is silent, immediate, and permanent.</div>
+
+      <h2 id="impact">Real-World Impact</h2>
+      <p>In isolation, losing a saved search sounds minor. But the context matters significantly here:</p>
+      <ul>
+        <li><strong>This is a U.S. Department of Defense platform.</strong> Users may be defence contractors, military personnel, government employees, or acquisition officers who have built up curated search collections as part of their workflows. Losing those isn't a minor inconvenience — it disrupts operational processes.</li>
+        <li><strong>Mass deletion is trivially automated.</strong> Because the IDs are sequential and the delete is a GET request, a single loop script can delete thousands of saved searches in seconds. This is a <strong>denial of service against user data</strong> at scale.</li>
+        <li><strong>The attack is silent and undetectable by victims.</strong> No email notification, no audit trail visible to the user — the saved search simply disappears from their list with no explanation.</li>
+        <li><strong>Deletion is irreversible.</strong> Unlike read IDORs where data is exposed but still intact, a write/delete IDOR permanently destroys the resource. Recovery depends entirely on whether the platform has backup or restoration mechanisms.</li>
+      </ul>
+
+      <div class="post-note" data-type="tip"><strong>Why Medium and not High?</strong> Severity scales with data sensitivity and reversibility. No sensitive PII, credentials, or financial data is exposed or stolen. The impact is disruption — annoying and operationally damaging, but not data exfiltration. On a platform with more sensitive stored resources (documents, reports, case files), the same vulnerability pattern would be High or Critical.</div>
+
+      <h2 id="write-vs-read">Write IDOR vs Read IDOR</h2>
+      <p>This is a textbook opportunity to understand why <strong>write IDORs and read IDORs are scored differently</strong> — and when a write IDOR actually scores higher.</p>
+
+      <div class="post-code">
+        <div class="post-code-header">
+          <div class="post-code-dots"><span></span><span></span><span></span></div>
+          <span class="post-code-label">Read IDOR vs Write IDOR — severity comparison</span>
+        </div>
+        <pre><code><span class="cc"># Read IDOR — attacker views another user's data</span>
+<span class="ck">GET</span> /api/user/<span class="ch">victim_id</span>/profile
+<span class="cc"># Impact: data disclosure — data still exists, victim unaware</span>
+<span class="cc"># Severity: Low → Critical depending on sensitivity of data exposed</span>
+
+<span class="cc"># Write IDOR (this report) — attacker deletes another user's data</span>
+<span class="ck">GET</span> /delete_search<span class="cv">?search_id=</span><span class="ch">victim_id</span>
+<span class="cc"># Impact: data destruction — data is gone, victim unaware</span>
+<span class="cc"># Severity: Medium → Critical depending on value of destroyed resource</span>
+
+<span class="cc"># Write IDOR (update) — attacker modifies another user's data</span>
+<span class="ck">POST</span> /api/user/<span class="ch">victim_id</span>/email  body: email=attacker@evil.com
+<span class="cc"># Impact: account takeover — HIGH/CRITICAL regardless of platform</span></code></pre>
+      </div>
+
+      <p>The key insight: a write IDOR that <strong>deletes low-sensitivity data</strong> (saved search) scores Medium. A write IDOR that <strong>modifies authentication data</strong> (email, password, phone for 2FA) is an account takeover and scores Critical. Always probe write IDORs for what else they can overwrite.</p>
+
+      <h2 id="fix">The Fix</h2>
+      <p>The remediation is a single server-side ownership check before executing the deletion. The researcher's suggested fix was direct: <em>"Check the user that is deleting the saved searches if he is legitimate and the real owner of that search or not."</em></p>
+
+      <div class="post-code">
+        <div class="post-code-header">
+          <div class="post-code-dots"><span></span><span></span><span></span></div>
+          <span class="post-code-label">Pseudocode — correct authorization before delete</span>
+        </div>
+        <pre><code><span class="cc"># Before the fix — no ownership check</span>
+<span class="ck">def</span> <span class="cf">delete_saved_search</span>(search_id):
+    search = SavedSearch.find(search_id)
+    search.delete()
+    <span class="ck">return</span> <span class="cok">200</span>   <span class="cc"># ← deletes for anyone</span>
+
+<span class="cc"># After the fix — ownership enforced</span>
+<span class="ck">def</span> <span class="cf">delete_saved_search</span>(search_id):
+    search = SavedSearch.find(search_id)
+    <span class="ck">if</span> search.<span class="cv">owner_id</span> != <span class="cs">current_user.id</span>:
+        <span class="ck">return</span> <span class="ch">403 Forbidden</span>    <span class="cc"># ← ownership verified</span>
+    search.delete()
+    <span class="ck">return</span> <span class="cok">200</span></code></pre>
+      </div>
+
+      <p>Additionally, delete operations should never be triggered by a plain <strong>GET request</strong>. GET is semantically a safe, idempotent operation — it should never cause a state change. Delete actions should use <strong>POST or DELETE</strong> HTTP methods, require a <strong>CSRF token</strong>, and enforce ownership. Using GET for destructive actions compounds the vulnerability: it means any link a user clicks — in an email, a forum post, an image tag — can silently delete their data.</p>
+
+      <h2 id="hunting">How to Hunt Destructive Write IDORs</h2>
+      <ul>
+        <li>
+          <strong>Target delete, update, and deactivate endpoints first.</strong>
+          These are where write IDORs live. In Burp's site map, filter for requests that contain keywords like <code>delete</code>, <code>remove</code>, <code>destroy</code>, <code>cancel</code>, <code>disable</code> in the URL or POST body. These are your primary targets.
+        </li>
+        <li>
+          <strong>Examine every ID parameter in destructive actions.</strong>
+          Whether it's in the URL path (<code>/searches/1042/delete</code>), a query string (<code>?search_id=1042</code>), or a POST body (<code>{"id": 1042}</code>) — any ID-like value in a delete/update flow is a candidate for IDOR.
+        </li>
+        <li>
+          <strong>Flag sequential integers immediately.</strong>
+          Sequential IDs are the easiest to exploit — just increment by 1. But don't skip UUIDs or hashes — they're also IDOR candidates if the server doesn't check ownership, just harder to enumerate blind.
+        </li>
+        <li>
+          <strong>Create two test accounts.</strong>
+          With Account A, note the <code>search_id</code> (or equivalent) of a resource. With Account B's session, send the delete request using Account A's ID. If it succeeds — confirmed write IDOR.
+        </li>
+        <li>
+          <strong>Check if GET requests cause state changes.</strong>
+          Any destructive operation triggered by a GET is a design flaw on top of the IDOR. Document both — the IDOR vulnerability and the improper HTTP method usage. This strengthens the report.
+        </li>
+        <li>
+          <strong>Enumerate the blast radius.</strong>
+          Once confirmed, use ffuf or a curl loop to demonstrate how many records are vulnerable. Don't actually delete real user data — use your own test accounts. Show the ID range is sequential and quantify the potential scale of impact. This elevates a Medium to a High in a report.
+        </li>
+      </ul>
+
+      <div class="post-code">
+        <div class="post-code-header">
+          <div class="post-code-dots"><span></span><span></span><span></span></div>
+          <span class="post-code-label">ffuf — verify write IDOR across ID range (test accounts only)</span>
+        </div>
+        <pre><code><span class="cc"># Confirm the range of vulnerable IDs using your own test accounts</span>
+<span class="cc"># NEVER run this against real user data</span>
+ffuf -u <span class="cf">"https://target.com/█████?search_id=FUZZ"</span> \
+     -H <span class="cs">"Cookie: session=TEST_ACCOUNT_B_SESSION"</span> \
+     -w <span class="cv">&lt;(seq 1000 1010)</span> \
+     -mc <span class="cn">200</span>
+
+<span class="cc"># Each 200 = a resource that would be deleted</span>
+<span class="cc"># Document the response count as the scale-of-impact evidence in your report</span></code></pre>
+      </div>
+
+      <div class="post-note"><strong>Responsible disclosure:</strong> when testing write IDORs, always use resources created by your own test accounts. Never delete, modify, or access data belonging to real users — the PoC only needs to show the authorization check is missing, not to cause actual harm. Document with screenshots and the raw Burp request/response, then stop.</div>
+
+      <hr class="post-divider" />
+
+      <h2 id="refs">References</h2>
+      <ul class="post-refs">
+        <li><a href="https://hackerone.com/reports/800608" target="_blank" rel="noopener">[1] HackerOne Report #800608 — IDOR: Delete Users' Saved Projects (U.S. DoD)</a></li>
+        <li><a href="https://owasp.org/www-project-web-security-testing-guide/latest/4-Web_Application_Security_Testing/05-Authorization_Testing/04-Testing_for_Insecure_Direct_Object_References" target="_blank" rel="noopener">[2] OWASP WSTG — Testing for Insecure Direct Object References</a></li>
+        <li><a href="https://portswigger.net/web-security/access-control/idor" target="_blank" rel="noopener">[3] PortSwigger Web Security Academy — IDOR</a></li>
+        <li><a href="https://cheatsheetseries.owasp.org/cheatsheets/Insecure_Direct_Object_Reference_Prevention_Cheat_Sheet.html" target="_blank" rel="noopener">[4] OWASP IDOR Prevention Cheat Sheet</a></li>
+        <li><a href="https://cwe.mitre.org/data/definitions/639.html" target="_blank" rel="noopener">[5] CWE-639 — Authorization Bypass Through User-Controlled Key</a></li>
+        <li><a href="https://developer.mozilla.org/en-US/docs/Web/HTTP/Methods" target="_blank" rel="noopener">[6] MDN — HTTP Request Methods (safe vs unsafe)</a></li>
+      </ul>
+
+      <div class="post-nav">
+        <a href="./blog-h1-120305-idor-veris-venueid.html" class="post-nav-link">
+          <span class="post-nav-dir">← Previous Post</span>
+          <span class="post-nav-title">IDOR: Venue Data Exposed via venue_id on Veris #120305</span>
+        </a>
+      </div>
+
+    </article>
+  </div>
+
+</div>
+
+<footer>
+  <p>© 2025 <span class="f-name">Darshak Patel</span> · B.Tech CSE Cybersecurity</p>
+  <div class="f-links">
+    <a href="../../index.html">Home</a>
+    <a href="../../pages/about.html">About</a>
+    <a href="../../pages/expertise.html">Expertise</a>
+    <a href="../../pages/certifications.html">Certifications</a>
+    <a href="../../pages/achievements.html">Achievements</a>
+    <a href="../../pages/tools.html">Tools</a>
+    <a href="../../pages/resources.html">Resources</a>
+    <a href="../index.html">Blog</a>
+    <a href="../../pages/contact.html">Contact</a>
+  </div>
+</footer>
+
+<script src="../../assets/js/main.js"></script>
+<script>
+  (function () {
+    const bar = document.getElementById('read-progress');
+    function update() {
+      const h = document.documentElement;
+      const pct = (h.scrollTop / (h.scrollHeight - h.clientHeight)) * 100;
+      bar.style.width = Math.min(pct, 100) + '%';
+    }
+    window.addEventListener('scroll', update, { passive: true });
+    update();
+  })();
+  (function () {
+    const links = document.querySelectorAll('.toc-list a');
+    const headings = Array.from(document.querySelectorAll('.post-article h2[id]'));
+    if (!links.length || !headings.length) return;
+    function onScroll() {
+      const top = window.scrollY + 100;
+      let active = headings[0];
+      for (const h of headings) { if (h.offsetTop <= top) active = h; }
+      links.forEach(l => l.classList.toggle('active', l.getAttribute('href') === '#' + active.id));
+    }
+    window.addEventListener('scroll', onScroll, { passive: true });
+    onScroll();
+  })();
+</script>
+</body>
+</html>

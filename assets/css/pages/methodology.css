@@ -101,3 +101,54 @@
   text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 0.6rem;
 }
 .mth-tools-chips { display: flex; flex-wrap: wrap; gap: 0.4rem; }
+
+/* ── Hunter's Philosophy callout ─────────────────── */
+.mth-callout {
+  display: flex; align-items: flex-start; gap: 1rem;
+  background: var(--surface); border: 1px solid var(--border);
+  border-left: 3px solid var(--text);
+  border-radius: 8px; padding: 1.2rem 1.4rem;
+  margin-bottom: 2rem;
+}
+.mth-callout-icon {
+  width: 22px; height: 22px; flex-shrink: 0; margin-top: 2px;
+}
+.mth-callout-icon svg {
+  width: 18px; height: 18px; stroke: var(--text); fill: none;
+  stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;
+}
+.mth-callout strong {
+  color: var(--text); font-size: 0.88rem; font-weight: 700;
+  display: block; margin-bottom: 0.35rem;
+}
+.mth-callout p {
+  color: var(--muted); font-size: 0.83rem; line-height: 1.7; margin: 0;
+}
+
+/* ── Pro Tip box ─────────────────────────────────── */
+.mth-tip {
+  margin-top: 1rem;
+  background: var(--surface2); border: 1px solid var(--border);
+  border-left: 3px solid var(--muted2);
+  border-radius: 6px; padding: 0.75rem 1rem;
+  font-size: 0.8rem; color: var(--muted); line-height: 1.7;
+}
+.mth-tip-label {
+  font-family: var(--mono); font-size: 0.65rem; color: var(--muted2);
+  text-transform: uppercase; letter-spacing: 1.2px;
+  display: block; margin-bottom: 0.3rem;
+}
+.mth-tip code {
+  font-family: var(--mono); font-size: 0.78rem;
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 3px; padding: 0.05rem 0.35rem;
+  color: var(--text);
+}
+
+/* ── Inline code in step cards ───────────────────── */
+.mth-step code {
+  font-family: var(--mono); font-size: 0.74rem;
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 3px; padding: 0.05rem 0.3rem;
+  color: var(--text);
+}

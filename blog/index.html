@@ -43,7 +43,7 @@
       from a cybersecurity student in the trenches.
     </p>
     <div class="blog-stats">
-      <div class="bs-item"><span class="bs-num">8</span><span class="bs-label">Posts</span></div>
+      <div class="bs-item"><span class="bs-num">14</span><span class="bs-label">Posts</span></div>
       <div class="bs-item"><span class="bs-num">3</span><span class="bs-label">Sections</span></div>
       <div class="bs-item"><span class="bs-num">+</span><span class="bs-label">Learning</span></div>
     </div>
@@ -269,7 +269,7 @@
             </div>
           </div>
           <div class="vuln-card-right">
-            <span class="vuln-post-badge">5 posts</span>
+            <span class="vuln-post-badge">11 posts</span>
             <span class="vuln-chevron">›</span>
           </div>
         </button>
@@ -339,7 +339,85 @@
             <p class="vp-excerpt">How a predictable <code>cur</code> query parameter on MailPoet's WooCommerce checkout allowed any buyer to switch their cart from EUR to USD — paying the same number in a weaker currency and saving real money on every transaction.</p>
             <span class="vp-arrow">→</span>
           </a>
-        </div>
+          <a class="vp-item" href="./posts/blog-h1-120305-idor-veris-venueid.html"
+             data-section="webapp" data-vuln="idor"
+             data-title="IDOR: Venue Data Exposed via venue_id on Veris — HackerOne #120305"
+             data-tags="idor veris venue_id gatekeeper api multi-tenant saas config branding s3 information disclosure">
+            <div class="vp-meta">
+              <span class="vp-badge bb">Bug Bounty</span>
+              <span class="vp-date">Jun 24, 2025</span>
+              <span class="vp-time">7 min</span>
+            </div>
+            <div class="vp-title">IDOR: Venue Data Exposed via <code>venue_id</code> on Veris — HackerOne #120305</div>
+            <p class="vp-excerpt">How changing a single integer in the <code>venue_id</code> query parameter of Veris's gatekeepers API returned the complete private configuration of any other organisation's venue — including branding, org name, and signed AWS S3 asset URLs.</p>
+            <span class="vp-arrow">→</span>
+          </a>
+          <a class="vp-item" href="./posts/blog-h1-800608-idor-shopify-orders.html"
+             data-section="webapp" data-vuln="idor"
+             data-title="IDOR: Delete Any User's Saved Searches on U.S. DoD Portal — HackerOne #800608"
+             data-tags="idor dod department of defense saved searches delete sequential id write idor destructive">
+            <div class="vp-meta">
+              <span class="vp-badge bb">Bug Bounty</span>
+              <span class="vp-date">Jul 2, 2025</span>
+              <span class="vp-time">7 min</span>
+            </div>
+            <div class="vp-title">IDOR: Delete Any User's Saved Searches on U.S. DoD Portal — HackerOne #800608</div>
+            <p class="vp-excerpt">How changing a single sequential integer in a GET request deleted the saved search of any user on a U.S. Department of Defense portal — no ownership check, no authorization, no confirmation required. A textbook destructive write IDOR.</p>
+            <span class="vp-arrow">→</span>
+          </a>
+          <a class="vp-item" href="./posts/blog-h1-52181-idor-vimeo-private-comment.html"
+             data-section="webapp" data-vuln="idor"
+             data-title="IDOR: Read Any Private Video Comment on Vimeo via comment_edit_form — HackerOne #52181"
+             data-tags="idor vimeo private video comment comment_id edit form ajax xhr read access control 2015">
+            <div class="vp-meta">
+              <span class="vp-badge bb">Bug Bounty</span>
+              <span class="vp-date">Jul 3, 2025</span>
+              <span class="vp-time">8 min</span>
+            </div>
+            <div class="vp-title">IDOR: Read Any Private Video Comment on Vimeo via <code>comment_edit_form</code> — HackerOne #52181</div>
+            <p class="vp-excerpt">How the <code>comment_edit_form</code> AJAX endpoint on Vimeo returned the full text of any comment — including comments on private and password-protected videos — to any logged-in user who knew the <code>comment_id</code>. No video access required.</p>
+            <span class="vp-arrow">→</span>
+          </a>
+          <a class="vp-item" href="./posts/blog-h1-45960-idor-vimeo-private-channel.html"
+             data-section="webapp" data-vuln="idor"
+             data-title="IDOR: Access Videos of Any Private Vimeo Channel via Montage Widget — HackerOne #45960"
+             data-tags="idor vimeo private channel badge_channel montage widget secondary endpoint bypass access control 2015">
+            <div class="vp-meta">
+              <span class="vp-badge bb">Bug Bounty</span>
+              <span class="vp-date">Jul 4, 2025</span>
+              <span class="vp-time">8 min</span>
+            </div>
+            <div class="vp-title">IDOR: Access Videos of Any Private Vimeo Channel via Montage Widget — HackerOne #45960</div>
+            <p class="vp-excerpt">How Vimeo's Montage Widget preview tool exposed every video in any private channel through an unvalidated <code>badge_channel</code> parameter — completely bypassing the "Private Channel" block that correctly protected the channel page itself.</p>
+            <span class="vp-arrow">→</span>
+          </a>
+          <a class="vp-item" href="./posts/blog-h1-1450117-idor-nextcloud-deck-boardid.html"
+             data-section="webapp" data-vuln="idor"
+             data-title="IDOR: Inject Stacks into Any User's Kanban Board in Nextcloud Deck — HackerOne #1450117"
+             data-tags="idor nextcloud deck kanban boardid stack move cve-2022-29159 write idor medium cvss 5.0">
+            <div class="vp-meta">
+              <span class="vp-badge bb">Bug Bounty</span>
+              <span class="vp-date">Jul 5, 2025</span>
+              <span class="vp-time">9 min</span>
+            </div>
+            <div class="vp-title">IDOR: Inject Stacks into Any User's Kanban Board in Nextcloud Deck — HackerOne #1450117</div>
+            <p class="vp-excerpt">How changing <code>boardId</code> in a stack-rename request silently moved an attacker's list — with all cards, images, labels, and calendar entries — onto any other user's board. CVE-2022-29159, CVSS 5.0, affecting Nextcloud Deck &lt; 1.4.8 / 1.5.6 / 1.6.1.</p>
+            <span class="vp-arrow">→</span>
+          </a>
+          <a class="vp-item" href="./posts/blog-h1-120291-idor-veris-terminal-data.html"
+             data-section="webapp" data-vuln="idor"
+             data-title="IDOR: Set Any Terminal's Data Remotely on Veris via Gatekeeper ID — HackerOne #120291"
+             data-tags="idor veris gatekeeper terminal put write xss stored xss configuration sabotage 2016">
+            <div class="vp-meta">
+              <span class="vp-badge bb">Bug Bounty</span>
+              <span class="vp-date">Jul 6, 2025</span>
+              <span class="vp-time">9 min</span>
+            </div>
+            <div class="vp-title">IDOR: Set Any Terminal's Data Remotely on Veris via Gatekeeper ID — HackerOne #120291</div>
+            <p class="vp-excerpt">How changing a single integer in a PUT request path allowed any authenticated Veris user to remotely overwrite any other organization's terminal configuration — including branding, theme, and check-in settings — with arbitrary content including stored XSS payloads.</p>
+            <span class="vp-arrow">→</span>
+          </a>
+       </div>
       </div>
 
       <!-- ── Authentication Flaws ── (placeholder) -->

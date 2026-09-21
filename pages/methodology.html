@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="description" content="Darshak Patel's personal web application security testing methodology — recon, enumeration, attack surface mapping, exploitation, and reporting." />
+  <meta name="description" content="Darshak Patel's personal web application security testing methodology — a pro bug bounty hunter's complete playbook." />
   <title>Methodology | Darshak Patel</title>
   <link rel="stylesheet" href="../assets/css/style.css" />
   <link rel="stylesheet" href="../assets/css/pages/methodology.css" />
@@ -31,7 +31,7 @@
 <div class="page-header">
   <p class="section-label">web app security</p>
   <h1 class="section-title">My Testing Methodology</h1>
-  <p class="section-sub">A personal, battle-tested approach to web application security testing — from initial recon to final report.</p>
+  <p class="section-sub">A battle-tested, hunter-grade playbook refined through real bug bounty programs — from zero knowledge to critical finding.</p>
 </div>
 
 <section class="cert-page-body">
@@ -44,35 +44,54 @@
       </a>
     </div>
 
+    <!-- ── PHILOSOPHY CALLOUT ───────────────────────── -->
+    <div class="mth-callout reveal">
+      <div class="mth-callout-icon">
+        <svg viewBox="0 0 24 24"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+      </div>
+      <div>
+        <strong>Hunter's Philosophy</strong>
+        <p>Scanners find the obvious. Hunters find the rest. Every step in this methodology is manual-first — tools assist, they never lead. Think like an attacker, report like an engineer.</p>
+      </div>
+    </div>
+
     <!-- ── PHASE INDEX ─────────────────────────────── -->
     <div class="mth-index reveal">
       <p class="mth-index-label">Phases</p>
       <div class="mth-index-pills">
-        <a href="#phase-1" class="mth-pill">01 · Recon</a>
-        <a href="#phase-2" class="mth-pill">02 · Enumeration</a>
-        <a href="#phase-3" class="mth-pill">03 · Attack Surface</a>
-        <a href="#phase-4" class="mth-pill">04 · Testing</a>
-        <a href="#phase-5" class="mth-pill">05 · Exploitation</a>
-        <a href="#phase-6" class="mth-pill">06 · Post-Exploitation</a>
-        <a href="#phase-7" class="mth-pill">07 · Reporting</a>
+        <a href="#phase-1" class="mth-pill">01 · Passive Recon</a>
+        <a href="#phase-2" class="mth-pill">02 · Active Enumeration</a>
+        <a href="#phase-3" class="mth-pill">03 · Attack Surface Mapping</a>
+        <a href="#phase-4" class="mth-pill">04 · Authentication &amp; Session</a>
+        <a href="#phase-5" class="mth-pill">05 · Injection Attacks</a>
+        <a href="#phase-6" class="mth-pill">06 · Access Control &amp; IDOR</a>
+        <a href="#phase-7" class="mth-pill">07 · SSRF / CSRF / Redirects</a>
+        <a href="#phase-8" class="mth-pill">08 · Business Logic</a>
+        <a href="#phase-9" class="mth-pill">09 · API &amp; JS Analysis</a>
+        <a href="#phase-10" class="mth-pill">10 · Exploitation &amp; Chaining</a>
+        <a href="#phase-11" class="mth-pill">11 · Reporting</a>
       </div>
     </div>
 
     <!-- ══════════════════════════════════════════════
-         PHASE 01 — RECONNAISSANCE
+         PHASE 01 — PASSIVE RECON
     ══════════════════════════════════════════════ -->
     <div class="mth-phase reveal" id="phase-1">
       <div class="mth-phase-header">
         <span class="mth-num">01</span>
         <div>
-          <h2 class="mth-phase-title">Reconnaissance</h2>
-          <p class="mth-phase-sub">PASSIVE · OSINT · FOOTPRINTING</p>
+          <h2 class="mth-phase-title">Passive Reconnaissance</h2>
+          <p class="mth-phase-sub">OSINT · NO TRAFFIC TO TARGET · FOOTPRINTING</p>
         </div>
       </div>
       <div class="mth-phase-body">
         <div class="mth-desc">
-          <p>Before touching the target, I gather as much information as possible without sending a single packet to it. The goal is to build a complete picture of the target's infrastructure, technologies, and people.</p>
-          <p>Good recon saves hours during testing and often surfaces vulnerabilities that active scanning completely misses.</p>
+          <p>Before a single packet reaches the target, I build a complete intelligence picture. Passive recon is the most underrated phase — it surfaces hidden assets, legacy endpoints, and leaked secrets that active scanning will never find.</p>
+          <p>The goal: know more about the target than their own team does.</p>
+          <div class="mth-tip">
+            <span class="mth-tip-label">Pro Tip</span>
+            Certificate transparency logs expose subdomains even when DNS is locked down. Always start with <code>crt.sh</code> before touching any active tool.
+          </div>
         </div>
         <div class="mth-steps">
           <div class="mth-step">
@@ -80,26 +99,26 @@
               <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
             </div>
             <div>
-              <strong>Domain & Subdomain Discovery</strong>
-              Enumerate subdomains via certificate transparency logs (crt.sh), brute-force (dnsx, subfinder, amass), and Google dorks.
+              <strong>Subdomain Enumeration (Passive)</strong>
+              Query crt.sh, Censys, SecurityTrails, and VirusTotal for all known subdomains. Grep cert SANs for wildcard scopes. Feed into a deduplicated master list.
             </div>
           </div>
           <div class="mth-step">
             <div class="mth-step-icon">
-              <svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+              <svg viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
             </div>
             <div>
-              <strong>OSINT — People & Org</strong>
-              LinkedIn employees, GitHub repos, leaked credentials via HaveIBeenPwned, Pastebin, and breach databases.
+              <strong>Google Dorks</strong>
+              Hunt for exposed login panels, config files, directory listings, API keys, and error pages using targeted dorks: <code>site:target.com ext:env</code>, <code>site:target.com inurl:api</code>, <code>site:target.com "internal use only"</code>.
             </div>
           </div>
           <div class="mth-step">
             <div class="mth-step-icon">
-              <svg viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+              <svg viewBox="0 0 24 24"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"/></svg>
             </div>
             <div>
-              <strong>Technology Fingerprinting</strong>
-              Identify tech stack via Wappalyzer, BuiltWith, HTTP headers, and response signatures.
+              <strong>GitHub &amp; Source Code Leaks</strong>
+              Search GitHub, GitLab, and Bitbucket for the org name, domain, and product names. Look for hardcoded API keys, DB credentials, internal endpoints, and commented-out debug code using <code>github.com/search</code> and TruffleHog.
             </div>
           </div>
           <div class="mth-step">
@@ -108,7 +127,25 @@
             </div>
             <div>
               <strong>Shodan / Censys / FOFA</strong>
-              Surface exposed services, open ports, and misconfigured cloud assets attached to the target's IP ranges and ASN.
+              Search the target's IP ranges and ASN for exposed services, self-signed certs, default banners, and misconfigured cloud storage. Look for S3 buckets, GCP/Azure blobs, and Elasticsearch instances.
+            </div>
+          </div>
+          <div class="mth-step">
+            <div class="mth-step-icon">
+              <svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+            </div>
+            <div>
+              <strong>Employee &amp; Org OSINT</strong>
+              LinkedIn for employee names, roles, and tech stack mentions. HaveIBeenPwned and DeHashed for leaked credentials. Glassdoor/job postings often reveal internal tools, frameworks, and cloud providers.
+            </div>
+          </div>
+          <div class="mth-step">
+            <div class="mth-step-icon">
+              <svg viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+            </div>
+            <div>
+              <strong>Wayback Machine &amp; Historical Data</strong>
+              Pull archived URLs from <code>web.archive.org</code> and Common Crawl via waybackurls and gau. Old endpoints often still work and are forgotten by the team — goldmine for IDOR and legacy API keys.
             </div>
           </div>
         </div>
@@ -118,30 +155,36 @@
         <div class="mth-tools-chips">
           <span class="tool-chip">subfinder</span>
           <span class="tool-chip">amass</span>
-          <span class="tool-chip">dnsx</span>
-          <span class="tool-chip">httpx</span>
           <span class="tool-chip">crt.sh</span>
           <span class="tool-chip">Shodan</span>
+          <span class="tool-chip">Censys</span>
           <span class="tool-chip">theHarvester</span>
+          <span class="tool-chip">TruffleHog</span>
+          <span class="tool-chip">waybackurls</span>
+          <span class="tool-chip">gau</span>
           <span class="tool-chip">Google Dorks</span>
         </div>
       </div>
     </div>
 
     <!-- ══════════════════════════════════════════════
-         PHASE 02 — ENUMERATION
+         PHASE 02 — ACTIVE ENUMERATION
     ══════════════════════════════════════════════ -->
     <div class="mth-phase reveal" id="phase-2">
       <div class="mth-phase-header">
         <span class="mth-num">02</span>
         <div>
-          <h2 class="mth-phase-title">Enumeration</h2>
-          <p class="mth-phase-sub">ACTIVE · PORTS · DIRECTORIES · PARAMETERS</p>
+          <h2 class="mth-phase-title">Active Enumeration</h2>
+          <p class="mth-phase-sub">PORTS · DNS BRUTE · DIRECTORIES · PARAMETERS</p>
         </div>
       </div>
       <div class="mth-phase-body">
         <div class="mth-desc">
-          <p>With a target list in hand, I move to active enumeration — probing what services are running, what paths exist, and what parameters are accepted. I stay within scope at all times.</p>
+          <p>Now I send traffic to the target — carefully and within scope. The aim is to resolve which subdomains are live, what ports are open, what paths exist, and what parameters the app accepts. Every discovery feeds the next step.</p>
+          <div class="mth-tip">
+            <span class="mth-tip-label">Pro Tip</span>
+            Run <code>httpx</code> over all enumerated subdomains to get status codes, titles, and tech headers in one pass before deep-diving anything individually.
+          </div>
         </div>
         <div class="mth-steps">
           <div class="mth-step">
@@ -149,8 +192,17 @@
               <svg viewBox="0 0 24 24"><polyline points="4 17 10 11 4 5"/><line x1="12" y1="19" x2="20" y2="19"/></svg>
             </div>
             <div>
-              <strong>Port & Service Scanning</strong>
-              Nmap full-port scans on all in-scope IPs. Identify non-standard HTTP ports, admin panels, and exposed services.
+              <strong>DNS Brute-Force</strong>
+              Run dnsx + subfinder + puredns with SecLists DNS wordlists to resolve all subdomains. Catch wildcard resolvers. Permute discovered subdomains with gotator to catch <code>dev-api</code>, <code>staging-app</code>, <code>internal-admin</code> patterns.
+            </div>
+          </div>
+          <div class="mth-step">
+            <div class="mth-step-icon">
+              <svg viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+            </div>
+            <div>
+              <strong>Port &amp; Service Scanning</strong>
+              Nmap full-port TCP scan (<code>-p- -sV --open</code>) on all in-scope IPs. Flag non-standard HTTP(S) ports, admin panels, Jenkins, Jira, Grafana, Redis, Elasticsearch, Docker APIs — all goldmines.
             </div>
           </div>
           <div class="mth-step">
@@ -158,8 +210,8 @@
               <svg viewBox="0 0 24 24"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
             </div>
             <div>
-              <strong>Directory & File Fuzzing</strong>
-              FFUF and Gobuster with curated wordlists (SecLists) to discover hidden paths, backup files, and admin endpoints.
+              <strong>Directory &amp; File Fuzzing</strong>
+              FFUF with <code>raft-medium-directories</code> and <code>raft-medium-files</code>. Target: backup files (<code>.bak</code>, <code>.old</code>, <code>~</code>), config files (<code>.env</code>, <code>config.json</code>, <code>web.config</code>), admin panels (<code>/admin</code>, <code>/dashboard</code>, <code>/manage</code>), and API docs (<code>/swagger</code>, <code>/api-docs</code>, <code>/graphql</code>).
             </div>
           </div>
           <div class="mth-step">
@@ -168,7 +220,7 @@
             </div>
             <div>
               <strong>Parameter Discovery</strong>
-              Arjun for hidden GET/POST parameters. Collect all JS endpoints from page source and bundled scripts.
+              Arjun on every endpoint to find hidden GET/POST parameters. Combine with param-miner (Burp extension) during manual browse. Unknown parameters = untested attack surface.
             </div>
           </div>
           <div class="mth-step">
@@ -176,8 +228,8 @@
               <svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
             </div>
             <div>
-              <strong>Authentication Endpoints</strong>
-              Map all login, register, password reset, OAuth flows, and API key endpoints for focused auth testing.
+              <strong>Technology Fingerprinting</strong>
+              Wappalyzer, WhatWeb, and manual header analysis to map the full tech stack. Framework version → known CVEs. CDN detection for potential cache poisoning vectors.
             </div>
           </div>
         </div>
@@ -187,11 +239,14 @@
         <div class="mth-tools-chips">
           <span class="tool-chip">Nmap</span>
           <span class="tool-chip">FFUF</span>
-          <span class="tool-chip">Gobuster</span>
-          <span class="tool-chip">Arjun</span>
+          <span class="tool-chip">dnsx</span>
+          <span class="tool-chip">puredns</span>
+          <span class="tool-chip">gotator</span>
           <span class="tool-chip">httpx</span>
+          <span class="tool-chip">Arjun</span>
           <span class="tool-chip">SecLists</span>
-          <span class="tool-chip">waybackurls</span>
+          <span class="tool-chip">Wappalyzer</span>
+          <span class="tool-chip">Param Miner</span>
         </div>
       </div>
     </div>
@@ -204,12 +259,17 @@
         <span class="mth-num">03</span>
         <div>
           <h2 class="mth-phase-title">Attack Surface Mapping</h2>
-          <p class="mth-phase-sub">BURP · PROXY · JS ANALYSIS · API MAPPING</p>
+          <p class="mth-phase-sub">BURP · PROXY · JS ANALYSIS · MULTI-ROLE BROWSE</p>
         </div>
       </div>
       <div class="mth-phase-body">
         <div class="mth-desc">
-          <p>I proxy all traffic through Burp Suite and manually walk through every feature of the application as different user roles — unauthenticated, standard user, privileged user. Every endpoint, parameter, and header is catalogued.</p>
+          <p>Every feature is proxied through Burp Suite and walked manually — as a guest, standard user, and privileged user. Every request, parameter, header, and cookie is catalogued. I treat this phase as building a complete map before attacking anything.</p>
+          <p>Most high-severity bugs come from features that aren't obviously interesting. Walk everything.</p>
+          <div class="mth-tip">
+            <span class="mth-tip-label">Pro Tip</span>
+            Create two accounts at every privilege level and keep them in separate browsers. Swap requests between accounts to instantly spot access control failures.
+          </div>
         </div>
         <div class="mth-steps">
           <div class="mth-step">
@@ -217,8 +277,8 @@
               <svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
             </div>
             <div>
-              <strong>Manual Browse + Proxy</strong>
-              Walk every user flow in Burp Suite — capture all requests, note interesting parameters, response differences, and error messages.
+              <strong>Full Manual Browse + Proxy</strong>
+              Walk every user flow — onboarding, account settings, payments, file uploads, search, profile, admin. Capture all requests in Burp Site Map. Note: interesting parameters, numeric/predictable IDs, JWT tokens, and custom headers.
             </div>
           </div>
           <div class="mth-step">
@@ -226,8 +286,8 @@
               <svg viewBox="0 0 24 24"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
             </div>
             <div>
-              <strong>JavaScript Analysis</strong>
-              Extract all API endpoints, tokens, and secrets from JS bundles using LinkFinder and manual review.
+              <strong>JavaScript Source Analysis</strong>
+              Deobfuscate and beautify all JS bundles. Use LinkFinder and relative-url-extractor to pull hidden endpoints, API routes, internal paths, hardcoded keys, and feature-flagged functionality not visible in the UI.
             </div>
           </div>
           <div class="mth-step">
@@ -235,65 +295,8 @@
               <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
             </div>
             <div>
-              <strong>API Discovery</strong>
-              Map REST and GraphQL APIs — enumerate schemas, mutations, queries, and unauthenticated endpoints.
-            </div>
-          </div>
-          <div class="mth-step">
-            <div class="mth-step-icon">
-              <svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
-            </div>
-            <div>
-              <strong>Role Differentiation</strong>
-              Test as each role to surface privilege escalation, IDOR, and access control issues from the start.
-            </div>
-          </div>
-        </div>
-      </div>
-      <div class="mth-tools">
-        <p class="mth-tools-label">Tools</p>
-        <div class="mth-tools-chips">
-          <span class="tool-chip">Burp Suite</span>
-          <span class="tool-chip">LinkFinder</span>
-          <span class="tool-chip">JS-Beautifier</span>
-          <span class="tool-chip">Postman</span>
-          <span class="tool-chip">GraphQL Voyager</span>
-        </div>
-      </div>
-    </div>
-
-    <!-- ══════════════════════════════════════════════
-         PHASE 04 — TESTING
-    ══════════════════════════════════════════════ -->
-    <div class="mth-phase reveal" id="phase-4">
-      <div class="mth-phase-header">
-        <span class="mth-num">04</span>
-        <div>
-          <h2 class="mth-phase-title">Vulnerability Testing</h2>
-          <p class="mth-phase-sub">OWASP · MANUAL · AUTOMATED</p>
-        </div>
-      </div>
-      <div class="mth-phase-body">
-        <div class="mth-desc">
-          <p>I test each attack class manually first, then layer automated scanning on top. Manual testing always comes first — scanners miss logic flaws, chained vulnerabilities, and anything that requires session context.</p>
-        </div>
-        <div class="mth-steps">
-          <div class="mth-step">
-            <div class="mth-step-icon">
-              <svg viewBox="0 0 24 24"><polyline points="4 17 10 11 4 5"/><line x1="12" y1="19" x2="20" y2="19"/></svg>
-            </div>
-            <div>
-              <strong>Injection (SQLi, XSS, SSTI, XXE)</strong>
-              Manually craft payloads for each injection context. Use SQLMap only to confirm manually found SQLi, not as a discovery tool.
-            </div>
-          </div>
-          <div class="mth-step">
-            <div class="mth-step-icon">
-              <svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
-            </div>
-            <div>
-              <strong>Authentication & Session</strong>
-              Test brute-force protections, password reset flows, JWT alg:none / weak secrets, OAuth misconfigurations, session fixation.
+              <strong>API Schema Discovery</strong>
+              For REST: probe <code>/swagger.json</code>, <code>/openapi.yaml</code>, <code>/api/v1</code>–<code>v5</code>, versioned paths. For GraphQL: run introspection query, map all types/mutations/queries with GraphQL Voyager. Look for deprecated mutations and hidden admin resolvers.
             </div>
           </div>
           <div class="mth-step">
@@ -301,26 +304,17 @@
               <svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/></svg>
             </div>
             <div>
-              <strong>IDOR & Access Control</strong>
-              Replace IDs in every request — numeric, UUIDs, hashed. Test horizontal and vertical escalation across all roles.
+              <strong>Multi-Role &amp; Multi-Tenant Testing</strong>
+              Map every role's permission surface. Identify all object IDs (user IDs, org IDs, resource IDs) per role. Note which endpoints enforce authorization server-side vs client-side only.
             </div>
           </div>
           <div class="mth-step">
             <div class="mth-step-icon">
-              <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+              <svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
             </div>
             <div>
-              <strong>SSRF, CSRF, Open Redirect</strong>
-              Test all URL/redirect parameters and out-of-band callbacks (Burp Collaborator / interactsh) for SSRF. Test state-changing requests for missing CSRF tokens.
-            </div>
-          </div>
-          <div class="mth-step">
-            <div class="mth-step-icon">
-              <svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
-            </div>
-            <div>
-              <strong>Business Logic</strong>
-              Test price manipulation, coupon stacking, race conditions, negative quantities, state machine bypasses, and workflow skipping.
+              <strong>Cookie &amp; Token Inventory</strong>
+              Document every cookie (flags: Secure, HttpOnly, SameSite), JWT structure and algorithm, OAuth tokens, CSRF tokens. Flag anything base64-encoded or predictable for further testing.
             </div>
           </div>
         </div>
@@ -329,38 +323,76 @@
         <p class="mth-tools-label">Tools</p>
         <div class="mth-tools-chips">
           <span class="tool-chip">Burp Suite Pro</span>
-          <span class="tool-chip">SQLMap</span>
-          <span class="tool-chip">Nuclei</span>
-          <span class="tool-chip">jwt_tool</span>
-          <span class="tool-chip">interactsh</span>
-          <span class="tool-chip">Turbo Intruder</span>
+          <span class="tool-chip">LinkFinder</span>
+          <span class="tool-chip">JS-Beautifier</span>
+          <span class="tool-chip">GraphQL Voyager</span>
+          <span class="tool-chip">Postman</span>
+          <span class="tool-chip">Param Miner</span>
+          <span class="tool-chip">Retire.js</span>
         </div>
       </div>
     </div>
 
     <!-- ══════════════════════════════════════════════
-         PHASE 05 — EXPLOITATION
+         PHASE 04 — AUTHENTICATION & SESSION TESTING
     ══════════════════════════════════════════════ -->
-    <div class="mth-phase reveal" id="phase-5">
+    <div class="mth-phase reveal" id="phase-4">
       <div class="mth-phase-header">
-        <span class="mth-num">05</span>
+        <span class="mth-num">04</span>
         <div>
-          <h2 class="mth-phase-title">Exploitation</h2>
-          <p class="mth-phase-sub">PROOF OF CONCEPT · IMPACT DEMONSTRATION</p>
+          <h2 class="mth-phase-title">Authentication &amp; Session Testing</h2>
+          <p class="mth-phase-sub">JWT · OAUTH · MFA BYPASS · SESSION MGMT</p>
         </div>
       </div>
       <div class="mth-phase-body">
         <div class="mth-desc">
-          <p>When a vulnerability is confirmed, I build a minimal, reliable proof of concept that demonstrates the real-world impact clearly. I never cause harm — I stop at the point of proof and document everything I did.</p>
+          <p>Auth bugs are disproportionately high-impact. A broken login or session issue can directly lead to account takeover — one of the most valuable findings in a bug bounty program.</p>
+          <p>I test every auth flow methodically, checking not just "does it work" but "what happens when it breaks in unexpected ways."</p>
         </div>
         <div class="mth-steps">
           <div class="mth-step">
             <div class="mth-step-icon">
-              <svg viewBox="0 0 24 24"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+              <svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
             </div>
             <div>
-              <strong>Minimal PoC Construction</strong>
-              Build the smallest possible payload or request sequence that proves the vulnerability. No destructive actions.
+              <strong>JWT Attacks</strong>
+              Test <code>alg:none</code> (remove signature), algorithm confusion (RS256 → HS256 with public key as secret), weak secret brute-force with hashcat/jwt_tool, kid header injection (SQL/path traversal in kid param), jku/x5u header spoofing to serve attacker-controlled JWKS.
+            </div>
+          </div>
+          <div class="mth-step">
+            <div class="mth-step-icon">
+              <svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+            </div>
+            <div>
+              <strong>OAuth 2.0 Misconfigurations</strong>
+              Test redirect_uri validation (open redirect → token theft), state parameter absence (CSRF on auth), code reuse / lack of PKCE, implicit flow token leakage in Referer header, and scope escalation.
+            </div>
+          </div>
+          <div class="mth-step">
+            <div class="mth-step-icon">
+              <svg viewBox="0 0 24 24"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+            </div>
+            <div>
+              <strong>Password Reset Flow</strong>
+              Test token predictability (PRNG-based or timestamp-derived), token reuse after password change, host header injection in reset email link, username enumeration via timing/response differences, and password reset poisoning.
+            </div>
+          </div>
+          <div class="mth-step">
+            <div class="mth-step-icon">
+              <svg viewBox="0 0 24 24"><polyline points="17 11 12 6 7 11"/><polyline points="17 18 12 13 7 18"/></svg>
+            </div>
+            <div>
+              <strong>MFA Bypass</strong>
+              Test: skipping MFA step entirely by going directly to post-auth URL, reusing OTPs, response manipulation (change <code>"mfa_required":true</code> to false), brute-forcing 6-digit TOTP with no rate limiting, and backup code exhaustion.
+            </div>
+          </div>
+          <div class="mth-step">
+            <div class="mth-step-icon">
+              <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            </div>
+            <div>
+              <strong>Session Management</strong>
+              Session token entropy analysis. Test: session not invalidated after logout/password change, session fixation, concurrent session limits, cookie scope (domain/path), and session token in URL (Referer leakage).
             </div>
           </div>
           <div class="mth-step">
@@ -368,8 +400,61 @@
               <svg viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
             </div>
             <div>
-              <strong>Impact Chaining</strong>
-              Look for combinations — can a stored XSS + CSRF chain to account takeover? Does SSRF reach internal metadata endpoints?
+              <strong>Brute-Force &amp; Rate Limiting</strong>
+              Test missing rate limiting on login, OTP, and password reset endpoints. Check for lockout bypass via IP rotation headers (<code>X-Forwarded-For</code>, <code>X-Real-IP</code>, <code>CF-Connecting-IP</code>).
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="mth-tools">
+        <p class="mth-tools-label">Tools</p>
+        <div class="mth-tools-chips">
+          <span class="tool-chip">jwt_tool</span>
+          <span class="tool-chip">hashcat</span>
+          <span class="tool-chip">Burp Intruder</span>
+          <span class="tool-chip">Turbo Intruder</span>
+          <span class="tool-chip">Autorize</span>
+          <span class="tool-chip">OWASP ZAP</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════════════════════════════════════════════
+         PHASE 05 — INJECTION ATTACKS
+    ══════════════════════════════════════════════ -->
+    <div class="mth-phase reveal" id="phase-5">
+      <div class="mth-phase-header">
+        <span class="mth-num">05</span>
+        <div>
+          <h2 class="mth-phase-title">Injection Attacks</h2>
+          <p class="mth-phase-sub">SQLi · XSS · SSTI · XXE · COMMAND INJECTION · LDAP</p>
+        </div>
+      </div>
+      <div class="mth-phase-body">
+        <div class="mth-desc">
+          <p>Every input that reaches a parser, interpreter, or database is a potential injection point. I test manually with hand-crafted payloads first — this catches context-specific bypasses that automated tools miss entirely.</p>
+          <div class="mth-tip">
+            <span class="mth-tip-label">Pro Tip</span>
+            Error messages are your best friend. A verbose SQL error, a Jinja2 trace, or an XML parse exception tells you exactly which engine you're injecting into.
+          </div>
+        </div>
+        <div class="mth-steps">
+          <div class="mth-step">
+            <div class="mth-step-icon">
+              <svg viewBox="0 0 24 24"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></svg>
+            </div>
+            <div>
+              <strong>SQL Injection</strong>
+              Test all input parameters, headers (<code>User-Agent</code>, <code>Referer</code>, <code>X-Forwarded-For</code>), and cookies. Payloads: <code>'</code>, <code>"</code>, <code>1=1</code>, time-based blind (<code>SLEEP(5)</code>), error-based, Union-based, OOB via DNS. Use SQLMap only after manual confirmation.
+            </div>
+          </div>
+          <div class="mth-step">
+            <div class="mth-step-icon">
+              <svg viewBox="0 0 24 24"><polyline points="4 17 10 11 4 5"/><line x1="12" y1="19" x2="20" y2="19"/></svg>
+            </div>
+            <div>
+              <strong>Cross-Site Scripting (XSS)</strong>
+              Reflected, stored, and DOM-based. Test all input contexts: HTML body, HTML attribute, JS string, JS template literal, URL, CSS. Bypass filters with encoding, polyglots, tag breaking, and event handler variations. Escalate stored XSS to session theft, CSRF bypass, or keylogging PoC.
             </div>
           </div>
           <div class="mth-step">
@@ -377,46 +462,409 @@
               <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
             </div>
             <div>
-              <strong>Screenshot & Request Capture</strong>
-              Capture full HTTP request/response pairs, screenshots, and video recordings where needed.
+              <strong>Server-Side Template Injection (SSTI)</strong>
+              Probe with <code>{{7*7}}</code>, <code>${7*7}</code>, <code>#{7*7}</code>, <code>*{7*7}</code> across all user-controlled inputs that appear in rendered output. Identify the template engine from error or output, then escalate to RCE with engine-specific payloads (Jinja2, Twig, Freemarker, Smarty).
             </div>
           </div>
+          <div class="mth-step">
+            <div class="mth-step-icon">
+              <svg viewBox="0 0 24 24"><path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><polyline points="13 2 13 9 20 9"/></svg>
+            </div>
+            <div>
+              <strong>XML External Entity (XXE)</strong>
+              Test all XML upload/parsing endpoints. Payloads: classic file read (<code>/etc/passwd</code>), blind OOB via DNS callback, SSRF via <code>http://</code> entity, and parameter entities for deeper bypass. Check for SVG, DOCX, and XLSX uploads which parse XML internally.
+            </div>
+          </div>
+          <div class="mth-step">
+            <div class="mth-step-icon">
+              <svg viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+            </div>
+            <div>
+              <strong>Command &amp; Code Injection</strong>
+              Any input that feeds system commands, shell scripts, or eval-like functions: test with <code>; id</code>, <code>| whoami</code>, <code>`id`</code>, <code>$(id)</code>, <code>%0a id</code>. Common targets: ping utilities, DNS lookup tools, file conversion services, and report generation features.
+            </div>
+          </div>
+          <div class="mth-step">
+            <div class="mth-step-icon">
+              <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            </div>
+            <div>
+              <strong>NoSQL &amp; LDAP Injection</strong>
+              MongoDB: <code>{"$gt":""}</code>, <code>{"$where":"sleep(1000)"}</code>. LDAP: <code>*)(uid=*))(|(uid=*</code>. Test login endpoints with operator injection to bypass authentication entirely.
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="mth-tools">
+        <p class="mth-tools-label">Tools</p>
+        <div class="mth-tools-chips">
+          <span class="tool-chip">SQLMap</span>
+          <span class="tool-chip">Burp Suite Pro</span>
+          <span class="tool-chip">XSStrike</span>
+          <span class="tool-chip">tplmap</span>
+          <span class="tool-chip">Nuclei</span>
+          <span class="tool-chip">interactsh</span>
+          <span class="tool-chip">dalfox</span>
         </div>
       </div>
     </div>
 
     <!-- ══════════════════════════════════════════════
-         PHASE 06 — POST-EXPLOITATION
+         PHASE 06 — ACCESS CONTROL & IDOR
     ══════════════════════════════════════════════ -->
     <div class="mth-phase reveal" id="phase-6">
       <div class="mth-phase-header">
         <span class="mth-num">06</span>
         <div>
-          <h2 class="mth-phase-title">Post-Exploitation</h2>
-          <p class="mth-phase-sub">LATERAL MOVEMENT · PRIVILEGE ESCALATION · DATA ACCESS</p>
+          <h2 class="mth-phase-title">Access Control &amp; IDOR</h2>
+          <p class="mth-phase-sub">HORIZONTAL · VERTICAL · MULTI-TENANT · FORCED BROWSING</p>
         </div>
       </div>
       <div class="mth-phase-body">
         <div class="mth-desc">
-          <p>Where in scope, I assess what an attacker could do with the access gained — what data is reachable, what other systems are accessible, and what the blast radius is. This drives accurate severity ratings.</p>
+          <p>Broken access control is consistently the #1 vulnerability class in bug bounty programs. IDOR alone accounts for a huge portion of critical/high findings. I test every object reference, every role boundary, and every assumed restriction.</p>
+          <div class="mth-tip">
+            <span class="mth-tip-label">Pro Tip</span>
+            The Autorize Burp extension automatically replays every request with a lower-privilege session — it catches horizontal IDOR at scale while you browse normally.
+          </div>
         </div>
         <div class="mth-steps">
+          <div class="mth-step">
+            <div class="mth-step-icon">
+              <svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/></svg>
+            </div>
+            <div>
+              <strong>IDOR — Horizontal Escalation</strong>
+              Replace numeric IDs, UUIDs, hashed values, and usernames across all endpoints — GET, POST, PUT, DELETE, PATCH. Test URL params, request bodies, JSON fields, and HTTP headers. A UUID doesn't mean it's not vulnerable.
+            </div>
+          </div>
           <div class="mth-step">
             <div class="mth-step-icon">
               <svg viewBox="0 0 24 24"><polyline points="17 11 12 6 7 11"/><polyline points="17 18 12 13 7 18"/></svg>
             </div>
             <div>
-              <strong>Privilege Escalation</strong>
-              Attempt to escalate from found access to admin or higher-privilege roles via further IDOR, JWT manipulation, or logic flaws.
+              <strong>Vertical Privilege Escalation</strong>
+              Access admin endpoints with a standard user token. Test role/permission parameters in request bodies (<code>"role":"admin"</code>). Mass assignment — send extra fields the API accepts but the UI doesn't show. Modify JWT role claims.
             </div>
           </div>
           <div class="mth-step">
             <div class="mth-step-icon">
-              <svg viewBox="0 0 24 24"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></svg>
+              <svg viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
             </div>
             <div>
-              <strong>Data Exposure Assessment</strong>
-              Determine which sensitive records are accessible — PII, financial data, credentials — and document minimum necessary to prove the issue.
+              <strong>Multi-Tenant Isolation</strong>
+              In SaaS apps: test cross-tenant data access by using org/tenant IDs from one account in another's session. Check if resource IDs are globally sequential vs tenant-scoped. Target: documents, users, billing, and settings endpoints.
+            </div>
+          </div>
+          <div class="mth-step">
+            <div class="mth-step-icon">
+              <svg viewBox="0 0 24 24"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+            </div>
+            <div>
+              <strong>Forced Browsing &amp; Function-Level Auth</strong>
+              Directly access admin URLs, internal API endpoints, and debug routes. Test API versioning — <code>/api/v2/admin</code> may lack the auth checks added to v3. Access restricted features by guessing URL patterns from JS source.
+            </div>
+          </div>
+          <div class="mth-step">
+            <div class="mth-step-icon">
+              <svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+            </div>
+            <div>
+              <strong>HTTP Method Tampering</strong>
+              Change GET→POST→PUT→DELETE→PATCH on every endpoint. Some servers apply auth middleware only to specific methods. Use <code>X-HTTP-Method-Override</code> header to tunnel methods through WAF-friendly verbs.
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="mth-tools">
+        <p class="mth-tools-label">Tools</p>
+        <div class="mth-tools-chips">
+          <span class="tool-chip">Autorize (Burp)</span>
+          <span class="tool-chip">Burp Repeater</span>
+          <span class="tool-chip">AuthMatrix</span>
+          <span class="tool-chip">FFUF</span>
+          <span class="tool-chip">Burp Comparer</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════════════════════════════════════════════
+         PHASE 07 — SSRF / CSRF / OPEN REDIRECT
+    ══════════════════════════════════════════════ -->
+    <div class="mth-phase reveal" id="phase-7">
+      <div class="mth-phase-header">
+        <span class="mth-num">07</span>
+        <div>
+          <h2 class="mth-phase-title">SSRF, CSRF &amp; Open Redirects</h2>
+          <p class="mth-phase-sub">OUT-OF-BAND · CLOUD METADATA · FILTER BYPASS</p>
+        </div>
+      </div>
+      <div class="mth-phase-body">
+        <div class="mth-desc">
+          <p>SSRF can turn a low-severity URL parameter into a critical cloud metadata takeover. CSRF turns a missing token into account compromise. Open redirects chain into phishing and OAuth token theft. These bugs punch above their weight.</p>
+        </div>
+        <div class="mth-steps">
+          <div class="mth-step">
+            <div class="mth-step-icon">
+              <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+            </div>
+            <div>
+              <strong>SSRF — Blind &amp; OOB</strong>
+              Test all URL/URI parameters with an interactsh/Burp Collaborator callback. Bypass filters: IP encoding (<code>0x7f000001</code>, <code>2130706433</code>, <code>0177.0.0.01</code>), DNS rebinding, <code>http://localhost</code>, IPv6 (<code>::1</code>). If AWS: target <code>169.254.169.254/latest/meta-data</code> for IMDSv1 credentials.
+            </div>
+          </div>
+          <div class="mth-step">
+            <div class="mth-step-icon">
+              <svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+            </div>
+            <div>
+              <strong>SSRF — Protocol Smuggling</strong>
+              Test non-HTTP schemes: <code>file:///etc/passwd</code>, <code>dict://</code>, <code>gopher://</code>, <code>ftp://</code>. Gopher can be used to forge arbitrary TCP payloads — SMTP, Redis, Memcached, internal APIs.
+            </div>
+          </div>
+          <div class="mth-step">
+            <div class="mth-step-icon">
+              <svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+            </div>
+            <div>
+              <strong>CSRF</strong>
+              Check every state-changing request (POST/PUT/DELETE) for CSRF token. Test: token absence, token reuse, token tied to session vs global, SameSite=None without Secure, JSON body CSRF (change Content-Type to <code>text/plain</code>). Build a minimal PoC HTML page to confirm exploitability.
+            </div>
+          </div>
+          <div class="mth-step">
+            <div class="mth-step-icon">
+              <svg viewBox="0 0 24 24"><path d="M18 8h1a4 4 0 0 1 0 8h-1"/><path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"/><line x1="6" y1="1" x2="6" y2="4"/><line x1="10" y1="1" x2="10" y2="4"/><line x1="14" y1="1" x2="14" y2="4"/></svg>
+            </div>
+            <div>
+              <strong>Open Redirect</strong>
+              Test all <code>redirect</code>, <code>return</code>, <code>next</code>, <code>url</code>, <code>goto</code>, <code>destination</code> parameters. Bypass filters: <code>//attacker.com</code>, <code>////attacker.com</code>, <code>https://trusted.com@attacker.com</code>, URL encoding, backslash-based. Chain with OAuth for token theft.
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="mth-tools">
+        <p class="mth-tools-label">Tools</p>
+        <div class="mth-tools-chips">
+          <span class="tool-chip">interactsh</span>
+          <span class="tool-chip">Burp Collaborator</span>
+          <span class="tool-chip">SSRFmap</span>
+          <span class="tool-chip">Gopherus</span>
+          <span class="tool-chip">Nuclei</span>
+          <span class="tool-chip">Burp Repeater</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════════════════════════════════════════════
+         PHASE 08 — BUSINESS LOGIC
+    ══════════════════════════════════════════════ -->
+    <div class="mth-phase reveal" id="phase-8">
+      <div class="mth-phase-header">
+        <span class="mth-num">08</span>
+        <div>
+          <h2 class="mth-phase-title">Business Logic Testing</h2>
+          <p class="mth-phase-sub">RACE CONDITIONS · PRICE MANIPULATION · WORKFLOW BYPASS</p>
+        </div>
+      </div>
+      <div class="mth-phase-body">
+        <div class="mth-desc">
+          <p>Business logic bugs cannot be found by any scanner. They require understanding the application's intended workflow — and then systematically testing every assumption it makes. These are often the highest-impact, most creative findings.</p>
+          <div class="mth-tip">
+            <span class="mth-tip-label">Pro Tip</span>
+            Think about what the developer assumed would never happen. Negative quantities, zero-price checkouts, applying a coupon after payment, completing step 3 before step 2 — if it wasn't explicitly prevented, test it.
+          </div>
+        </div>
+        <div class="mth-steps">
+          <div class="mth-step">
+            <div class="mth-step-icon">
+              <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            </div>
+            <div>
+              <strong>Race Conditions</strong>
+              Use Turbo Intruder or Burp's Last-Byte Sync to send parallel requests. Target: coupon single-use bypass, free-credit double-spend, vote/like counting, gift card redemption, referral bonus abuse, and concurrent withdrawal.
+            </div>
+          </div>
+          <div class="mth-step">
+            <div class="mth-step-icon">
+              <svg viewBox="0 0 24 24"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+            </div>
+            <div>
+              <strong>Price &amp; Quantity Manipulation</strong>
+              Modify price, quantity, discount, and total fields in requests. Test: negative quantities, zero/negative prices, integer overflow on large quantities, and applying discounts to items that should be excluded.
+            </div>
+          </div>
+          <div class="mth-step">
+            <div class="mth-step-icon">
+              <svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg>
+            </div>
+            <div>
+              <strong>Workflow &amp; State Machine Bypass</strong>
+              Skip steps in multi-stage flows: jump from step 1 to step 3, access post-payment pages pre-payment, reuse one-time confirmation tokens, bypass email verification, complete actions in reverse order.
+            </div>
+          </div>
+          <div class="mth-step">
+            <div class="mth-step-icon">
+              <svg viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+            </div>
+            <div>
+              <strong>Coupon &amp; Referral Abuse</strong>
+              Stack multiple coupons, apply expired codes, reuse single-use codes after order cancellation, self-referral loops, and referral bonus without completing required action.
+            </div>
+          </div>
+          <div class="mth-step">
+            <div class="mth-step-icon">
+              <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/></svg>
+            </div>
+            <div>
+              <strong>File Upload Abuse</strong>
+              Test: unrestricted file types (PHP/JSP webshell upload), MIME type bypass, double extension (<code>file.php.jpg</code>), null byte (<code>file.php%00.jpg</code>), path traversal in filename, zip slip (archive containing <code>../../evil</code>), SVG XSS via image upload, and storing files in web-accessible directories.
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="mth-tools">
+        <p class="mth-tools-label">Tools</p>
+        <div class="mth-tools-chips">
+          <span class="tool-chip">Turbo Intruder</span>
+          <span class="tool-chip">Burp Suite Pro</span>
+          <span class="tool-chip">Burp Repeater</span>
+          <span class="tool-chip">Custom Python Scripts</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════════════════════════════════════════════
+         PHASE 09 — API & JS ANALYSIS
+    ══════════════════════════════════════════════ -->
+    <div class="mth-phase reveal" id="phase-9">
+      <div class="mth-phase-header">
+        <span class="mth-num">09</span>
+        <div>
+          <h2 class="mth-phase-title">API &amp; JavaScript Deep Dive</h2>
+          <p class="mth-phase-sub">REST · GRAPHQL · MOBILE APIs · EXPOSED SECRETS</p>
+        </div>
+      </div>
+      <div class="mth-phase-body">
+        <div class="mth-desc">
+          <p>Modern apps live and die by their APIs. Frontend JS bundles contain the full map of what the app can do — including things the UI deliberately hides. This phase extracts everything that wasn't meant to be found.</p>
+        </div>
+        <div class="mth-steps">
+          <div class="mth-step">
+            <div class="mth-step-icon">
+              <svg viewBox="0 0 24 24"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+            </div>
+            <div>
+              <strong>GraphQL Exploitation</strong>
+              Enable introspection if disabled via field suggestion. Test: introspection → dump all types → find admin mutations → test unauthenticated access → batch query abuse (sending 1000 queries in one request to bypass rate limits) → field-level auth gaps.
+            </div>
+          </div>
+          <div class="mth-step">
+            <div class="mth-step-icon">
+              <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+            </div>
+            <div>
+              <strong>REST API Security</strong>
+              Test API versioning gaps (v1 vs v2 auth enforcement), mass assignment (send extra fields), HTTP verb tampering, BOLA/IDOR on resource IDs, missing authentication on bulk/export endpoints, and improper error handling leaking stack traces.
+            </div>
+          </div>
+          <div class="mth-step">
+            <div class="mth-step-icon">
+              <svg viewBox="0 0 24 24"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"/></svg>
+            </div>
+            <div>
+              <strong>JS Secret Hunting</strong>
+              Grep all JS files for: API keys, AWS access keys, Stripe/Twilio keys, Firebase configs, internal service URLs, hardcoded credentials, and feature flags. Use <code>truffleHog</code> and <code>secretfinder</code>. Check source maps (<code>.js.map</code>) for original unminified source.
+            </div>
+          </div>
+          <div class="mth-step">
+            <div class="mth-step-icon">
+              <svg viewBox="0 0 24 24"><rect x="5" y="2" width="14" height="20" rx="2" ry="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg>
+            </div>
+            <div>
+              <strong>Mobile API Analysis</strong>
+              Intercept mobile app traffic via Burp + Android emulator or iOS with SSL kill switch. Mobile APIs often have weaker auth, missing rate limits, and additional admin endpoints not exposed in the web app. Decompile APK with jadx to extract hardcoded keys and hidden endpoints.
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="mth-tools">
+        <p class="mth-tools-label">Tools</p>
+        <div class="mth-tools-chips">
+          <span class="tool-chip">GraphQL Voyager</span>
+          <span class="tool-chip">InQL (Burp)</span>
+          <span class="tool-chip">Postman</span>
+          <span class="tool-chip">SecretFinder</span>
+          <span class="tool-chip">TruffleHog</span>
+          <span class="tool-chip">jadx</span>
+          <span class="tool-chip">LinkFinder</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════════════════════════════════════════════
+         PHASE 10 — EXPLOITATION & CHAINING
+    ══════════════════════════════════════════════ -->
+    <div class="mth-phase reveal" id="phase-10">
+      <div class="mth-phase-header">
+        <span class="mth-num">10</span>
+        <div>
+          <h2 class="mth-phase-title">Exploitation &amp; Vulnerability Chaining</h2>
+          <p class="mth-phase-sub">IMPACT MAXIMISATION · PoC · CHAIN BUILDING</p>
+        </div>
+      </div>
+      <div class="mth-phase-body">
+        <div class="mth-desc">
+          <p>A P3 reflected XSS combined with a CSRF bypass and a weak CORS policy becomes a P1 account takeover. The best hunters don't just find bugs — they chain them into the maximum demonstrable impact.</p>
+          <p>I build the smallest, most reliable PoC that proves the real-world damage. No destructive actions — I stop at proof and document every step.</p>
+          <div class="mth-tip">
+            <span class="mth-tip-label">Pro Tip</span>
+            Always ask: "if I were a real attacker, what would I do next with this?" That second step is often the finding that turns a medium into a critical.
+          </div>
+        </div>
+        <div class="mth-steps">
+          <div class="mth-step">
+            <div class="mth-step-icon">
+              <svg viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+            </div>
+            <div>
+              <strong>Classic Chain: Stored XSS → ATO</strong>
+              Inject a stored XSS payload that steals the victim's session cookie or sends a state-changing request (email/password change) on their behalf, silently escalating to full account takeover.
+            </div>
+          </div>
+          <div class="mth-step">
+            <div class="mth-step-icon">
+              <svg viewBox="0 0 24 24"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+            </div>
+            <div>
+              <strong>Classic Chain: SSRF → Cloud Credentials</strong>
+              SSRF to <code>169.254.169.254</code> → read IMDSv1 IAM role credentials → use credentials to access S3 buckets, Lambda functions, RDS snapshots, or escalate to full AWS account access.
+            </div>
+          </div>
+          <div class="mth-step">
+            <div class="mth-step-icon">
+              <svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+            </div>
+            <div>
+              <strong>Classic Chain: Open Redirect → OAuth Token Theft</strong>
+              Craft OAuth auth request with <code>redirect_uri</code> pointing to an open redirect on the trusted domain. Victim authenticates, token lands in attacker's server logs via Referer header.
+            </div>
+          </div>
+          <div class="mth-step">
+            <div class="mth-step-icon">
+              <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+            </div>
+            <div>
+              <strong>Screenshot &amp; Evidence Collection</strong>
+              For every confirmed finding: capture the full HTTP request/response pair from Burp, a browser screenshot proving impact, a screen recording for complex multi-step chains, and the exact reproduction steps as a numbered list.
+            </div>
+          </div>
+          <div class="mth-step">
+            <div class="mth-step-icon">
+              <svg viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+            </div>
+            <div>
+              <strong>CVSS v3.1 Impact Assessment</strong>
+              Score each finding honestly: AV (Network/Adjacent/Local/Physical), AC (Low/High), PR, UI, S, C/I/A impact. Don't overstate — triage teams reject inflated severities and it hurts your reputation. Undersell impact in PoC, justify the score in writing.
             </div>
           </div>
         </div>
@@ -424,37 +872,38 @@
     </div>
 
     <!-- ══════════════════════════════════════════════
-         PHASE 07 — REPORTING
+         PHASE 11 — REPORTING
     ══════════════════════════════════════════════ -->
-    <div class="mth-phase reveal" id="phase-7">
+    <div class="mth-phase reveal" id="phase-11">
       <div class="mth-phase-header">
-        <span class="mth-num">07</span>
+        <span class="mth-num">11</span>
         <div>
           <h2 class="mth-phase-title">Reporting</h2>
-          <p class="mth-phase-sub">CVSS · CLEAR WRITE-UP · REMEDIATION ADVICE</p>
+          <p class="mth-phase-sub">CVSS · CLEAR WRITE-UP · TRIAGE-READY · REMEDIATION</p>
         </div>
       </div>
       <div class="mth-phase-body">
         <div class="mth-desc">
-          <p>A vulnerability that can't be clearly communicated doesn't get fixed. I write every report so a developer who has never heard of the issue can understand it, reproduce it, and fix it.</p>
+          <p>A vulnerability that can't be communicated clearly doesn't get fixed — and in bug bounty, it doesn't get paid. Every report I write follows a format that a developer who has never heard of the vulnerability can read, reproduce, and patch.</p>
+          <p>Quality over quantity. One clear, well-evidenced report beats five vague ones every time.</p>
         </div>
         <div class="mth-steps">
+          <div class="mth-step">
+            <div class="mth-step-icon">
+              <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+            </div>
+            <div>
+              <strong>Report Structure</strong>
+              <strong>Title</strong> (vuln type + affected endpoint) → <strong>Severity</strong> (CVSS score + justification) → <strong>Summary</strong> (2–3 sentences, plain English) → <strong>Steps to Reproduce</strong> (numbered, exact URLs and payloads) → <strong>PoC</strong> (Burp screenshot + raw request) → <strong>Impact</strong> (who is affected, what data/action is at risk) → <strong>Remediation</strong> → <strong>References</strong>.
+            </div>
+          </div>
           <div class="mth-step">
             <div class="mth-step-icon">
               <svg viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
             </div>
             <div>
-              <strong>CVSS Severity Scoring</strong>
-              Rate each finding using CVSS v3.1 — Attack Vector, Complexity, Privileges Required, Impact — and justify the score.
-            </div>
-          </div>
-          <div class="mth-step">
-            <div class="mth-step-icon">
-              <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
-            </div>
-            <div>
-              <strong>Write-up Structure</strong>
-              Title → Summary → Severity → Steps to Reproduce → PoC (screenshot / request) → Impact → Remediation.
+              <strong>Severity Scoring (CVSS v3.1)</strong>
+              Use the official calculator. Rate AV, AC, PR, UI, Scope, and C/I/A impact. Include the vector string (<code>CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H</code>). Justify non-obvious choices in the description.
             </div>
           </div>
           <div class="mth-step">
@@ -463,7 +912,16 @@
             </div>
             <div>
               <strong>Remediation Guidance</strong>
-              Always include a concrete fix — not just "sanitise input" but specific library calls, config changes, or code patterns that address the root cause.
+              Specific, not generic. Not "sanitise input" but "use parameterised queries with PDO / prepared statements." Not "validate redirects" but "maintain a server-side whitelist of allowed redirect destinations and reject anything not on it." Give the dev the fix, not just the problem.
+            </div>
+          </div>
+          <div class="mth-step">
+            <div class="mth-step-icon">
+              <svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+            </div>
+            <div>
+              <strong>Communication &amp; Triage Collaboration</strong>
+              Respond to triage questions within 24 hours. If marked as informative or N/A, ask for clarification with additional evidence — don't argue, educate. Build a track record of accurate, well-written reports for program priority.
             </div>
           </div>
         </div>
@@ -472,12 +930,13 @@
         <p class="mth-tools-label">Report template includes</p>
         <div class="mth-tools-chips">
           <span class="tool-chip">Title</span>
-          <span class="tool-chip">Severity (CVSS)</span>
+          <span class="tool-chip">Severity (CVSS v3.1)</span>
+          <span class="tool-chip">Summary</span>
           <span class="tool-chip">Steps to Reproduce</span>
-          <span class="tool-chip">PoC</span>
+          <span class="tool-chip">PoC (Request + Screenshot)</span>
           <span class="tool-chip">Impact</span>
           <span class="tool-chip">Remediation</span>
-          <span class="tool-chip">References</span>
+          <span class="tool-chip">References (CWE / OWASP)</span>
         </div>
       </div>
     </div>

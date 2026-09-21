@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="IDOR on Veris — HackerOne #120305. How substituting a sequential venue_id in the gatekeepers API exposed private venue configuration, theme assets, and S3-signed media URLs belonging to other organizations." />
+  <title>IDOR: Venue Data Exposed via venue_id on Veris — HackerOne #120305 | Blog — Darshak Patel</title>
+  <link rel="stylesheet" href="../../assets/css/style.css" />
+  <link rel="stylesheet" href="../../assets/css/pages/post.css" />
+</head>
+<body>
+
+<div class="read-progress" id="read-progress"></div>
+<canvas id="particles"></canvas>
+
+<nav>
+  <a href="../../index.html" class="nav-logo">
+    <span class="bracket">[</span>dp<span class="bracket">]</span>
+  </a>
+  <ul class="nav-links">
+    <li><a href="../../pages/about.html">about</a></li>
+    <li><a href="../../pages/expertise.html">expertise</a></li>
+    <li><a href="../../pages/certifications.html">certifications</a></li>
+    <li><a href="../../pages/achievements.html">achievements</a></li>
+    <li><a href="../../pages/tools.html">tools</a></li>
+    <li><a href="../../pages/resources.html">resources</a></li>
+    <li><a href="../index.html" class="active">blog</a></li>
+    <li><a href="../../pages/contact.html">contact</a></li>
+  </ul>
+  <a href="mailto:your@email.com" class="nav-cta">Hire Me</a>
+  <div class="nav-hamburger" aria-label="menu">
+    <span></span><span></span><span></span>
+  </div>
+</nav>
+
+<div class="post-wrap">
+
+  <!-- ── Hero ── -->
+  <div class="post-hero" data-vuln="idor">
+    <div class="post-hero-inner">
+      <a href="../index.html" class="post-back">← Back to Blog</a>
+      <div class="post-vuln-badge">⬡ IDOR</div>
+      <div class="post-meta">
+        <span class="post-tag">Bug Bounty</span>
+        <span class="post-tag">Web App</span>
+        <span class="post-tag">Information Disclosure</span>
+        <span class="post-tag" data-sev="medium">Medium</span>
+        <span class="post-meta-sep">·</span>
+        <span>Jun 24, 2025</span>
+        <span class="post-meta-sep">·</span>
+        <span>7 min read</span>
+      </div>
+      <h1 class="post-h1">IDOR: Private Venue Configuration Exposed via <code>venue_id</code> Parameter on Veris — HackerOne #120305</h1>
+      <p class="post-sub">How changing a single integer in the <code>venue_id</code> query parameter of Veris's gatekeepers API returned the complete private configuration of any other organisation's venue — including branding assets, theme colours, org name, and signed AWS S3 media URLs.</p>
+      <div class="post-stats">
+        <div class="post-stat">
+          <span class="post-stat-label">Program</span>
+          <span class="post-stat-value">Veris (sandbox.veris.in)</span>
+        </div>
+        <div class="post-stat">
+          <span class="post-stat-label">Report</span>
+          <span class="post-stat-value">#120305</span>
+        </div>
+        <div class="post-stat">
+          <span class="post-stat-label">Severity</span>
+          <span class="post-stat-value">Medium</span>
+        </div>
+        <div class="post-stat">
+          <span class="post-stat-label">Weakness</span>
+          <span class="post-stat-value">IDOR / Broken Object-Level Auth</span>
+        </div>
+        <div class="post-stat">
+          <span class="post-stat-label">Reported</span>
+          <span class="post-stat-value">Mar 2016</span>
+        </div>
+        <div class="post-stat">
+          <span class="post-stat-label">Status</span>
+          <span class="post-stat-value">Resolved</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Source + Attribution ── -->
+  <div class="post-body">
+    <a href="https://hackerone.com/reports/120305" target="_blank" rel="noopener" class="post-source">
+      ↗ HackerOne Report #120305 — Veris
+    </a>
+    <p class="post-attr">Independent educational breakdown of a publicly disclosed report. Credit for the original finding belongs to its researcher, Smit B. Shah.</p>
+  </div>
+
+  <div class="post-layout">
+
+    <aside class="post-toc">
+      <div class="toc-label">Contents</div>
+      <ul class="toc-list">
+        <li><a href="#what">What Is IDOR?</a></li>
+        <li><a href="#context">The Target</a></li>
+        <li><a href="#bug">The Bug</a></li>
+        <li><a href="#poc">Proof of Concept</a></li>
+        <li><a href="#data">What Was Leaked</a></li>
+        <li><a href="#impact">Impact</a></li>
+        <li><a href="#fix">The Fix</a></li>
+        <li><a href="#hunting">How to Hunt It</a></li>
+        <li><a href="#recognition">Recognition</a></li>
+        <li><a href="#refs">References</a></li>
+      </ul>
+    </aside>
+
+    <article class="post-article">
+
+      <h2 id="what">What Is IDOR?</h2>
+      <p><strong>Insecure Direct Object Reference (IDOR)</strong> is a broken access control vulnerability where an application uses a user-supplied value — an integer ID, a slug, a UUID — to look up a resource on the server, but does not verify that the requesting user is authorised to access that resource. The attacker simply substitutes a different value and the server returns data that should be off-limits.</p>
+      <p>IDOR does not require any technical exploit. It requires only the observation that a predictable identifier is controlling access to data — and the decision to change it.</p>
+      <div class="post-note">IDOR is consistently ranked in the OWASP Top 10 under <strong>Broken Access Control</strong> (A01). It is one of the most commonly rewarded vulnerability classes on bug bounty platforms precisely because it is easy to find manually, easy to demonstrate, and often high-impact.</div>
+
+      <h2 id="context">The Target — Veris Gatekeepers API</h2>
+      <p><strong>Veris</strong> is a visitor management platform used by organizations to manage entry to their venues — handling check-ins, gatekeeper assignments, customization, and branding for each physical location. Its API lives at <code>sandbox.veris.in</code>.</p>
+      <p>Each organization registers one or more <strong>venues</strong>. A venue has a unique integer ID and associated configuration data: branding colors, org name, logo, media assets, and per-venue settings used by the gatekeeper application at the physical entry point.</p>
+      <p>This configuration is sensitive — it belongs to a specific organization and should only be visible to users of that organization. It is not meant to be accessible to users of other organizations on the same platform.</p>
+
+      <h2 id="bug">The Bug</h2>
+      <p>The gatekeepers API endpoint at <code>/api/v1/gatekeepers/</code> accepted a <code>venue_id</code> query parameter that directly controlled which venue's configuration was returned. The server used the token in the <code>Authorization</code> header for authentication — verifying that the caller was a logged-in Veris user — but performed <strong>no ownership check</strong> to confirm that the venue being requested belonged to the authenticated user's organization.</p>
+
+      <div class="post-code">
+        <div class="post-code-header">
+          <div class="post-code-dots"><span></span><span></span><span></span></div>
+          <span class="post-code-label">The vulnerable endpoint</span>
+        </div>
+        <pre><code><span class="cc"># Authenticated request — returns YOUR venue's config (venue_id=36)</span>
+<span class="ck">GET</span> <span class="cf">/api/v1/gatekeepers/</span>?<span class="cv">venue_id</span>=<span class="cok">36</span> <span class="ck">HTTP/1.1</span>
+<span class="ck">Host:</span>          <span class="cs">sandbox.veris.in</span>
+<span class="ck">Authorization:</span> <span class="cs">Token 6a33c4adf07755848a5c11fb5385aca3bfc69343</span>
+<span class="ck">Cookie:</span>        <span class="cs">user_uid=0091Q; ...</span>
+
+<span class="cc"># Same token, different venue_id — returns ANOTHER org's config (venue_id=28)</span>
+<span class="ck">GET</span> <span class="cf">/api/v1/gatekeepers/</span>?<span class="cv">venue_id</span>=<span class="ch">28</span> <span class="ck">HTTP/1.1</span>
+<span class="ck">Host:</span>          <span class="cs">sandbox.veris.in</span>
+<span class="ck">Authorization:</span> <span class="cs">Token 6a33c4adf07755848a5c11fb5385aca3bfc69343</span>
+<span class="ck">Cookie:</span>        <span class="cs">user_uid=0091Q; ...</span>
+<span class="cc"># ↑ Same user, different venue — server returns 200 OK with full config</span></code></pre>
+      </div>
+
+      <p>Because venue IDs are sequential integers, any authenticated user could iterate through <code>venue_id=1</code>, <code>2</code>, <code>3</code> … and enumerate the complete configuration of every venue registered on the platform.</p>
+
+      <div class="post-note" data-type="warn"><strong>Authentication ≠ Authorization.</strong> This is the core lesson of every IDOR: the server confirmed the caller had a valid login token, but never asked "does this token belong to someone allowed to see venue 28?" Those are two separate checks — and only the first one was implemented.</div>
+
+      <h2 id="poc">Proof of Concept</h2>
+      <p>The researcher used Burp Suite to intercept and modify the live API request. The steps:</p>
+      <ul>
+        <li><strong>1.</strong> Log in to a Veris account at <code>sandbox.veris.in</code>.</li>
+        <li><strong>2.</strong> Navigate to <strong>Portal → Venues</strong> — the browser makes a GET request to <code>/api/v1/gatekeepers/?venue_id=36</code> (your own venue ID).</li>
+        <li><strong>3.</strong> Intercept this request in Burp Suite and observe the <code>Authorization</code> token and <code>venue_id</code> parameter.</li>
+      </ul>
+
+      <!-- Image 1 — Burp Original request with venue_id=36 -->
+      <figure class="post-figure">
+        <div class="post-figure-header">
+          <div class="post-figure-dots"><span></span><span></span><span></span></div>
+          <span class="post-figure-label">Step 1 — Original request: <code>venue_id=36</code> (attacker's own venue)</span>
+        </div>
+        <img src="../../assets/images/blog/h1-120305-burp-original.png"
+             alt="Burp Suite showing the original GET /api/v1/gatekeepers/?venue_id=36 request with Authorization token and Cookie headers"
+             loading="lazy" />
+        <figcaption>The original intercepted request to <code>/api/v1/gatekeepers/?venue_id=36</code>. The <code>Authorization</code> token authenticates the user. The <code>venue_id</code> parameter controls which venue's data is returned.</figcaption>
+      </figure>
+
+      <ul>
+        <li><strong>4.</strong> Send the request to Burp Repeater and change <code>venue_id=36</code> to <code>venue_id=28</code> — a different organisation's venue ID.</li>
+        <li><strong>5.</strong> Forward the modified request with the same auth token.</li>
+      </ul>
+
+      <!-- Image 2 — Burp Edited request with venue_id=28 -->
+      <figure class="post-figure">
+        <div class="post-figure-header">
+          <div class="post-figure-dots"><span></span><span></span><span></span></div>
+          <span class="post-figure-label">Step 2 — Edited request: <code>venue_id=28</code> (another org's venue)</span>
+        </div>
+        <img src="../../assets/images/blog/h1-120305-burp-edited.png"
+             alt="Burp Suite Edited request tab showing venue_id changed from 36 to 28 — same Authorization token, different venue"
+             loading="lazy" />
+        <figcaption>The edited request — only <code>venue_id</code> has been changed from <code>36</code> to <code>28</code>. The <code>Authorization</code> token is identical. No other modification is required.</figcaption>
+      </figure>
+
+      <ul>
+        <li><strong>6.</strong> The server responds with <strong>HTTP 200 OK</strong> and returns the complete gatekeeper configuration for venue 28 — a different organisation's private data.</li>
+      </ul>
+
+      <!-- Image 3 — Burp Response 200 OK with full JSON payload -->
+      <figure class="post-figure">
+        <div class="post-figure-header">
+          <div class="post-figure-dots"><span></span><span></span><span></span></div>
+          <span class="post-figure-label">Step 3 — Server response: <code>200 OK</code> with full venue config of <em>fetchmyterminal</em></span>
+        </div>
+        <img src="../../assets/images/blog/h1-120305-burp-response.png"
+             alt="Burp Suite Response tab showing HTTP 200 OK with JSON payload containing org_name fetchmyterminal, theme colours, logo S3 URL, and assets zip S3 URL"
+             loading="lazy" />
+        <figcaption>The server returns <code>200 OK</code> with the full gatekeeper config for venue 28 — including the organisation name <code>fetchmyterminal</code>, primary/secondary theme colours, primary/secondary text colours, a signed S3 logo URL, and a signed S3 assets archive URL. No authorisation error is raised.</figcaption>
+      </figure>
+
+      <div class="post-note"><strong>One parameter change. One HTTP request. Full cross-tenant data exposure.</strong> No brute-forcing, no token cracking, no complex tooling. The entire exploit took seconds and required only a valid user account on the same platform.</div>
+
+      <h2 id="data">What Was Leaked</h2>
+      <p>Each response for an unauthorised <code>venue_id</code> returned the full <code>customization_data</code> array for the target venue. From the actual response in the report, this included:</p>
+
+      <div class="post-code">
+        <div class="post-code-header">
+          <div class="post-code-dots"><span></span><span></span><span></span></div>
+          <span class="post-code-label">Actual response data — venue 28 (fetchmyterminal)</span>
+        </div>
+        <pre><code>{
+  <span class="cv">"count"</span>: <span class="cn">1</span>,
+  <span class="cv">"results"</span>: [{
+    <span class="cv">"pk"</span>: <span class="cn">27</span>,
+    <span class="cv">"name"</span>: <span class="ch">"fetchmyterminal"</span>,
+    <span class="cv">"description"</span>: <span class="ch">"fetchmyterminal"</span>,
+    <span class="cv">"customization_data"</span>: [
+      { <span class="cv">"code"</span>: <span class="cs">"primary_theme_color"</span>,    <span class="cv">"value"</span>: <span class="ch">"#018CCF"</span> },
+      { <span class="cv">"code"</span>: <span class="cs">"secondary_theme_color"</span>,  <span class="cv">"value"</span>: <span class="ch">"#FFFFFF"</span> },
+      { <span class="cv">"code"</span>: <span class="cs">"primary_text_color"</span>,     <span class="cv">"value"</span>: <span class="ch">"#000000"</span> },
+      { <span class="cv">"code"</span>: <span class="cs">"secondary_text_color"</span>,   <span class="cv">"value"</span>: <span class="ch">"#53585F"</span> },
+      { <span class="cv">"code"</span>: <span class="cs">"org_name"</span>,             <span class="cv">"value"</span>: <span class="ch">"fetchmyterminal"</span> },
+      { <span class="cv">"code"</span>: <span class="cs">"logo"</span>,                 <span class="cv">"value"</span>: <span class="ch">"https://storage-sandbox-veris-in.s3.amazonaws.com:443/media/settings/Veris_Combined_Gradient_fit.png?Signature=...&amp;AWSAccessKeyId=AKIAI52CUT347SUBZHHA"</span> },
+      { <span class="cv">"code"</span>: <span class="cs">"assets"</span>,               <span class="cv">"value"</span>: <span class="ch">"https://storage-sandbox-veris-in.s3.amazonaws.com:443/media/settings/assets.zip?Signature=...&amp;AWSAccessKeyId=AKIAI52CUT347SUBZHHA"</span> },
+      { <span class="cv">"code"</span>: <span class="cs">"checkin_time_offset"</span>,   <span class="cv">"value"</span>: <span class="cn">600</span> }
+    ]
+  }]
+}</code></pre>
+      </div>
+
+      <ul>
+        <li><strong>Organisation name</strong> — the registered name of the victim company (<code>fetchmyterminal</code>).</li>
+        <li><strong>Brand theme colours</strong> — primary and secondary theme/text colours used in the gatekeeper UI.</li>
+        <li><strong>Signed S3 logo URL</strong> — a time-limited but valid AWS pre-signed URL to download the organisation's logo file directly.</li>
+        <li><strong>Signed S3 assets archive URL</strong> — a pre-signed URL to download the entire venue assets bundle (<code>assets.zip</code>).</li>
+        <li><strong>AWS Access Key ID</strong> — the <code>AWSAccessKeyId</code> parameter embedded in each signed URL reveals the AWS IAM key used for signing, which is additional infrastructure intelligence for an attacker.</li>
+        <li><strong>Venue check-in time offset</strong> — operational configuration data (<code>checkin_time_offset: 600</code>).</li>
+      </ul>
+
+      <h2 id="impact">Impact</h2>
+      <ul>
+        <li><strong>Cross-tenant data exposure</strong> — every organization's venue configuration is readable by any other authenticated Veris user. This is a fundamental multi-tenancy breach: data from one tenant leaks to another.</li>
+        <li><strong>Full enumeration</strong> — venue IDs are sequential integers. An attacker can loop from ID 1 upward and collect the complete configuration of every venue on the platform in a single script run.</li>
+        <li><strong>Brand asset theft</strong> — the signed S3 URLs provide direct, time-limited download access to each company's logo and full assets bundle without requiring any AWS credentials of the attacker's own.</li>
+        <li><strong>AWS key reconnaissance</strong> — the exposed <code>AWSAccessKeyId</code> in the signed URLs leaks the IAM signing key identity, which could aid further cloud infrastructure reconnaissance.</li>
+        <li><strong>Competitive intelligence</strong> — an attacker can harvest org names, branding configurations, and operational settings for all competitors using the same platform.</li>
+        <li><strong>No victim interaction required</strong> — the attack is entirely server-side. Victim organizations are never aware their data was accessed.</li>
+      </ul>
+
+      <h2 id="fix">The Fix</h2>
+      <p>The root cause is a missing authorization check: the API authenticates the caller (valid token) but never verifies the caller owns the requested venue. The fix is a single server-side ownership validation before returning any data:</p>
+
+      <div class="post-code">
+        <div class="post-code-header">
+          <div class="post-code-dots"><span></span><span></span><span></span></div>
+          <span class="post-code-label">Server-side fix — pseudocode</span>
+        </div>
+        <pre><code><span class="cc"># Vulnerable — returns config for any venue_id without ownership check</span>
+<span class="cv">def</span> <span class="cf">get_gatekeepers</span>(venue_id, auth_token):
+    user  = User.from_token(auth_token)         <span class="cc">← authentication only</span>
+    venue = Venue.find(venue_id)
+    <span class="ck">return</span> venue.config                          <span class="cc">← no ownership check ✗</span>
+
+<span class="cc"># Secure — enforce that the venue belongs to the authenticated user's org</span>
+<span class="cv">def</span> <span class="cf">get_gatekeepers</span>(venue_id, auth_token):
+    user  = User.from_token(auth_token)
+    venue = Venue.find(venue_id)
+    <span class="ck">if</span> venue.organisation_id != user.organisation_id:   <span class="cc">← ownership check ✓</span>
+        <span class="ck">raise</span> Forbidden(<span class="cs">"You do not have access to this venue"</span>)
+    <span class="ck">return</span> venue.config</code></pre>
+      </div>
+
+      <ul>
+        <li><strong>Server-side ownership check on every request</strong> — verify that the authenticated user's organisation owns the requested <code>venue_id</code> before returning any data. Never trust the client to supply only their own IDs.</li>
+        <li><strong>Derive venue scope from the auth token</strong> — instead of accepting a <code>venue_id</code> parameter at all, derive the list of venues the user can access directly from their auth token's organisation claim. Eliminate the parameter entirely for single-venue contexts.</li>
+        <li><strong>Use non-sequential IDs</strong> — replace integer venue IDs with UUIDs or random tokens. Even if an IDOR check is accidentally missed, random IDs make enumeration computationally infeasible.</li>
+        <li><strong>Short-lived signed URLs</strong> — S3 pre-signed URLs in API responses should have the shortest practical expiry (seconds to minutes, not hours) to limit the window of exploitation if they are leaked.</li>
+        <li><strong>Automated IDOR testing</strong> — add integration tests that verify cross-tenant access attempts return 403, not 200. Run these on every deployment.</li>
+      </ul>
+
+      <h2 id="hunting">How to Hunt IDOR on Multi-Tenant SaaS APIs</h2>
+      <ul>
+        <li><strong>Identify all parameters that look like object IDs.</strong> Integer IDs, short slugs, UUIDs — any parameter that controls which resource the server fetches is a candidate. On a multi-tenant SaaS platform, every such parameter is an IDOR surface.</li>
+        <li><strong>Create two accounts in different organisations.</strong> This is the most reliable IDOR test setup. With Account A, note the IDs of your own resources. Switch to Account B and substitute those IDs. If Account B receives Account A's data — that's a confirmed IDOR.</li>
+        <li><strong>Look for query parameters on GET endpoints.</strong> Parameters like <code>venue_id</code>, <code>org_id</code>, <code>company_id</code>, <code>account_id</code>, <code>location_id</code> on GET requests are the highest-probability IDOR targets. They are read-only so easy to test without side effects.</li>
+        <li><strong>Check every API call made during normal navigation.</strong> Intercept all requests in Burp Suite while clicking through the application. Look for integer or predictable IDs in query parameters, path segments, and request bodies. The gatekeepers endpoint here was found simply by navigating to the Venues section.</li>
+        <li><strong>Test enumeration depth.</strong> If ID 28 returns 200, try 1, 2, 3 — confirm whether the entire ID space is enumerable. This determines the blast radius for the severity rating.</li>
+        <li><strong>Don't overlook config and settings endpoints.</strong> Data-access IDORs (reading records) are common, but configuration endpoints are equally valuable: they often expose internal org structure, operational settings, and infrastructure details (like S3 signing keys).</li>
+      </ul>
+
+      <div class="post-code">
+        <div class="post-code-header">
+          <div class="post-code-dots"><span></span><span></span><span></span></div>
+          <span class="post-code-label">venue_id enumeration — ffuf one-liner</span>
+        </div>
+        <pre><code><span class="cc"># Enumerate venue IDs 1–500 with your own auth token</span>
+ffuf -u <span class="cf">"https://sandbox.veris.in/api/v1/gatekeepers/?venue_id=FUZZ"</span> \
+     -H <span class="cs">"Authorization: Token YOUR_TOKEN"</span> \
+     -w <span class="cv">&lt;(seq 1 500)</span> \
+     -mc <span class="cn">200</span> \
+     -mr <span class="cs">"org_name"</span>     <span class="cc"># match responses that contain org data</span>
+
+<span class="cc"># Any 200 response that contains a different org_name than your own = IDOR confirmed</span></code></pre>
+      </div>
+
+      <div class="post-note" data-type="tip"><strong>Why multi-tenant SaaS is a fertile IDOR hunting ground:</strong> the entire value proposition of SaaS is that many organisations share the same codebase and infrastructure. Every resource — venue, account, team, project, invoice — has an ID that all tenants share the same ID space for. A single missing ownership check exposes data across every tenant on the platform. The developer who wrote the endpoint may have only ever thought about their own organisation's data — never about a different org trying to access it.</div>
+
+      <hr class="post-divider" />
+
+      <h2 id="recognition">Recognition</h2>
+      <p>Veris acknowledged the responsible disclosure of this vulnerability and issued a <strong>Certificate of Appreciation</strong> to the researcher, Smit B. Shah, for helping improve the security of their platform.</p>
+
+      <figure class="post-figure">
+        <div class="post-figure-header">
+          <div class="post-figure-dots"><span></span><span></span><span></span></div>
+          <span class="post-figure-label">Certificate of Appreciation — Veris / HackerOne #120305</span>
+        </div>
+        <img src="../../assets/images/blog/h1-120305-certificate.png"
+             alt="Certificate of Appreciation from Veris presented to Smit B. Shah for responsible security vulnerability disclosure, referencing HackerOne report #120305, dated 17 March 2016, signed by Nayan Goenka, Product Head"
+             loading="lazy" />
+        <figcaption>Certificate of Appreciation issued by Veris to Smit B. Shah — dated 17 March 2016, signed by Nayan Goenka (Product Head). References HackerOne Report #120305 and acknowledges the responsible disclosure that helped enhance the security of the Veris platform.</figcaption>
+      </figure>
+
+      <hr class="post-divider" />
+
+      <h2 id="refs">References</h2>
+      <ul class="post-refs">
+        <li><a href="https://hackerone.com/reports/120305" target="_blank" rel="noopener">[1] HackerOne Report #120305 — IDOR on Veris via venue_id parameter</a></li>
+        <li><a href="https://owasp.org/www-project-web-security-testing-guide/latest/4-Web_Application_Security_Testing/05-Authorization_Testing/04-Testing_for_Insecure_Direct_Object_References" target="_blank" rel="noopener">[2] OWASP WSTG — Testing for Insecure Direct Object References</a></li>
+        <li><a href="https://portswigger.net/web-security/access-control/idor" target="_blank" rel="noopener">[3] PortSwigger — Insecure Direct Object References (IDOR)</a></li>
+        <li><a href="https://cheatsheetseries.owasp.org/cheatsheets/Insecure_Direct_Object_Reference_Prevention_Cheat_Sheet.html" target="_blank" rel="noopener">[4] OWASP — IDOR Prevention Cheat Sheet</a></li>
+        <li><a href="https://owasp.org/www-project-api-security/" target="_blank" rel="noopener">[5] OWASP API Security Top 10 — API1:2023 Broken Object Level Authorization</a></li>
+      </ul>
+
+      <div class="post-nav">
+        <a href="./blog-h1-125027-xss-shopify-partners.html" class="post-nav-link">
+          <span class="post-nav-dir">← Previous Post</span>
+          <span class="post-nav-title">Stored XSS on Shopify Partners #125027</span>
+        </a>
+        <a href="../index.html" class="post-nav-link next">
+          <span class="post-nav-dir">All Posts →</span>
+          <span class="post-nav-title">Back to Blog Index</span>
+        </a>
+      </div>
+
+    </article>
+  </div>
+
+</div>
+
+<footer>
+  <p>© 2025 <span class="f-name">Darshak Patel</span> · B.Tech CSE Cybersecurity</p>
+  <div class="f-links">
+    <a href="../../index.html">Home</a>
+    <a href="../../pages/about.html">About</a>
+    <a href="../../pages/expertise.html">Expertise</a>
+    <a href="../../pages/certifications.html">Certifications</a>
+    <a href="../../pages/achievements.html">Achievements</a>
+    <a href="../../pages/tools.html">Tools</a>
+    <a href="../../pages/resources.html">Resources</a>
+    <a href="../index.html">Blog</a>
+    <a href="../../pages/contact.html">Contact</a>
+  </div>
+</footer>
+
+<script src="../../assets/js/main.js"></script>
+<script>
+  (function () {
+    const bar = document.getElementById('read-progress');
+    function update() {
+      const h = document.documentElement;
+      const pct = (h.scrollTop / (h.scrollHeight - h.clientHeight)) * 100;
+      bar.style.width = Math.min(pct, 100) + '%';
+    }
+    window.addEventListener('scroll', update, { passive: true });
+    update();
+  })();
+  (function () {
+    const links = document.querySelectorAll('.toc-list a');
+    const headings = Array.from(document.querySelectorAll('.post-article h2[id]'));
+    if (!links.length || !headings.length) return;
+    function onScroll() {
+      const top = window.scrollY + 100;
+      let active = headings[0];
+      for (const h of headings) { if (h.offsetTop <= top) active = h; }
+      links.forEach(l => l.classList.toggle('active', l.getAttribute('href') === '#' + active.id));
+    }
+    window.addEventListener('scroll', onScroll, { passive: true });
+    onScroll();
+  })();
+</script>
+</body>
+</html>

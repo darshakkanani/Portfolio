@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="IDOR on Vimeo — HackerOne #52181. How the comment_edit_form endpoint leaked the full content of any private video comment to any authenticated user who knew the comment ID — no video access required." />
+  <title>IDOR: Read Any Private Video Comment on Vimeo via comment_edit_form — HackerOne #52181 | Blog — Darshak Patel</title>
+  <link rel="stylesheet" href="../../assets/css/style.css" />
+  <link rel="stylesheet" href="../../assets/css/pages/post.css" />
+</head>
+<body>
+
+<div class="read-progress" id="read-progress"></div>
+<canvas id="particles"></canvas>
+
+<nav>
+  <a href="../../index.html" class="nav-logo">
+    <span class="bracket">[</span>dp<span class="bracket">]</span>
+  </a>
+  <ul class="nav-links">
+    <li><a href="../../pages/about.html">about</a></li>
+    <li><a href="../../pages/expertise.html">expertise</a></li>
+    <li><a href="../../pages/certifications.html">certifications</a></li>
+    <li><a href="../../pages/achievements.html">achievements</a></li>
+    <li><a href="../../pages/tools.html">tools</a></li>
+    <li><a href="../../pages/resources.html">resources</a></li>
+    <li><a href="../index.html" class="active">blog</a></li>
+    <li><a href="../../pages/contact.html">contact</a></li>
+  </ul>
+  <a href="mailto:your@email.com" class="nav-cta">Hire Me</a>
+  <div class="nav-hamburger" aria-label="menu">
+    <span></span><span></span><span></span>
+  </div>
+</nav>
+
+<div class="post-wrap">
+
+  <!-- ── Hero ── -->
+  <div class="post-hero" data-vuln="idor">
+    <div class="post-hero-inner">
+      <a href="../index.html" class="post-back">← Back to Blog</a>
+      <div class="post-vuln-badge">⬡ IDOR</div>
+      <div class="post-meta">
+        <span class="post-tag">Bug Bounty</span>
+        <span class="post-tag">Web App</span>
+        <span class="post-tag" data-sev="high">Bounty Awarded</span>
+        <span class="post-meta-sep">·</span>
+        <span>Jul 3, 2025</span>
+        <span class="post-meta-sep">·</span>
+        <span>8 min read</span>
+      </div>
+      <h1 class="post-h1">IDOR: Read Any Private Video Comment on Vimeo via <code>comment_edit_form</code> — HackerOne #52181</h1>
+      <p class="post-sub">How the <code>comment_edit_form</code> action endpoint on Vimeo returned the full text of any comment — including comments on password-protected and private videos — to any authenticated user who simply knew the <code>comment_id</code>. No access to the video. No ownership of the comment. Just a number in a GET request.</p>
+      <div class="post-stats">
+        <div class="post-stat">
+          <span class="post-stat-label">Program</span>
+          <span class="post-stat-value">Vimeo</span>
+        </div>
+        <div class="post-stat">
+          <span class="post-stat-label">Report</span>
+          <span class="post-stat-value">#52181</span>
+        </div>
+        <div class="post-stat">
+          <span class="post-stat-label">Outcome</span>
+          <span class="post-stat-value">Resolved + Bounty</span>
+        </div>
+        <div class="post-stat">
+          <span class="post-stat-label">Reporter</span>
+          <span class="post-stat-value">@patrik</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="post-body">
+    <a href="https://hackerone.com/reports/52181" target="_blank" rel="noopener" class="post-source">
+      ↗ HackerOne Report #52181 — Vimeo
+    </a>
+    <p class="post-attr">Independent educational breakdown of a publicly disclosed report. Credit for the original finding belongs to @patrik.</p>
+  </div>
+
+  <div class="post-layout">
+
+    <aside class="post-toc">
+      <div class="toc-label">Contents</div>
+      <ul class="toc-list">
+        <li><a href="#background">Background</a></li>
+        <li><a href="#context">The Target</a></li>
+        <li><a href="#discovery">How It Was Found</a></li>
+        <li><a href="#bug">The Bug</a></li>
+        <li><a href="#request">The Exact Request</a></li>
+        <li><a href="#poc">Proof of Concept</a></li>
+        <li><a href="#impact">Real-World Impact</a></li>
+        <li><a href="#why-edit-form">Why the Edit Form?</a></li>
+        <li><a href="#fix">The Fix</a></li>
+        <li><a href="#hunting">How to Hunt It</a></li>
+        <li><a href="#refs">References</a></li>
+      </ul>
+    </aside>
+
+    <article class="post-article">
+
+      <h2 id="background">Background</h2>
+      <p><strong>Insecure Direct Object Reference (IDOR)</strong> is an access control flaw where a server exposes an internal identifier — a comment ID, a user ID, a file handle — and fails to verify that the requesting user is authorised to act on the object that identifier points to. Change the number, get someone else's data.</p>
+      <p>This report, submitted by @patrik on <strong>16 March 2015</strong>, is a clean and elegant IDOR that highlights something hunters often overlook: <strong>edit form endpoints are just as dangerous as view endpoints</strong>. When an edit form pre-populates a text field with existing data, it is by definition reading that data — and if that read isn't access-controlled, it becomes an information disclosure bug wearing an edit form disguise.</p>
+      <p>Vimeo resolved the issue and awarded a bounty. The report was publicly disclosed on <strong>4 May 2015</strong>.</p>
+
+      <h2 id="context">The Target</h2>
+      <p>Vimeo is a video-hosting platform built around a privacy-first model. Unlike YouTube, Vimeo allows creators to mark videos as <strong>private</strong> (visible only to the creator) or <strong>password-protected</strong> (accessible only to viewers who know the password). Comments on such videos are, by the platform's promise, just as private as the video itself — only people who can see the video should be able to see its comments.</p>
+      <p>Vimeo's comment system works as you would expect: authenticated users who have access to a video can comment on it. Each comment gets a unique <code>comment_id</code> assigned by the server. The platform also allows comment authors to edit their own comments after posting.</p>
+      <p>That edit functionality is where the vulnerability lived.</p>
+
+      <h2 id="discovery">How It Was Found</h2>
+      <p>@patrik notes in the report that this finding came <em>"in combination with my previous bug"</em> — suggesting it was discovered as part of an active testing session while investigating the same application area. This is a common pattern for experienced hunters: one finding opens a window that leads to another.</p>
+      <p>The researcher was testing Vimeo's comment editing workflow and proxying all traffic through Burp Suite. When clicking the edit button on a comment, Burp captured the outgoing request. The researcher noticed two things:</p>
+      <ol>
+        <li>The edit form request included a <code>comment_id</code> parameter as a plain integer in the query string.</li>
+        <li>The server's response to that request <strong>returned the comment's full text</strong> in the body — pre-populating the edit form.</li>
+      </ol>
+      <p>The question any hunter should immediately ask: <em>what happens if I put a different comment ID in that request?</em> @patrik asked exactly that.</p>
+
+      <div class="post-note" data-type="tip"><strong>Hunter's instinct:</strong> any time a form pre-populates with data retrieved from the server, the retrieval is a read operation. If that read is triggered client-side by an ID in a URL parameter, test it like any other read IDOR — swap the ID with one from a different account and see what comes back.</div>
+
+      <h2 id="bug">The Bug</h2>
+      <p>The <code>comment_edit_form</code> action on Vimeo's comment endpoint accepted a <code>comment_id</code> integer and returned the comment's content in an edit form — <strong>with absolutely no check that the requesting user had access to the video the comment belonged to, or that they owned the comment itself</strong>.</p>
+      <p>Vimeo had correctly restricted direct access to private videos: an unauthenticated user or a user without the video password could not load the video page. But the <code>comment_edit_form</code> endpoint was a back-channel that bypassed all of that. It operated at the comment-object level and only looked up the comment by its ID — it never verified whether the video it belonged to was accessible to the caller.</p>
+      <p>The access control model had a <strong>missing layer</strong>:</p>
+
+      <div class="post-code">
+        <div class="post-code-header">
+          <div class="post-code-dots"><span></span><span></span><span></span></div>
+          <span class="post-code-label">Access control model — what existed vs what was missing</span>
+        </div>
+        <pre><code><span class="cc"># What Vimeo checked on the video page</span>
+<span class="ck">GET</span> /122303200
+<span class="cc"># ✓ Is the video public?</span>
+<span class="cc"># ✓ Is the user authenticated (if private)?</span>
+<span class="cc"># ✓ Does the user have the password (if password-protected)?</span>
+
+<span class="cc"># What Vimeo checked on the edit-form endpoint</span>
+<span class="ck">GET</span> /122303200?<span class="cv">comment_id=</span><span class="ch">13011164</span>&amp;action=<span class="cf">comment_edit_form</span>
+<span class="cc"># ✓ Is the user authenticated?</span>
+<span class="cc"># ✗ Does the user have access to the VIDEO this comment belongs to?  ← MISSING</span>
+<span class="cc"># ✗ Does the user OWN this comment?                                  ← MISSING</span>
+<span class="cc"># Result: comment text returned to anyone who is logged in</span></code></pre>
+      </div>
+
+      <p>Being logged in to Vimeo was the only requirement. Any authenticated Vimeo account — including free basic accounts — could read the content of any comment on any video by hitting this endpoint with a known <code>comment_id</code>.</p>
+
+      <h2 id="request">The Exact Request</h2>
+      <p>@patrik included the full HTTP request in the report. Here it is, reproduced exactly as disclosed (personal cookie values are from the researcher's own session and are now long expired):</p>
+
+      <div class="post-code">
+        <div class="post-code-header">
+          <div class="post-code-dots"><span></span><span></span><span></span></div>
+          <span class="post-code-label">Exact vulnerable GET request from the report</span>
+        </div>
+        <pre><code><span class="ck">GET</span> <span class="cf">/122303200</span><span class="cv">?comment_id=</span><span class="ch">13011164</span><span class="cv">&amp;is_sticky=0&amp;action=comment_edit_form</span> HTTP/1.1
+<span class="ck">Host:</span> vimeo.com
+<span class="ck">Connection:</span> keep-alive
+<span class="ck">Accept:</span> text/html, application/xml, text/xml, */*
+<span class="ck">X-Requested-With:</span> XMLHttpRequest
+<span class="ck">User-Agent:</span> Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_2) AppleWebKit/537.36
+<span class="ck">Referer:</span> https://vimeo.com/122303200
+<span class="ck">Cookie:</span> <span class="cs">[researcher's session cookies]</span></code></pre>
+      </div>
+
+      <p>A few things to notice in this request:</p>
+      <ul>
+        <li><strong><code>/122303200</code></strong> — this is the video ID in the URL path. It appears to scope the request to a specific video, but the server never validated that <code>comment_id=13011164</code> actually belongs to video <code>122303200</code>. The video ID in the path was essentially decorative in this context.</li>
+        <li><strong><code>action=comment_edit_form</code></strong> — this is the action parameter that triggers the edit form response. It is the key to why this endpoint returns comment text rather than a form of some other kind.</li>
+        <li><strong><code>is_sticky=0</code></strong> — a secondary parameter indicating whether the comment is pinned; irrelevant to the vulnerability but present in the real request.</li>
+        <li><strong><code>X-Requested-With: XMLHttpRequest</code></strong> — this is an AJAX request, indicating the edit form was loaded dynamically in the page. This is typical for inline editing UIs — and AJAX endpoints are frequently under-tested for authorization compared to full page loads.</li>
+      </ul>
+
+      <div class="post-note" data-type="tip"><strong>Key observation for hunters:</strong> AJAX/XHR endpoints that return partial page content (forms, modals, widgets) are a rich source of IDOR bugs. They are internal, often not directly linked, and developers frequently skip authorization checks on them because they assume the endpoint is "only called by the UI." It's always called by the UI — until a researcher swaps the ID.</div>
+
+      <h2 id="poc">Proof of Concept</h2>
+      <p>@patrik demonstrated the bug with a two-account PoC and backed it with a <strong>video recording</strong> hosted on Vimeo itself (report #52181 references <code>https://vimeo.com/122306957</code>, password <code>vimeopoc</code>):</p>
+      <ol>
+        <li><strong>Account 1</strong> posts a comment on a <em>private</em> video. The researcher intercepts the resulting request in Burp Suite and saves the <code>comment_id</code> from the server's response.</li>
+        <li><strong>Account 2</strong> — running in a separate browser with a completely different Vimeo account — has no access to the private video at all. It cannot load the video page.</li>
+        <li>Account 2 intercepts the edit-form request in Burp Suite, modifies the <code>comment_id</code> to the value captured in step 1, and sends it.</li>
+        <li><strong>Result:</strong> the server returns the full text of Account 1's private comment in Account 2's edit form. The "secret phrase" written in the comment is fully visible to Account 2 — despite Account 2 having zero access to the video.</li>
+      </ol>
+
+      <div class="post-code">
+        <div class="post-code-header">
+          <div class="post-code-dots"><span></span><span></span><span></span></div>
+          <span class="post-code-label">Two-account PoC — Burp Repeater session swap</span>
+        </div>
+        <pre><code><span class="cc">── Account 1 (legitimate — has video access) ──────────────────</span>
+<span class="cc"># 1. Post a comment on a private video</span>
+<span class="cc"># 2. Intercept the response — capture comment_id from the reply</span>
+<span class="cc">#    e.g. comment_id = 13011164</span>
+
+<span class="cc">── Account 2 (attacker — NO video access) ─────────────────────</span>
+<span class="cc"># 3. In Burp Repeater, send the edit-form request with Account 2's session</span>
+<span class="ck">GET</span> <span class="cf">/122303200</span><span class="cv">?comment_id=</span><span class="ch">13011164</span><span class="cv">&amp;is_sticky=0&amp;action=comment_edit_form</span> HTTP/1.1
+<span class="ck">Host:</span> vimeo.com
+<span class="ck">X-Requested-With:</span> XMLHttpRequest
+<span class="ck">Cookie:</span> <span class="cs">vimeo=ACCOUNT_2_SESSION</span>
+
+<span class="cc"># Response: HTTP 200</span>
+<span class="cc"># Body: edit form pre-populated with Account 1's private comment text</span>
+<span class="cc"># Account 2 can now read the comment — despite having no video access</span></code></pre>
+      </div>
+
+      <div class="post-note"><strong>The PoC video made the impact undeniable.</strong> Including a screen recording that shows the exact steps, the ID swap, and the comment appearing in the attacker's browser is the gold standard for reporting IDOR. It removes all ambiguity from the triage process and almost always results in faster resolution.</div>
+
+      <h2 id="impact">Real-World Impact</h2>
+      <p>Vimeo's privacy model is one of its core selling points. Creators use private and password-protected videos for unreleased work, client deliverables, confidential presentations, and sensitive personal content. The expectation is absolute: <em>if you cannot see my video, you cannot see anything about it, including what people said about it.</em></p>
+      <p>This IDOR broke that expectation completely for comments. The concrete impact:</p>
+      <ul>
+        <li><strong>Private comment content exposed.</strong> The text of any comment on any private or password-protected video was readable to any authenticated Vimeo user — provided they knew the <code>comment_id</code>.</li>
+        <li><strong>Comment IDs are integers and likely sequential.</strong> The example in the report shows <code>comment_id=1301116</code> as a 7-digit integer and <code>13011164</code> as 8 digits. Sequential or near-sequential IDs mean an attacker could enumerate a large range and harvest comments at scale — no specific target knowledge required.</li>
+        <li><strong>No interaction required from the victim.</strong> The comment owner has no way to know their private comment was read. No notification, no access log, no audit trail visible to the user.</li>
+        <li><strong>Confidential creative and business communication exposed.</strong> Vimeo is used by film studios, agencies, and enterprises for review workflows. Comments on private review links often contain director's notes, client feedback, legal annotations, and unreleased creative content. Exposing these comments has real business and competitive harm.</li>
+      </ul>
+
+      <div class="post-note" data-type="tip"><strong>Why this is more impactful than it first appears:</strong> the data exposed is user-generated content tied to a private context. Unlike leaking a generic database field, a comment is a direct, personal communication the author explicitly marked private by choosing to post it on a private video. The privacy violation is intentional from the author's perspective — making the breach of that expectation especially serious.</div>
+
+      <h2 id="why-edit-form">Why the Edit Form? — The Hidden Read Inside Every Write</h2>
+      <p>This finding carries an important lesson about where IDOR vulnerabilities hide. Most hunters instinctively look for read IDORs on <em>view</em> endpoints — the profile page, the order confirmation, the document download. But <strong>edit forms are read endpoints in disguise</strong>.</p>
+      <p>Think about what an edit form does:</p>
+      <ol>
+        <li>The user clicks "Edit" on a resource they own.</li>
+        <li>The browser fires a request to the server: "give me the current content of object X so I can pre-fill the form."</li>
+        <li>The server reads object X and returns its content to the client.</li>
+        <li>The user edits the pre-filled text and submits.</li>
+      </ol>
+      <p>Step 3 is a <strong>read operation</strong>. If the server doesn't verify ownership in step 3 — only in step 4 when the edited content is submitted — the edit form becomes an unrestricted read endpoint for any object whose ID you can supply.</p>
+      <p>In this case Vimeo's edit form endpoint had no ownership check at all on the GET (pre-fill) side. The access control, if any existed, was presumably only on the POST (submit edit) side — but the damage was done in the GET: the content was already exposed.</p>
+
+      <div class="post-code">
+        <div class="post-code-header">
+          <div class="post-code-dots"><span></span><span></span><span></span></div>
+          <span class="post-code-label">Edit form lifecycle — where the read happens</span>
+        </div>
+        <pre><code><span class="cc">── Normal edit flow ────────────────────────────────────────────</span>
+<span class="cc"># Step 1: load edit form (READ — returns existing content)</span>
+<span class="ck">GET</span> /video?<span class="cv">comment_id=</span><span class="cok">MY_OWN_ID</span>&amp;action=<span class="cf">comment_edit_form</span>
+<span class="cc"># ← authorization check needed HERE (missing in this bug)</span>
+
+<span class="cc"># Step 2: submit edited content (WRITE)</span>
+<span class="ck">POST</span> /video/comment/<span class="cok">MY_OWN_ID</span>/edit  body: text=new_content
+<span class="cc"># ← authorization check typically present here</span>
+
+<span class="cc">── Attacker flow ───────────────────────────────────────────────</span>
+<span class="cc"># Only step 1 is needed — never need to reach step 2</span>
+<span class="ck">GET</span> /video?<span class="cv">comment_id=</span><span class="ch">VICTIM_ID</span>&amp;action=<span class="cf">comment_edit_form</span>
+<span class="cc"># Response contains victim's comment text — read achieved</span>
+<span class="cc"># Attacker never submits an edit — just harvests the content</span></code></pre>
+      </div>
+
+      <h2 id="fix">The Fix</h2>
+      <p>The correct remediation is to add an authorization check on the <code>comment_edit_form</code> GET handler before returning any comment data. The check needs two layers:</p>
+
+      <div class="post-code">
+        <div class="post-code-header">
+          <div class="post-code-dots"><span></span><span></span><span></span></div>
+          <span class="post-code-label">Pseudocode — correct two-layer authorization</span>
+        </div>
+        <pre><code><span class="cc"># Before the fix — no authorization on the read side</span>
+<span class="ck">def</span> <span class="cf">comment_edit_form</span>(video_id, comment_id):
+    comment = Comment.find(comment_id)
+    <span class="ck">return</span> render_edit_form(comment)   <span class="cc"># ← exposed to anyone logged in</span>
+
+<span class="cc"># After the fix — two-layer check</span>
+<span class="ck">def</span> <span class="cf">comment_edit_form</span>(video_id, comment_id):
+    video   = Video.find(video_id)
+    comment = Comment.find(comment_id)
+
+    <span class="cc"># Layer 1: does the requesting user have access to THIS video?</span>
+    <span class="ck">if not</span> current_user.<span class="cv">can_access</span>(video):
+        <span class="ck">return</span> <span class="ch">403 Forbidden</span>
+
+    <span class="cc"># Layer 2: does this comment actually belong to this video?</span>
+    <span class="ck">if</span> comment.<span class="cv">video_id</span> != video.<span class="cv">id</span>:
+        <span class="ck">return</span> <span class="ch">403 Forbidden</span>
+
+    <span class="cc"># (Optional Layer 3 for edit): does the user OWN this comment?</span>
+    <span class="ck">if</span> comment.<span class="cv">author_id</span> != current_user.<span class="cv">id</span>:
+        <span class="ck">return</span> <span class="ch">403 Forbidden</span>
+
+    <span class="ck">return</span> render_edit_form(comment)   <span class="cc"># ← safe</span></code></pre>
+      </div>
+
+      <p>The critical fix is <strong>Layer 1</strong> — checking video access before returning any comment data. Without it, the comment content is readable regardless of video privacy. Layer 2 prevents cross-video comment access (using a comment ID from a different video). Layer 3 ensures only the comment's own author can load the edit form — the standard expectation for any edit operation.</p>
+
+      <h2 id="hunting">How to Hunt IDOR on Edit Form Endpoints</h2>
+      <ul>
+        <li>
+          <strong>Intercept every edit / modify action in your testing session.</strong>
+          In Burp Suite, use the "Filter" on Site Map to surface all requests containing <code>edit</code>, <code>modify</code>, <code>update</code>, <code>change</code>, <code>revise</code> in the URL or action parameter. These are your edit-form candidates.
+        </li>
+        <li>
+          <strong>Separate the GET (pre-fill) from the POST (submit).</strong>
+          Many edit workflows have two requests: a GET that loads the current content, and a POST/PUT that saves the changes. Test both — but prioritise the GET. If the GET has no authorization check, you already have an information disclosure IDOR even without submitting anything.
+        </li>
+        <li>
+          <strong>Test action parameters the same way you test ID parameters.</strong>
+          In this report, the vulnerability required both a known <code>comment_id</code> and the <code>action=comment_edit_form</code> parameter. Application-specific action parameters like this are often less scrutinised by developers than plain numeric IDs. Map all possible <code>action=</code> values by reading the JavaScript.
+        </li>
+        <li>
+          <strong>Two-account swap on the GET request.</strong>
+          With Account A, click edit on a resource you own. In Burp, copy the GET request. Switch to Account B's session cookie in Repeater and replay. If Account B receives Account A's content — IDOR confirmed on the read side.
+        </li>
+        <li>
+          <strong>Check cross-resource boundaries.</strong>
+          In Vimeo's case, the video ID in the path was decorative. Test whether you can supply a valid comment ID that belongs to a <em>different</em> video than the one in the path. This probes whether the server validates the relationship between the parent resource (video) and the child resource (comment).
+        </li>
+        <li>
+          <strong>AJAX / XHR endpoints deserve special attention.</strong>
+          Edit forms loaded dynamically (via XHR, as in this case — note the <code>X-Requested-With: XMLHttpRequest</code> header) are often less rigorously reviewed than full-page endpoints. They are internal sub-requests the developer may have never considered a security boundary. They almost always are.
+        </li>
+        <li>
+          <strong>Enumerate comment / resource IDs if they are sequential.</strong>
+          If the IDs are integers starting from a small number, a quick FFUF run across a range will confirm the scale of impact — how many comments are exposed. Use this in your report to demonstrate blast radius, not just the existence of the bug.
+        </li>
+      </ul>
+
+      <div class="post-code">
+        <div class="post-code-header">
+          <div class="post-code-dots"><span></span><span></span><span></span></div>
+          <span class="post-code-label">ffuf — enumerate comment IDs on the edit-form endpoint</span>
+        </div>
+        <pre><code><span class="cc"># Enumerate comment IDs using Account B's session</span>
+<span class="cc"># Filter: 200 responses with non-zero content length = comment content exposed</span>
+ffuf -u <span class="cf">"https://vimeo.com/VIDEO_ID?comment_id=FUZZ&amp;is_sticky=0&amp;action=comment_edit_form"</span> \
+     -H <span class="cs">"Cookie: vimeo=ACCOUNT_B_SESSION"</span> \
+     -H <span class="cs">"X-Requested-With: XMLHttpRequest"</span> \
+     -w <span class="cv">&lt;(seq 13000000 13020000)</span> \
+     -mc <span class="cn">200</span> \
+     -fs <span class="cn">0</span>
+
+<span class="cc"># Each match = a comment whose full text is readable without video access</span>
+<span class="cc"># Use only test account data — never harvest real user comments</span></code></pre>
+      </div>
+
+      <div class="post-note"><strong>Responsible disclosure:</strong> when confirming this type of IDOR, use comments posted by your own test accounts on your own private test videos. Demonstrate that the authorization check is missing — do not harvest real user content. The PoC is complete the moment you see your own test comment returned to the second account. Document the request/response and stop.</div>
+
+      <hr class="post-divider" />
+
+      <h2 id="refs">References</h2>
+      <ul class="post-refs">
+        <li><a href="https://hackerone.com/reports/52181" target="_blank" rel="noopener">[1] HackerOne Report #52181 — IDOR: Read any private comment on Vimeo</a></li>
+        <li><a href="https://owasp.org/www-project-web-security-testing-guide/latest/4-Web_Application_Security_Testing/05-Authorization_Testing/04-Testing_for_Insecure_Direct_Object_References" target="_blank" rel="noopener">[2] OWASP WSTG — Testing for Insecure Direct Object References</a></li>
+        <li><a href="https://portswigger.net/web-security/access-control/idor" target="_blank" rel="noopener">[3] PortSwigger Web Security Academy — IDOR</a></li>
+        <li><a href="https://cheatsheetseries.owasp.org/cheatsheets/Insecure_Direct_Object_Reference_Prevention_Cheat_Sheet.html" target="_blank" rel="noopener">[4] OWASP IDOR Prevention Cheat Sheet</a></li>
+        <li><a href="https://cwe.mitre.org/data/definitions/639.html" target="_blank" rel="noopener">[5] CWE-639 — Authorization Bypass Through User-Controlled Key</a></li>
+        <li><a href="https://cwe.mitre.org/data/definitions/284.html" target="_blank" rel="noopener">[6] CWE-284 — Improper Access Control</a></li>
+      </ul>
+
+      <div class="post-nav">
+        <a href="./blog-h1-800608-idor-shopify-orders.html" class="post-nav-link">
+          <span class="post-nav-dir">← Previous Post</span>
+          <span class="post-nav-title">IDOR: Delete Any User's Saved Searches on U.S. DoD Portal #800608</span>
+        </a>
+      </div>
+
+    </article>
+  </div>
+
+</div>
+
+<footer>
+  <p>© 2025 <span class="f-name">Darshak Patel</span> · B.Tech CSE Cybersecurity</p>
+  <div class="f-links">
+    <a href="../../index.html">Home</a>
+    <a href="../../pages/about.html">About</a>
+    <a href="../../pages/expertise.html">Expertise</a>
+    <a href="../../pages/certifications.html">Certifications</a>
+    <a href="../../pages/achievements.html">Achievements</a>
+    <a href="../../pages/tools.html">Tools</a>
+    <a href="../../pages/resources.html">Resources</a>
+    <a href="../index.html">Blog</a>
+    <a href="../../pages/contact.html">Contact</a>
+  </div>
+</footer>
+
+<script src="../../assets/js/main.js"></script>
+<script>
+  (function () {
+    const bar = document.getElementById('read-progress');
+    function update() {
+      const h = document.documentElement;
+      const pct = (h.scrollTop / (h.scrollHeight - h.clientHeight)) * 100;
+      bar.style.width = Math.min(pct, 100) + '%';
+    }
+    window.addEventListener('scroll', update, { passive: true });
+    update();
+  })();
+  (function () {
+    const links = document.querySelectorAll('.toc-list a');
+    const headings = Array.from(document.querySelectorAll('.post-article h2[id]'));
+    if (!links.length || !headings.length) return;
+    function onScroll() {
+      const top = window.scrollY + 100;
+      let active = headings[0];
+      for (const h of headings) { if (h.offsetTop <= top) active = h; }
+      links.forEach(l => l.classList.toggle('active', l.getAttribute('href') === '#' + active.id));
+    }
+    window.addEventListener('scroll', onScroll, { passive: true });
+    onScroll();
+  })();
+</script>
+</body>
+</html>

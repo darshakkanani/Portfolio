@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="IDOR on Veris — HackerOne #120291. How changing the gatekeeper integer ID in a PUT request allowed any authenticated user to remotely overwrite the terminal configuration of any other organization's Veris terminal." />
+  <title>IDOR: Set Any Terminal's Data Remotely on Veris via Gatekeeper ID — HackerOne #120291 | Blog — Darshak Patel</title>
+  <link rel="stylesheet" href="../../assets/css/style.css" />
+  <link rel="stylesheet" href="../../assets/css/pages/post.css" />
+</head>
+<body>
+
+<div class="read-progress" id="read-progress"></div>
+<canvas id="particles"></canvas>
+
+<nav>
+  <a href="../../index.html" class="nav-logo">
+    <span class="bracket">[</span>dp<span class="bracket">]</span>
+  </a>
+  <ul class="nav-links">
+    <li><a href="../../pages/about.html">about</a></li>
+    <li><a href="../../pages/expertise.html">expertise</a></li>
+    <li><a href="../../pages/certifications.html">certifications</a></li>
+    <li><a href="../../pages/achievements.html">achievements</a></li>
+    <li><a href="../../pages/tools.html">tools</a></li>
+    <li><a href="../../pages/resources.html">resources</a></li>
+    <li><a href="../index.html" class="active">blog</a></li>
+    <li><a href="../../pages/contact.html">contact</a></li>
+  </ul>
+  <a href="mailto:your@email.com" class="nav-cta">Hire Me</a>
+  <div class="nav-hamburger" aria-label="menu">
+    <span></span><span></span><span></span>
+  </div>
+</nav>
+
+<div class="post-wrap">
+
+  <!-- ── Hero ── -->
+  <div class="post-hero" data-vuln="idor">
+    <div class="post-hero-inner">
+      <a href="../index.html" class="post-back">← Back to Blog</a>
+      <div class="post-vuln-badge">⬡ IDOR</div>
+      <div class="post-meta">
+        <span class="post-tag">Bug Bounty</span>
+        <span class="post-tag">Web App</span>
+        <span class="post-tag" data-sev="critical">Critical</span>
+        <span class="post-meta-sep">·</span>
+        <span>Jul 6, 2025</span>
+        <span class="post-meta-sep">·</span>
+        <span>9 min read</span>
+      </div>
+      <h1 class="post-h1">IDOR: Set Any Terminal's Data Remotely on Veris via Gatekeeper ID — HackerOne #120291</h1>
+      <p class="post-sub">How changing the integer gatekeeper ID in a PUT request allowed any authenticated Veris user to remotely overwrite the complete terminal configuration of any other organization on the platform — including branding, theme, and customization data — injecting arbitrary content into the physical check-in terminal of a company they had never interacted with.</p>
+      <div class="post-stats">
+        <div class="post-stat">
+          <span class="post-stat-label">Program</span>
+          <span class="post-stat-value">Veris</span>
+        </div>
+        <div class="post-stat">
+          <span class="post-stat-label">Report</span>
+          <span class="post-stat-value">#120291</span>
+        </div>
+        <div class="post-stat">
+          <span class="post-stat-label">Outcome</span>
+          <span class="post-stat-value">Resolved</span>
+        </div>
+        <div class="post-stat">
+          <span class="post-stat-label">Reporter</span>
+          <span class="post-stat-value">@itly (Hely H. Shah)</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="post-body">
+    <a href="https://hackerone.com/reports/120291" target="_blank" rel="noopener" class="post-source">
+      ↗ HackerOne Report #120291 — Veris
+    </a>
+    <p class="post-attr">Independent educational breakdown of a publicly disclosed report. Credit for the original finding belongs to @itly (Hely H. Shah).</p>
+  </div>
+
+  <div class="post-layout">
+
+    <aside class="post-toc">
+      <div class="toc-label">Contents</div>
+      <ul class="toc-list">
+        <li><a href="#background">Background</a></li>
+        <li><a href="#context">The Target</a></li>
+        <li><a href="#discovery">How It Was Found</a></li>
+        <li><a href="#bug">The Bug</a></li>
+        <li><a href="#poc">Proof of Concept</a></li>
+        <li><a href="#xss">The XSS Dimension</a></li>
+        <li><a href="#impact">Real-World Impact</a></li>
+        <li><a href="#read-vs-write">Read IDOR vs Write IDOR</a></li>
+        <li><a href="#fix">The Fix</a></li>
+        <li><a href="#hunting">How to Hunt It</a></li>
+        <li><a href="#refs">References</a></li>
+      </ul>
+    </aside>
+
+    <article class="post-article">
+
+      <h2 id="background">Background</h2>
+      <p><strong>Insecure Direct Object Reference (IDOR)</strong> is an access control vulnerability where a server accepts a client-supplied identifier to look up or modify a resource — and fails to verify the requesting user has permission to act on that resource. The attacker changes the ID; the server obeys.</p>
+      <p>This report — submitted by @itly (Hely H. Shah) on <strong>3 March 2016</strong> and disclosed on <strong>12 June 2016</strong> — is a <strong>write IDOR</strong> on Veris's gatekeeper terminal configuration endpoint. Unlike read IDORs that expose someone else's data, this one allowed the attacker to <em>overwrite</em> any terminal's complete configuration — remotely, silently, and with arbitrary content including XSS payloads.</p>
+      <p>Veris resolved the issue. No monetary bounty was offered by the program — Veris issued a <strong>Certificate of Appreciation</strong> for responsible disclosure.</p>
+
+      <div class="post-note" data-type="tip"><strong>This report is part of a pair.</strong> A related report, <a href="./blog-h1-120305-idor-veris-venueid.html">#120305</a>, found by a different researcher around the same time, covered a <em>read</em> IDOR on the same Veris API — exposing any venue's configuration via a <code>venue_id</code> query parameter. Together, they demonstrate that the same API had both read and write access control failures on its gatekeeper resources.</div>
+
+      <h2 id="context">The Target</h2>
+      <p><strong>Veris</strong> is a visitor management and physical access control platform used by organisations to manage entry to their offices and venues. It operates through a combination of a web portal (at <code>sandbox.veris.in</code>) and physical <strong>gatekeeper terminals</strong> — dedicated hardware devices installed at venue entry points that display a branded, customized check-in interface.</p>
+      <p>Each terminal is configured through the Veris web portal. An organization's admin sets the terminal's:</p>
+      <ul>
+        <li><strong>Name and description</strong> — the terminal's display label</li>
+        <li><strong>Theme and branding colors</strong> — primary/secondary theme and text colors</li>
+        <li><strong>Logo and assets</strong> — the organization's branding files displayed on the terminal screen</li>
+        <li><strong>Venue and check-in settings</strong> — which venue the terminal belongs to, check-in time offset, base gatekeeper assignment</li>
+      </ul>
+      <p>Each terminal has a unique integer <strong>gatekeeper ID</strong> used in the API URL path: <code>PUT /api/v1/gatekeeper/{id}/</code>. This ID is the object reference that the attacker controls — and that the server failed to validate against the authenticated user's organization.</p>
+
+      <h2 id="discovery">How It Was Found</h2>
+      <p>@itly was testing the Veris portal with Burp Suite intercepting all traffic. While updating a terminal's configuration in the web portal (renaming it, changing settings), they captured the outgoing PUT request and noted the gatekeeper ID in the URL path — a small integer like <code>26</code>.</p>
+      <p>The question was straightforward: <em>can I change that integer to a different terminal's ID and have the server apply my PUT body to that terminal instead?</em></p>
+      <p>The answer was yes. The server updated whatever terminal ID was in the path, with whatever data was in the body — with no check that the terminal belonged to the requesting user's organization.</p>
+
+      <div class="post-note" data-type="tip"><strong>Hunter's instinct:</strong> integer IDs in PUT request URL paths are the highest-priority write IDOR target. A PUT with <code>/api/v1/resource/{id}/</code> means "overwrite the resource at this ID with my body." If the server doesn't verify you own the resource at that ID, you can overwrite any resource on the platform. Always test PUT, PATCH, and DELETE path IDs — not just GET.</div>
+
+      <h2 id="bug">The Bug</h2>
+      <p>The gatekeeper update endpoint <code>PUT /api/v1/gatekeeper/{id}/</code> accepted the terminal ID as a path parameter and the full configuration as the request body. The server verified the caller was authenticated — a valid <code>Authorization</code> token was required — but performed <strong>no ownership check</strong> to confirm the terminal at the given ID belonged to the authenticated user's organization.</p>
+      <p>Any authenticated Veris user could PUT any body to any terminal ID and the server would overwrite that terminal's configuration silently.</p>
+
+      <div class="post-code">
+        <div class="post-code-header">
+          <div class="post-code-dots"><span></span><span></span><span></span></div>
+          <span class="post-code-label">Authorization gap — what was checked vs what was missing</span>
+        </div>
+        <pre><code><span class="cc"># What the server checked</span>
+<span class="ck">PUT</span> /api/v1/gatekeeper/<span class="ch">22</span>/ HTTP/1.1
+<span class="ck">Authorization:</span> Token <span class="cs">85e75775b5623fc543a729ed51a428fdb0b8b185</span>
+
+<span class="cc"># ✓ Is the user authenticated? (valid token check)</span>
+<span class="cc"># ✓ Does gatekeeper ID=22 exist?</span>
+
+<span class="cc"># ✗ Does this token's organization OWN gatekeeper ID=22?  ← MISSING</span>
+<span class="cc"># ✗ Is gatekeeper 22 in the same venue as the authenticated user? ← MISSING</span>
+
+<span class="cc"># Result: server overwrites terminal 22 with the attacker's body</span>
+<span class="cc"># HTTP 200 — configuration applied to a terminal the attacker doesn't own</span></code></pre>
+      </div>
+
+      <h2 id="poc">Proof of Concept</h2>
+      <p>The reporter attached two Burp Suite screenshots directly to the report — the original request and the edited request — demonstrating the attack precisely.</p>
+
+      <p><strong>Step 1 — Capture the original request.</strong> The researcher logs into their own Veris account and configures their own terminal (gatekeeper ID <code>26</code>). Burp Suite intercepts the PUT request as it leaves the browser.</p>
+
+      <!-- Original request image -->
+      <figure class="post-figure">
+        <div class="post-figure-header">
+          <div class="post-figure-dots"><span></span><span></span><span></span></div>
+          <span class="post-figure-label">Original request — <code>PUT /api/v1/gatekeeper/26/</code> (attacker's own terminal)</span>
+        </div>
+        <img src="../../assets/images/blog/h1-120291-burp-original.jpg"
+             alt="Burp Suite Original request tab showing PUT /api/v1/gatekeeper/26/ with Authorization token, Cookie user_uid=0091Q, and JSON body containing XSS payloads in name and description fields"
+             loading="lazy" />
+        <figcaption>The original intercepted PUT request to <code>/api/v1/gatekeeper/26/</code> — the attacker's own terminal. The <code>Authorization</code> token authenticates the user. The body contains the full terminal configuration including <code>name</code>, <code>description</code>, venue ID (<code>28</code>), and the complete <code>customization_data</code> array with theme colors, logo, assets, and check-in settings.</figcaption>
+      </figure>
+
+      <p><strong>Step 2 — Edit the gatekeeper ID.</strong> In Burp's "Edited request" tab, only the path is changed — the integer ID is modified from <code>26</code> (the attacker's own terminal) to <code>22</code> (a different organization's terminal). The body, including the full customization_data overwrite, remains unchanged. The same Authorization token is sent.</p>
+
+      <!-- Edited request image -->
+      <figure class="post-figure">
+        <div class="post-figure-header">
+          <div class="post-figure-dots"><span></span><span></span><span></span></div>
+          <span class="post-figure-label">Edited request — <code>PUT /api/v1/gatekeeper/22/</code> (another organization's terminal)</span>
+        </div>
+        <img src="../../assets/images/blog/h1-120291-burp-edited.jpg"
+             alt="Burp Suite Edited request tab showing PUT /api/v1/gatekeeper/22/ — gatekeeper ID changed from 26 to 22, same Authorization token, same body with XSS payloads in name and description"
+             loading="lazy" />
+        <figcaption>The edited request — only the path integer has changed from <code>26</code> to <code>22</code>. The <code>Authorization</code> token is identical. The body is the same configuration payload including the attacker-controlled <code>name</code> and <code>description</code> fields. The server accepts this and overwrites terminal 22's configuration with the attacker's data.</figcaption>
+      </figure>
+
+      <p><strong>Step 3 — Server overwrites the victim's terminal.</strong> The server processes the PUT as if the authenticated user owned terminal 22. It overwrites the terminal's complete configuration — name, description, theme colors, branding, and all customization settings — with whatever the attacker supplied in the body. The physical check-in terminal at the victim's venue immediately reflects these changes.</p>
+
+      <div class="post-code">
+        <div class="post-code-header">
+          <div class="post-code-dots"><span></span><span></span><span></span></div>
+          <span class="post-code-label">Full body sent in the attack — exact payload from the report</span>
+        </div>
+        <pre><code>{
+  <span class="cv">"csrfmiddlewaretoken"</span>: <span class="cs">"tdrJXzZM4BOIjItqehheVXU9SSHTrAyA"</span>,
+  <span class="cv">"name"</span>:        <span class="ch">"&lt;svg onload=alert(1)&gt;"</span>,   <span class="cc">← attacker-controlled — XSS payload</span>
+  <span class="cv">"description"</span>: <span class="ch">"&lt;svg onload=alert(2)&gt;"</span>,   <span class="cc">← attacker-controlled — XSS payload</span>
+  <span class="cv">"venue"</span>:       <span class="cs">"28"</span>,
+  <span class="cv">"base_gk"</span>:     <span class="cs">"1"</span>,
+  <span class="cv">"customization_data"</span>: [
+    { <span class="cv">"storage_type"</span>: <span class="cs">"char"</span>,  <span class="cv">"value"</span>: <span class="cs">"#018CCF"</span>,  <span class="cv">"code"</span>: <span class="cs">"primary_theme_color"</span> },
+    { <span class="cv">"storage_type"</span>: <span class="cs">"char"</span>,  <span class="cv">"value"</span>: <span class="cs">"#FFFFFF"</span>,  <span class="cv">"code"</span>: <span class="cs">"secondary_theme_color"</span> },
+    { <span class="cv">"storage_type"</span>: <span class="cs">"char"</span>,  <span class="cv">"value"</span>: <span class="cs">"#000000"</span>,  <span class="cv">"code"</span>: <span class="cs">"primary_text_color"</span> },
+    { <span class="cv">"storage_type"</span>: <span class="cs">"char"</span>,  <span class="cv">"value"</span>: <span class="cs">"#53585F"</span>,  <span class="cv">"code"</span>: <span class="cs">"secondary_text_color"</span> },
+    { <span class="cv">"storage_type"</span>: <span class="cs">"file"</span>,  <span class="cv">"value"</span>: <span class="cs">""</span>,         <span class="cv">"code"</span>: <span class="cs">"logo"</span> },
+    { <span class="cv">"storage_type"</span>: <span class="cs">"file"</span>,  <span class="cv">"value"</span>: <span class="cs">""</span>,         <span class="cv">"code"</span>: <span class="cs">"assets"</span> },
+    { <span class="cv">"storage_type"</span>: <span class="cs">"int"</span>,   <span class="cv">"value"</span>: <span class="cs">"600"</span>,      <span class="cv">"code"</span>: <span class="cs">"checkin_time_offset"</span> },
+    { <span class="cv">"storage_type"</span>: <span class="cs">"char"</span>,  <span class="cv">"value"</span>: <span class="cs">"Veris"</span>,    <span class="cv">"code"</span>: <span class="cs">"org_name"</span> }
+  ],
+  <span class="cv">"gk_id"</span>: <span class="cs">"26"</span>,   <span class="cc">← note: body still references 26, but the PATH says 22</span>
+  <span class="cv">"value"</span>: <span class="cs">""</span>
+}</code></pre>
+      </div>
+
+      <div class="post-note"><strong>No victim interaction required and no visible alert to the target organization.</strong> The configuration change takes effect immediately on the physical terminal. The victim organization may not notice until employees or visitors arrive at the terminal and see unexpected branding, content, or behaviour.</div>
+
+      <h2 id="xss">The XSS Dimension</h2>
+      <p>The reporter chose to set the terminal's <code>name</code> and <code>description</code> fields to SVG-based XSS payloads — <code>&lt;svg onload=alert(1)&gt;</code> and <code>&lt;svg onload=alert(2)&gt;</code>. This was a deliberate demonstration of the compound impact: <em>not only can the attacker overwrite the terminal's data, but if the web portal renders those fields without escaping, they also achieve stored XSS in the admin dashboard of the victim organization.</em></p>
+      <p>This is a compound vulnerability: the primary bug is the <strong>IDOR</strong> (unauthorized write to any terminal). The secondary impact is <strong>stored XSS</strong> — if the terminal name/description is rendered in the victim org's portal without HTML escaping, the attacker's payload executes in the browser of every admin who loads the terminal management page for their own organization.</p>
+
+      <div class="post-code">
+        <div class="post-code-header">
+          <div class="post-code-dots"><span></span><span></span><span></span></div>
+          <span class="post-code-label">Compound attack chain — IDOR → Stored XSS</span>
+        </div>
+        <pre><code><span class="cc">── Step 1: IDOR write ────────────────────────────────────────────</span>
+<span class="ck">PUT</span> /api/v1/gatekeeper/<span class="ch">22</span>/
+body: { <span class="cv">"name"</span>: <span class="ch">"&lt;svg onload=alert(document.cookie)&gt;"</span>, ... }
+<span class="cc"># Server overwrites terminal 22's name with the XSS payload</span>
+<span class="cc"># No ownership check — accepted as HTTP 200</span>
+
+<span class="cc">── Step 2: Stored XSS triggers ──────────────────────────────────</span>
+<span class="cc"># Victim org admin logs into Veris portal</span>
+<span class="cc"># Navigates to their terminal management page</span>
+<span class="cc"># Server renders: &lt;td&gt;&lt;svg onload=alert(document.cookie)&gt;&lt;/td&gt;</span>
+<span class="cc"># Admin's session cookie is exfiltrated to attacker's server</span>
+<span class="cc"># → Full account takeover of the victim organization's admin</span></code></pre>
+      </div>
+
+      <p>In a worst-case chain, this escalates from a configuration IDOR to a full administrative account takeover of any organization on the Veris platform — just by sending one PUT request with a crafted payload to a victim terminal's ID.</p>
+
+      <h2 id="impact">Real-World Impact</h2>
+      <p>Veris terminals are physical devices deployed at the entrances of real offices and venues. This vulnerability had both digital and physical-world consequences:</p>
+      <ul>
+        <li>
+          <strong>Remote terminal sabotage.</strong>
+          An attacker could overwrite a victim organization's terminal configuration at any time — changing their branding, org name displayed on the screen, theme colors, and check-in settings. From the perspective of visitors arriving at the office, the terminal would show incorrect or attacker-controlled information.
+        </li>
+        <li>
+          <strong>Logo and asset erasure.</strong>
+          The <code>logo</code> and <code>assets</code> fields in the PUT body were empty strings in the PoC — meaning the attacker's write would blank out the victim's logo and assets from the terminal. Visitor-facing branding disappears from the check-in screen.
+        </li>
+        <li>
+          <strong>Check-in time manipulation.</strong>
+          The <code>checkin_time_offset</code> value (600 in the PoC) controls timing aspects of the check-in flow. An attacker could set this to extreme values, disrupting the gatekeeper's operation at the physical venue.
+        </li>
+        <li>
+          <strong>Stored XSS → admin account takeover.</strong>
+          If the portal renders terminal name/description unsanitized, the XSS payload executes in every admin's browser who views their terminal list — escalating to full session theft and account takeover of the victim org's Veris admin.
+        </li>
+        <li>
+          <strong>Platform-wide scale.</strong>
+          Gatekeeper IDs are sequential integers starting from 1. A single loop script could overwrite every terminal on the entire platform — disrupting check-in operations at every Veris-hosted organization simultaneously.
+        </li>
+        <li>
+          <strong>Silent attack.</strong>
+          The victim organization receives no notification. The configuration change is applied server-side. Unless someone actively checks the portal or notices the physical terminal's display changing, the attack is undetectable.
+        </li>
+      </ul>
+
+      <h2 id="read-vs-write">Read IDOR vs Write IDOR — Why Write Is More Dangerous</h2>
+      <p>The companion report <a href="./blog-h1-120305-idor-veris-venueid.html">#120305</a> on the same Veris platform was a <em>read</em> IDOR — it exposed configuration data. This report (#120291) is a <em>write</em> IDOR — it allows overwriting configuration data. The distinction matters significantly for impact:</p>
+
+      <div class="post-code">
+        <div class="post-code-header">
+          <div class="post-code-dots"><span></span><span></span><span></span></div>
+          <span class="post-code-label">Read IDOR vs Write IDOR on the same platform</span>
+        </div>
+        <pre><code><span class="cc">── Report #120305 — Read IDOR ────────────────────────────────────</span>
+<span class="ck">GET</span> /api/v1/gatekeepers/?venue_id=<span class="ch">28</span>
+<span class="cc"># Impact: attacker reads another org's config</span>
+<span class="cc"># Data still intact — victim org unaffected operationally</span>
+<span class="cc"># Severity: Medium (confidentiality impact)</span>
+
+<span class="cc">── Report #120291 — Write IDOR (this report) ────────────────────</span>
+<span class="ck">PUT</span> /api/v1/gatekeeper/<span class="ch">22</span>/
+<span class="cc"># Impact: attacker overwrites another org's config</span>
+<span class="cc"># Physical terminal affected — victim org's operations disrupted</span>
+<span class="cc"># + Stored XSS chain possible → admin account takeover</span>
+<span class="cc"># Severity: Critical (integrity + availability + XSS chain)</span></code></pre>
+      </div>
+
+      <p>Both bugs share the same root cause — missing authorization on the same API surface. But the write IDOR has permanent, operational, and potentially physical consequences. This is why write IDORs on production systems are almost always rated higher than their read counterparts on the same endpoint.</p>
+
+      <h2 id="fix">The Fix</h2>
+      <p>The correct remediation is a server-side ownership check before processing any PUT on a gatekeeper resource — verifying that the authenticated user's organization owns the terminal ID in the path:</p>
+
+      <div class="post-code">
+        <div class="post-code-header">
+          <div class="post-code-dots"><span></span><span></span><span></span></div>
+          <span class="post-code-label">Pseudocode — before and after the fix</span>
+        </div>
+        <pre><code><span class="cc"># Before the fix — no ownership check on PUT</span>
+<span class="ck">def</span> <span class="cf">update_gatekeeper</span>(gk_id, body, auth_token):
+    user       = User.from_token(auth_token)   <span class="cc"># authentication only</span>
+    gatekeeper = Gatekeeper.find(gk_id)
+    gatekeeper.update(body)                    <span class="cc"># ← applied to any ID</span>
+    <span class="ck">return</span> <span class="cok">200</span>
+
+<span class="cc"># After the fix — ownership enforced before any write</span>
+<span class="ck">def</span> <span class="cf">update_gatekeeper</span>(gk_id, body, auth_token):
+    user       = User.from_token(auth_token)
+    gatekeeper = Gatekeeper.find(gk_id)
+
+    <span class="cc"># Check: does the authenticated user's org own this terminal?</span>
+    <span class="ck">if</span> gatekeeper.<span class="cv">organisation_id</span> != user.<span class="cv">organisation_id</span>:
+        <span class="ck">return</span> <span class="ch">403 Forbidden</span>
+
+    gatekeeper.update(body)
+    <span class="ck">return</span> <span class="cok">200</span>
+
+<span class="cc"># Additionally — sanitize name/description fields before storing</span>
+<span class="cc"># to prevent the stored XSS secondary impact:</span>
+<span class="ck">def</span> <span class="cf">sanitize</span>(value):
+    <span class="ck">return</span> html_escape(strip_tags(value))   <span class="cc"># removes &lt;svg onload=...&gt;</span></code></pre>
+      </div>
+
+      <p>Two fixes are needed: the authorization check (prevents the IDOR) and input sanitization on <code>name</code>/<code>description</code> (prevents the stored XSS secondary impact). Neither fix alone is complete — both must be applied.</p>
+
+      <h2 id="hunting">How to Hunt Write IDOR on Configuration/Settings Endpoints</h2>
+      <ul>
+        <li>
+          <strong>Prioritise PUT, PATCH, and DELETE requests with integer path IDs.</strong>
+          These are the highest-yield write IDOR targets. In Burp's site map, filter for requests with these methods that contain a numeric segment in the URL path (<code>/resource/42/</code>, <code>/api/v1/entity/7/</code>). Every one of these is worth testing.
+        </li>
+        <li>
+          <strong>The "one number change" test.</strong>
+          With two test accounts in different organizations, note the terminal/resource ID from Account A's PUT request. While authenticated as Account B, replay the same PUT with Account A's ID in the path. A 200 response means Account B just wrote to Account A's resource — confirmed write IDOR.
+        </li>
+        <li>
+          <strong>Test configuration and settings endpoints specifically.</strong>
+          Unlike data records (orders, profiles), configuration endpoints control how a product or service behaves. A write IDOR on a config endpoint doesn't just leak data — it changes system behaviour, affects other users, and may have physical-world consequences (as in this case: a real terminal at a real office entrance).
+        </li>
+        <li>
+          <strong>Always probe the XSS surface alongside the IDOR.</strong>
+          When you confirm a write IDOR on a field that gets rendered in a UI (name, description, title, label), test whether that field is sanitized. Inject a simple payload like <code>&lt;svg onload=alert(1)&gt;</code>. If the portal renders it, the IDOR chains directly to stored XSS — dramatically increasing the severity of your report.
+        </li>
+        <li>
+          <strong>Check for path ID vs body ID mismatches.</strong>
+          In this report, the path contains <code>/gatekeeper/22/</code> but the body still references <code>"gk_id":"26"</code>. The server used the path ID for the operation — not the body ID. Some servers use the path, some use the body, some use both. Always change both to ensure you're testing the right one.
+        </li>
+        <li>
+          <strong>Enumerate the blast radius.</strong>
+          Terminal/gatekeeper IDs starting from 1 and increasing sequentially mean the attack scales to the entire platform. In your report, quantify this — "by iterating IDs from 1 to N, an attacker can overwrite the configuration of all N terminals across all organizations on the platform."
+        </li>
+      </ul>
+
+      <div class="post-code">
+        <div class="post-code-header">
+          <div class="post-code-dots"><span></span><span></span><span></span></div>
+          <span class="post-code-label">Burp Intruder — enumerate gatekeeper IDs for write IDOR</span>
+        </div>
+        <pre><code><span class="cc"># Use Burp Intruder on the path ID to confirm affected range</span>
+<span class="cc"># Payload position: the integer in /api/v1/gatekeeper/§26§/</span>
+<span class="cc"># Payload type: Numbers, 1 to 50, step 1</span>
+
+PUT /api/v1/gatekeeper/§<span class="ch">26</span>§/ HTTP/1.1
+Host: sandbox.veris.in
+Authorization: Token <span class="cs">YOUR_TOKEN</span>
+Content-Type: application/x-www-form-urlencoded
+
+name=test&amp;description=test&amp;venue=28&amp;...
+
+<span class="cc"># Filter: 200 responses where ID != your own gatekeeper ID</span>
+<span class="cc"># Each match = a terminal belonging to another org that was writable</span>
+<span class="cc"># For PoC: use a harmless body — confirm 200, do not apply destructive changes</span></code></pre>
+      </div>
+
+      <div class="post-note"><strong>Responsible disclosure for write IDORs:</strong> when testing a write IDOR, use only resources belonging to your own test accounts. Never overwrite another organization's real terminal configuration — even to confirm the bug. The PoC is complete the moment you receive a 200 response for a resource ID that belongs to your own second test account, not your first. Document the request, response, and the ID mismatch. Stop there.</div>
+
+      <hr class="post-divider" />
+
+      <h2 id="refs">References</h2>
+      <ul class="post-refs">
+        <li><a href="https://hackerone.com/reports/120291" target="_blank" rel="noopener">[1] HackerOne Report #120291 — Critical IDOR: Set anyone's Terminal Data remotely on Veris</a></li>
+        <li><a href="https://hackerone.com/reports/120305" target="_blank" rel="noopener">[2] HackerOne Report #120305 — Related read IDOR on Veris via venue_id (companion report)</a></li>
+        <li><a href="https://owasp.org/www-project-web-security-testing-guide/latest/4-Web_Application_Security_Testing/05-Authorization_Testing/04-Testing_for_Insecure_Direct_Object_References" target="_blank" rel="noopener">[3] OWASP WSTG — Testing for Insecure Direct Object References</a></li>
+        <li><a href="https://portswigger.net/web-security/access-control/idor" target="_blank" rel="noopener">[4] PortSwigger Web Security Academy — IDOR</a></li>
+        <li><a href="https://cheatsheetseries.owasp.org/cheatsheets/Insecure_Direct_Object_Reference_Prevention_Cheat_Sheet.html" target="_blank" rel="noopener">[5] OWASP IDOR Prevention Cheat Sheet</a></li>
+        <li><a href="https://portswigger.net/web-security/cross-site-scripting/stored" target="_blank" rel="noopener">[6] PortSwigger — Stored XSS</a></li>
+        <li><a href="https://cwe.mitre.org/data/definitions/639.html" target="_blank" rel="noopener">[7] CWE-639 — Authorization Bypass Through User-Controlled Key</a></li>
+      </ul>
+
+      <div class="post-nav">
+        <a href="./blog-h1-1450117-idor-nextcloud-deck-boardid.html" class="post-nav-link">
+          <span class="post-nav-dir">← Previous Post</span>
+          <span class="post-nav-title">IDOR: Inject Stacks into Any User's Board in Nextcloud Deck #1450117</span>
+        </a>
+      </div>
+
+    </article>
+  </div>
+
+</div>
+
+<footer>
+  <p>© 2025 <span class="f-name">Darshak Patel</span> · B.Tech CSE Cybersecurity</p>
+  <div class="f-links">
+    <a href="../../index.html">Home</a>
+    <a href="../../pages/about.html">About</a>
+    <a href="../../pages/expertise.html">Expertise</a>
+    <a href="../../pages/certifications.html">Certifications</a>
+    <a href="../../pages/achievements.html">Achievements</a>
+    <a href="../../pages/tools.html">Tools</a>
+    <a href="../../pages/resources.html">Resources</a>
+    <a href="../index.html">Blog</a>
+    <a href="../../pages/contact.html">Contact</a>
+  </div>
+</footer>
+
+<script src="../../assets/js/main.js"></script>
+<script>
+  (function () {
+    const bar = document.getElementById('read-progress');
+    function update() {
+      const h = document.documentElement;
+      const pct = (h.scrollTop / (h.scrollHeight - h.clientHeight)) * 100;
+      bar.style.width = Math.min(pct, 100) + '%';
+    }
+    window.addEventListener('scroll', update, { passive: true });
+    update();
+  })();
+  (function () {
+    const links = document.querySelectorAll('.toc-list a');
+    const headings = Array.from(document.querySelectorAll('.post-article h2[id]'));
+    if (!links.length || !headings.length) return;
+    function onScroll() {
+      const top = window.scrollY + 100;
+      let active = headings[0];
+      for (const h of headings) { if (h.offsetTop <= top) active = h; }
+      links.forEach(l => l.classList.toggle('active', l.getAttribute('href') === '#' + active.id));
+    }
+    window.addEventListener('scroll', onScroll, { passive: true });
+    onScroll();
+  })();
+</script>
+</body>
+</html>
