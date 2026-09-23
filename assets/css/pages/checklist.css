@@ -1,0 +1,256 @@
+/* ═══════════════════════════════════════════════════
+   checklist.css — security checklist page styles
+   Used by: webapp-checklist.html, ai-checklist.html
+═══════════════════════════════════════════════════ */
+
+/* ── Progress / Stats bar ────────────────────────── */
+.cl-stats-bar {
+  display: flex; align-items: center; gap: 1.5rem;
+  flex-wrap: wrap;
+  padding: 1rem 1.4rem;
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 8px; margin-bottom: 1.2rem;
+}
+.cl-stat {
+  display: flex; flex-direction: column; gap: 0.1rem;
+  min-width: 60px;
+}
+.cl-stat-num {
+  font-family: var(--mono); font-size: 1.25rem; font-weight: 700;
+  color: var(--text); line-height: 1;
+}
+.cl-stat-label {
+  font-family: var(--mono); font-size: 0.6rem;
+  text-transform: uppercase; letter-spacing: 1.3px; color: var(--muted2);
+}
+.cl-stat-divider {
+  width: 1px; height: 36px; background: var(--border); flex-shrink: 0;
+}
+.cl-progress-wrap { flex: 1; min-width: 160px; }
+.cl-progress-track {
+  height: 3px; background: var(--border); border-radius: 2px; overflow: hidden;
+  margin-top: 0.5rem;
+}
+.cl-progress-fill {
+  height: 100%; background: var(--text); border-radius: 2px;
+  width: 0%; transition: width 0.35s ease;
+}
+.cl-progress-label {
+  font-family: var(--mono); font-size: 0.65rem;
+  color: var(--muted2); display: flex; justify-content: space-between;
+}
+.cl-reset-btn {
+  margin-left: auto; font-family: var(--mono); font-size: 0.7rem;
+  color: var(--muted2); background: none; border: 1px solid var(--border);
+  border-radius: 4px; padding: 0.3rem 0.75rem; cursor: pointer;
+  transition: border-color var(--ease), color var(--ease); flex-shrink: 0;
+}
+.cl-reset-btn:hover { border-color: var(--border2); color: var(--muted); }
+
+/* ── Filter / Search toolbar ─────────────────────── */
+.cl-toolbar {
+  display: flex; align-items: center; gap: 0.6rem;
+  flex-wrap: wrap; margin-bottom: 1.8rem;
+}
+.cl-filter-btn {
+  font-family: var(--mono); font-size: 0.68rem;
+  border: 1px solid var(--border); border-radius: 4px;
+  padding: 0.28rem 0.75rem; background: none;
+  color: var(--muted2); cursor: pointer;
+  transition: border-color var(--ease), color var(--ease), background var(--ease);
+  white-space: nowrap;
+}
+.cl-filter-btn:hover { border-color: var(--border2); color: var(--muted); }
+.cl-filter-btn.active {
+  background: var(--text); color: var(--bg);
+  border-color: var(--text);
+}
+.cl-search {
+  margin-left: auto;
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 5px; padding: 0.3rem 0.85rem;
+  color: var(--text); font-family: var(--mono); font-size: 0.72rem;
+  width: 220px; outline: none;
+  transition: border-color var(--ease);
+}
+.cl-search:focus { border-color: var(--border2); }
+.cl-search::placeholder { color: var(--muted2); }
+@media (max-width: 700px) { .cl-search { width: 100%; margin-left: 0; } }
+
+/* ── Checklist grid layout ───────────────────────── */
+.cl-grid {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 1.4rem;
+}
+.cl-grid-3 {
+  display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1.4rem;
+}
+@media (max-width: 1060px) { .cl-grid-3 { grid-template-columns: 1fr 1fr; } }
+@media (max-width: 860px) { .cl-grid, .cl-grid-3 { grid-template-columns: 1fr; } }
+
+/* ── Group ───────────────────────────────────────── */
+.cl-group { display: flex; flex-direction: column; gap: 0.35rem; }
+.cl-group-label {
+  font-family: var(--mono); font-size: 0.63rem;
+  text-transform: uppercase; letter-spacing: 1.4px;
+  color: var(--muted2); margin-bottom: 0.3rem;
+  padding-bottom: 0.3rem; border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: space-between;
+}
+.cl-group-count {
+  font-size: 0.6rem; color: var(--muted2); font-weight: 400;
+}
+
+/* ── Checklist item ──────────────────────────────── */
+.cl-item {
+  display: flex; align-items: flex-start; gap: 0.65rem;
+  background: var(--surface2); border: 1px solid var(--border);
+  border-radius: 6px; padding: 0.5rem 0.75rem;
+  cursor: pointer; font-size: 0.78rem; color: var(--muted);
+  line-height: 1.55; transition: border-color var(--ease), opacity var(--ease);
+  user-select: none; position: relative;
+}
+.cl-item:hover { border-color: var(--border2); }
+.cl-item.hidden { display: none; }
+
+/* Custom checkbox */
+.cl-item input[type="checkbox"] {
+  appearance: none; -webkit-appearance: none;
+  width: 13px; height: 13px; flex-shrink: 0; margin-top: 2px;
+  border: 1.5px solid var(--border2); border-radius: 3px;
+  background: transparent; cursor: pointer;
+  transition: background var(--ease), border-color var(--ease);
+  position: relative;
+}
+.cl-item input[type="checkbox"]:checked {
+  background: var(--text); border-color: var(--text);
+}
+.cl-item input[type="checkbox"]:checked::after {
+  content: "";
+  position: absolute; top: 0px; left: 3px;
+  width: 4px; height: 7px;
+  border: 1.5px solid var(--bg);
+  border-top: none; border-left: none;
+  transform: rotate(40deg);
+}
+
+/* Checked dim + strikethrough */
+.cl-item:has(input:checked) {
+  opacity: 0.42; border-color: var(--border);
+}
+.cl-item:has(input:checked) > .cl-text {
+  text-decoration: line-through; color: var(--muted2);
+}
+
+/* Text span */
+.cl-text { flex: 1; }
+
+/* Inline code */
+.cl-item code {
+  font-family: var(--mono); font-size: 0.71rem;
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 3px; padding: 0.02rem 0.28rem; color: var(--text);
+}
+
+/* ── Severity badge ──────────────────────────────── */
+.cl-sev {
+  font-family: var(--mono); font-size: 0.57rem; font-weight: 700;
+  letter-spacing: 0.4px; text-transform: uppercase; flex-shrink: 0;
+  padding: 0.13rem 0.42rem; border-radius: 3px;
+  margin-top: 2px; align-self: flex-start; border: 1px solid transparent;
+}
+.sev-c { color: #f87171; border-color: rgba(248,113,113,0.22); background: rgba(248,113,113,0.07); }
+.sev-h { color: #fb923c; border-color: rgba(251,146,60,0.22); background: rgba(251,146,60,0.07); }
+.sev-m { color: #facc15; border-color: rgba(250,204,21,0.22); background: rgba(250,204,21,0.07); }
+.sev-l { color: var(--muted2); border-color: var(--border); background: transparent; }
+.sev-i { color: #60a5fa; border-color: rgba(96,165,250,0.22); background: rgba(96,165,250,0.07); }
+
+/* ── Pro tip inside a section ────────────────────── */
+.cl-tip {
+  grid-column: 1 / -1;
+  background: var(--surface); border: 1px solid var(--border);
+  border-left: 3px solid var(--muted2);
+  border-radius: 6px; padding: 0.7rem 1rem;
+  font-size: 0.78rem; color: var(--muted); line-height: 1.7;
+}
+.cl-tip-label {
+  font-family: var(--mono); font-size: 0.62rem; color: var(--muted2);
+  text-transform: uppercase; letter-spacing: 1.1px;
+  display: block; margin-bottom: 0.25rem;
+}
+.cl-tip code {
+  font-family: var(--mono); font-size: 0.71rem;
+  background: var(--surface2); border: 1px solid var(--border);
+  border-radius: 3px; padding: 0.02rem 0.28rem; color: var(--text);
+}
+
+/* ── Attack chain callout ────────────────────────── */
+.cl-chain {
+  grid-column: 1 / -1;
+  background: var(--surface2); border: 1px solid var(--border);
+  border-radius: 7px; padding: 0.9rem 1.1rem;
+  font-size: 0.78rem; color: var(--muted); line-height: 1.7;
+}
+.cl-chain-label {
+  font-family: var(--mono); font-size: 0.62rem; color: var(--muted);
+  text-transform: uppercase; letter-spacing: 1px;
+  display: block; margin-bottom: 0.4rem; font-weight: 700;
+}
+.cl-chain-steps {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 0.3rem;
+}
+.cl-chain-step {
+  font-family: var(--mono); font-size: 0.67rem;
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 4px; padding: 0.18rem 0.55rem; color: var(--muted);
+}
+.cl-chain-arrow {
+  font-size: 0.65rem; color: var(--muted2);
+}
+
+/* ── Finding template box ────────────────────────── */
+.cl-template {
+  background: var(--surface2); border: 1px solid var(--border);
+  border-left: 3px solid var(--border2);
+  border-radius: 6px; padding: 1rem 1.1rem;
+  font-size: 0.77rem; color: var(--muted); line-height: 1.85;
+}
+.cl-t-label {
+  font-family: var(--mono); font-size: 0.62rem; color: var(--text);
+  letter-spacing: 0.7px; text-transform: uppercase;
+  margin-right: 0.6rem; font-weight: 700;
+}
+
+/* ── OWASP reference pill row ─────────────────────── */
+.cl-owasp-map {
+  margin-bottom: 1.8rem; padding: 1rem 1.2rem;
+  background: var(--surface); border: 1px solid var(--border); border-radius: 8px;
+}
+.cl-owasp-label {
+  font-family: var(--mono); font-size: 0.63rem;
+  text-transform: uppercase; letter-spacing: 1.3px;
+  color: var(--muted2); margin-bottom: 0.65rem;
+}
+.cl-owasp-grid { display: flex; flex-wrap: wrap; gap: 0.35rem; }
+.cl-owasp-pill {
+  font-family: var(--mono); font-size: 0.65rem;
+  color: var(--muted2); border: 1px solid var(--border);
+  border-radius: 4px; padding: 0.18rem 0.55rem; white-space: nowrap;
+}
+
+/* ── OWASP LLM inline section ref ─────────────────── */
+.cl-owasp-ref {
+  font-family: var(--mono); font-size: 0.63rem;
+  color: var(--muted2); letter-spacing: 1.1px; text-transform: uppercase;
+  margin-top: 0.1rem;
+}
+
+/* ── No-results message ──────────────────────────── */
+.cl-no-results {
+  display: none; text-align: center;
+  padding: 3rem 1rem; color: var(--muted2);
+  font-family: var(--mono); font-size: 0.8rem;
+}
+.cl-no-results.visible { display: block; }
+
+/* ── Section hidden by filter ────────────────────── */
+.mth-phase.cl-section-hidden { display: none; }

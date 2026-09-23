@@ -1,0 +1,31 @@
+## Summary:
+The Logitech account system at id.logi.com does not invalidate existing authenticated sessions after a user changes their password.
+
+An authenticated user can have an active session in Browser A and another active session in Browser B. After changing the account password from Browser A, the previously established session in Browser B remains authenticated and can continue accessing the account.
+
+This behavior may allow an attacker who has obtained a user's authenticated session to retain access even after the legitimate account owner changes their password.
+
+## Steps To Reproduce:
+
+1. Open Browser A and navigate to id.logi.com.
+2. Log in to a test Logitech account.
+3. Open Browser B and log in to the same account.
+4. Confirm that both browsers have valid authenticated sessions.
+5. From Browser A, navigate to the account/security settings.
+6. Change the account password.
+7. Complete any required verification.
+8. Return to Browser B without logging in again.
+9. Access authenticated account functionality.
+10. Observe that Browser B's existing session remains authenticated despite the password being changed.
+
+## Expected Result
+
+Changing the account password should invalidate existing authenticated sessions, or at minimum provide the user with an option to terminate all other active sessions.
+
+## Supporting Material/References:
+
+If an attacker obtains a user's authenticated session—for example through session theft, malware, an exposed browser profile, or another session-compromise scenario—the legitimate user changing their password may not be sufficient to revoke the attacker's access.
+
+The attacker could potentially retain access to the account until the compromised session naturally expires or is otherwise revoked.
+
+The impact is particularly relevant because users commonly expect changing their password to terminate previously authenticated sessions.

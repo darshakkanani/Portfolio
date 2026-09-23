@@ -1,0 +1,469 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="IDOR on U.S. Dept of Defense — HackerOne #498351. How a 4-digit random code appended to ticket URLs on a DoD event registration system could be brute-forced with Burp Suite to access and modify any other registrant's ticket data." />
+  <title>IDOR: Brute-Force Ticket Access via 4-Digit Code on U.S. DoD System — HackerOne #498351 | Blog — Darshak Patel</title>
+  <link rel="stylesheet" href="../../assets/css/style.css" />
+  <link rel="stylesheet" href="../../assets/css/pages/post.css" />
+</head>
+<body>
+
+<div class="read-progress" id="read-progress"></div>
+<canvas id="particles"></canvas>
+
+<nav>
+  <a href="../../index.html" class="nav-logo">
+    <span class="bracket">[</span>dp<span class="bracket">]</span>
+  </a>
+  <ul class="nav-links">
+    <li><a href="../../pages/about.html">about</a></li>
+    <li><a href="../../pages/expertise.html">expertise</a></li>
+    <li><a href="../../pages/certifications.html">certifications</a></li>
+    <li><a href="../../pages/achievements.html">achievements</a></li>
+    <li><a href="../../pages/tools.html">tools</a></li>
+    <li><a href="../../pages/resources.html">resources</a></li>
+    <li><a href="../index.html" class="active">blog</a></li>
+    <li><a href="../../pages/contact.html">contact</a></li>
+  </ul>
+  <a href="mailto:your@email.com" class="nav-cta">Hire Me</a>
+  <div class="nav-hamburger" aria-label="menu">
+    <span></span><span></span><span></span>
+  </div>
+</nav>
+
+<div class="post-wrap">
+
+  <!-- ── Hero ── -->
+  <div class="post-hero" data-vuln="idor">
+    <div class="post-hero-inner">
+      <a href="../index.html" class="post-back">← Back to Blog</a>
+      <div class="post-vuln-badge">⬡ IDOR</div>
+      <div class="post-meta">
+        <span class="post-tag">Bug Bounty</span>
+        <span class="post-tag">Web App</span>
+        <span class="post-tag" data-sev="medium">Medium</span>
+        <span class="post-meta-sep">·</span>
+        <span>Feb 19, 2019</span>
+        <span class="post-meta-sep">·</span>
+        <span>8 min read</span>
+      </div>
+      <h1 class="post-h1">IDOR: Brute-Force Ticket Access via 4-Digit Code on a U.S. DoD Event Registration System — HackerOne #498351</h1>
+      <p class="post-sub">When a registrant signed up on a U.S. Department of Defense event registration site, they received a ticket URL containing a sequential <code>PID</code> and a 4-digit random <code>RNo</code>. That code space — only 10,000 possibilities — was small enough to brute-force with Burp Suite, giving an attacker access to every other registrant's personal data and the ability to modify their ticket.</p>
+      <div class="post-stats">
+        <div class="post-stat">
+          <span class="post-stat-label">Program</span>
+          <span class="post-stat-value">U.S. Dept of Defense</span>
+        </div>
+        <div class="post-stat">
+          <span class="post-stat-label">Report</span>
+          <span class="post-stat-value">#498351</span>
+        </div>
+        <div class="post-stat">
+          <span class="post-stat-label">Severity</span>
+          <span class="post-stat-value">Medium</span>
+        </div>
+        <div class="post-stat">
+          <span class="post-stat-label">Weakness</span>
+          <span class="post-stat-value">IDOR (CWE-639)</span>
+        </div>
+        <div class="post-stat">
+          <span class="post-stat-label">Reporter</span>
+          <span class="post-stat-value">@jarvis0x1</span>
+        </div>
+        <div class="post-stat">
+          <span class="post-stat-label">Submitted</span>
+          <span class="post-stat-value">Feb 19, 2019</span>
+        </div>
+        <div class="post-stat">
+          <span class="post-stat-label">Disclosed</span>
+          <span class="post-stat-value">Dec 2, 2019</span>
+        </div>
+        <div class="post-stat">
+          <span class="post-stat-label">Bounty</span>
+          <span class="post-stat-value">$0 (VDP — no bounty)</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Source + Attribution ── -->
+  <div class="post-body">
+    <a href="https://hackerone.com/reports/498351" target="_blank" rel="noopener" class="post-source">
+      ↗ HackerOne Report #498351 — U.S. Dept of Defense
+    </a>
+    <p class="post-attr">Independent educational breakdown of a publicly disclosed report. All redacted details (█████) are as-disclosed. Credit for the original finding belongs to @jarvis0x1.</p>
+  </div>
+
+  <!-- ── Layout ── -->
+  <div class="post-layout">
+
+    <aside class="post-toc">
+      <div class="toc-label">Contents</div>
+      <ul class="toc-list">
+        <li><a href="#what">What Is IDOR?</a></li>
+        <li><a href="#context">The Target</a></li>
+        <li><a href="#bug">The Bug</a></li>
+        <li><a href="#request">The Vulnerable Request</a></li>
+        <li><a href="#poc">Proof of Concept</a></li>
+        <li><a href="#results">Results from the Report</a></li>
+        <li><a href="#impact">Impact</a></li>
+        <li><a href="#weak-randomness">4 Digits Is Not Enough</a></li>
+        <li><a href="#fix">The Fix</a></li>
+        <li><a href="#hunting">How to Hunt It</a></li>
+        <li><a href="#refs">References</a></li>
+      </ul>
+    </aside>
+
+    <article class="post-article">
+
+      <h2 id="what">What Is IDOR?</h2>
+      <p><strong>Insecure Direct Object Reference (IDOR)</strong> is an access control vulnerability where an application uses a user-controlled identifier to access an internal resource without verifying that the requesting user is authorised to see it. The most common form uses sequential integers — change one digit, access someone else's record. This report features a variation: the identifier combines a sequential <code>PID</code> with a short <em>random</em> code (<code>RNo</code>) intended as a lightweight secret. The problem is that with only 4 digits, the entire key space is just 10,000 values — small enough to exhaust with Burp Suite in minutes.</p>
+
+      <h2 id="context">The Target</h2>
+      <p>The affected system is part of the <strong>U.S. Department of Defense Vulnerability Disclosure Program (DoD VDP)</strong>. The specific application and hostname are redacted in the disclosed report with <code>█████</code>, per standard DoD disclosure policy. What is disclosed: the system was an <strong>event registration portal</strong> — a web application where users could register for a DoD-associated event.</p>
+      <p>The registration flow was straightforward:</p>
+      <ol>
+        <li>A user navigates to a registration page at <code>https://█████/daumw2017/Registration.aspx</code></li>
+        <li>They fill in their personal details (name, email, and other registration data) and submit.</li>
+        <li>After successful registration, they are redirected to a confirmation page — <code>ThankYou.aspx</code> — whose URL contains their ticket details as query parameters.</li>
+      </ol>
+
+      <div class="post-code">
+        <div class="post-code-header">
+          <div class="post-code-dots"><span></span><span></span><span></span></div>
+          <span class="post-code-label">Post-registration redirect — ticket URL format</span>
+        </div>
+        <pre><code>https://██████/daumw2017/ThankYou.aspx?<span class="cv">PID</span>=<span class="cok">12004</span>&amp;<span class="cv">RNo</span>=<span class="cok">4387</span>
+
+<span class="cc">PID  — sequential integer ticket number (e.g. 12004)</span>
+<span class="cc">RNo  — 4-digit random number intended as a per-ticket access code (e.g. 4387)</span></code></pre>
+      </div>
+
+      <p>The design intent was that the <code>RNo</code> would act as a lightweight access control — only the registrant who received their unique URL would know their <code>RNo</code>. In practice, a 4-digit code has only 10,000 possible values (0000–9999), which can be exhausted in minutes with an automated tool.</p>
+
+      <h2 id="bug">The Bug</h2>
+      <p>The <code>ThankYou.aspx</code> page accepted the <code>PID</code> and <code>RNo</code> parameters directly from the URL query string, looked up the corresponding ticket, and displayed the registrant's full personal information. The access control model relied entirely on the secrecy of the 4-digit <code>RNo</code> — there was no session-based authentication or ownership verification beyond knowing the two URL parameters.</p>
+      <p>This created two exploitable weaknesses simultaneously:</p>
+      <ul>
+        <li><strong>Sequential PID.</strong> Ticket numbers were assigned sequentially — e.g. 11997, 11998, 11999, 12000, 12001. An attacker who received <code>PID=12004</code> knows that <code>PID=12003</code>, <code>12002</code>, etc. are other registrants' tickets. No guessing required.</li>
+        <li><strong>Brute-forceable RNo.</strong> The 4-digit random code has only 10,000 possible values. With 20–30 threads in Burp Suite (as the researcher noted: <em>"Optimal number of threads is 20–30 in Burp Suite"</em>), all 10,000 values for a given <code>PID</code> can be tested rapidly. A correct <code>RNo</code> for any given <code>PID</code> reveals that ticket owner's full registration data.</li>
+      </ul>
+      <p>Compounding the impact: the researcher noted that once access to a ticket was gained, the attacker could also <strong>change the content of that ticket</strong> — not just read it.</p>
+
+      <div class="post-code">
+        <div class="post-code-header">
+          <div class="post-code-dots"><span></span><span></span><span></span></div>
+          <span class="post-code-label">Attack model — sequential PID + brute-forced RNo</span>
+        </div>
+        <pre><code><span class="cc"># Attacker's own ticket (received after registration)</span>
+https://██████/daumw2017/ThankYou.aspx?<span class="cv">PID</span>=<span class="cok">12004</span>&amp;<span class="cv">RNo</span>=<span class="cok">4387</span>
+
+<span class="cc"># Decrement PID to target previous registrants</span>
+<span class="cc"># Brute-force RNo (0000–9999) for each PID</span>
+https://██████/daumw2017/ThankYou.aspx?<span class="cv">PID</span>=<span class="ch">12003</span>&amp;<span class="cv">RNo</span>=<span class="ch">????</span>  <span class="cc">← 10,000 attempts</span>
+https://██████/daumw2017/ThankYou.aspx?<span class="cv">PID</span>=<span class="ch">12002</span>&amp;<span class="cv">RNo</span>=<span class="ch">????</span>  <span class="cc">← 10,000 attempts</span>
+https://██████/daumw2017/ThankYou.aspx?<span class="cv">PID</span>=<span class="ch">12001</span>&amp;<span class="cv">RNo</span>=<span class="ch">????</span>  <span class="cc">← 10,000 attempts</span>
+
+<span class="cc"># Correct RNo hit → full ticket data exposed + ability to modify it</span></code></pre>
+      </div>
+
+      <div class="post-note" data-type="warn"><strong>A 4-digit code is not a secret.</strong> Using a short random code as an access control mechanism is a form of security through obscurity — it raises the cost of attack marginally (10,000 attempts instead of 1) but does not prevent it. Any code space that can be exhausted by automation within a reasonable timeframe provides no meaningful security guarantee.</div>
+
+      <h2 id="request">The Vulnerable Request</h2>
+      <p>The researcher included the exact HTTP request used for brute-forcing in the report. It is a simple GET request to <code>ThankYou.aspx</code> with the two parameters:</p>
+
+      <div class="post-code">
+        <div class="post-code-header">
+          <div class="post-code-dots"><span></span><span></span><span></span></div>
+          <span class="post-code-label">Exact vulnerable GET request from the report</span>
+        </div>
+        <pre><code><span class="ck">GET</span> <span class="cf">/daumw2017/ThankYou.aspx</span>?<span class="cv">PID</span>=<span class="ch">&lt;ID_record&gt;</span>&amp;<span class="cv">RNo</span>=<span class="ch">&lt;4_digit_random_number&gt;</span> HTTP/1.1
+<span class="ck">Host:</span> ██████
+<span class="ck">User-Agent:</span> Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:60.0) Gecko/20100101 Firefox/60.0
+<span class="ck">Accept:</span> text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8
+<span class="ck">Accept-Language:</span> ru,en-US;q=0.7,en;q=0.3
+<span class="ck">Accept-Encoding:</span> gzip, deflate
+<span class="ck">Cookie:</span> <span class="cs">ASP.NET_SessionId=40n0abdtjikowu5qzr4e2fyj</span>
+<span class="ck">DNT:</span> 1
+<span class="ck">Connection:</span> close
+<span class="ck">Upgrade-Insecure-Requests:</span> 1</code></pre>
+      </div>
+
+      <p>Key observations from this request:</p>
+      <ul>
+        <li><strong>ASP.NET application.</strong> The <code>ASP.NET_SessionId</code> cookie confirms the backend is ASP.NET — common in older enterprise and government web applications. The <code>ThankYou.aspx</code> extension is classic ASP.NET WebForms.</li>
+        <li><strong>No CSRF token or session binding on the ticket lookup.</strong> The ticket is retrieved purely by the two URL parameters — <code>PID</code> and <code>RNo</code>. The session cookie is present but serves only general session management; the ticket access itself is controlled only by the URL parameters.</li>
+        <li><strong>GET request — stateless enumeration.</strong> Because this is a GET request with the identifier in the query string, the entire brute-force can be performed with Burp Suite Intruder or a simple script — no CSRF handling, no JSON body construction required.</li>
+      </ul>
+
+      <h2 id="poc">Proof of Concept</h2>
+      <p>The researcher's steps to reproduce, exactly as documented in the report:</p>
+      <ol>
+        <li>Navigate to <code>https://█████/daumw2017/Registration.aspx</code> and register with your own details.</li>
+        <li>After registering, you are redirected to a URL like: <code>https://██████/daumw2017/ThankYou.aspx?PID=12004&amp;RNo=4387</code></li>
+        <li>Note your own <code>PID</code> value. Decrement it to target other registrants (e.g. <code>PID=12003</code>, <code>12002</code>, etc.).</li>
+        <li>For each target <code>PID</code>, use Burp Suite Intruder to brute-force the <code>RNo</code> parameter across all values from <code>0000</code> to <code>9999</code>.</li>
+        <li>The researcher recommends 20–30 threads for optimal speed. When a correct <code>RNo</code> is found for a given <code>PID</code>, the page renders the full ticket details — including the registrant's personal information.</li>
+        <li>Once access is gained, ticket content can also be modified.</li>
+      </ol>
+
+      <div class="post-code">
+        <div class="post-code-header">
+          <div class="post-code-dots"><span></span><span></span><span></span></div>
+          <span class="post-code-label">Burp Suite Intruder — brute-force RNo for a given PID</span>
+        </div>
+        <pre><code><span class="cc"># Configure Intruder on the ThankYou.aspx request</span>
+<span class="cc"># Attack type: Sniper — mark RNo as the payload position</span>
+
+<span class="ck">GET</span> <span class="cf">/daumw2017/ThankYou.aspx</span>?<span class="cv">PID</span>=<span class="ch">12003</span>&amp;<span class="cv">RNo</span>=<span class="cok">§0000§</span> HTTP/1.1
+<span class="ck">Host:</span> ██████
+<span class="ck">Cookie:</span> <span class="cs">ASP.NET_SessionId=40n0abdtjikowu5qzr4e2fyj</span>
+
+<span class="cc"># Payload set: Numbers</span>
+<span class="cc"># From: 0  To: 9999  Step: 1</span>
+<span class="cc"># Min integer digits: 4  (zero-padded: 0000–9999)</span>
+
+<span class="cc"># Filter: look for responses with different Content-Length</span>
+<span class="cc"># A successful hit returns the ticket page (longer response)</span>
+<span class="cc"># A miss returns an error/empty page (shorter response)</span>
+
+<span class="cc"># Threads: 20–30 (as noted by researcher)</span>
+<span class="cc"># Time to exhaust 10,000 values: minutes</span></code></pre>
+      </div>
+
+      <div class="post-note"><strong>Responsible disclosure:</strong> to confirm this class of vulnerability, register with your own details and attempt to brute-force only <em>your own</em> ticket's <code>RNo</code> from a second browser session (without the URL). When you successfully find your own <code>RNo</code> via brute-force, the vulnerability is proven without accessing anyone else's data. Document the speed of the brute-force and the response differential, then report immediately.</div>
+
+      <h2 id="results">Results from the Report</h2>
+      <p>The researcher confirmed the vulnerability by successfully accessing multiple other registrants' tickets. The report includes four concrete examples — URLs with real <code>PID</code> and <code>RNo</code> values, with the hostname and the ticket content redacted by DoD as <code>█████</code>:</p>
+
+      <div class="post-code">
+        <div class="post-code-header">
+          <div class="post-code-dots"><span></span><span></span><span></span></div>
+          <span class="post-code-label">Confirmed results — four other registrants' tickets accessed</span>
+        </div>
+        <pre><code><span class="cc"># Each URL below successfully returned another registrant's personal data</span>
+<span class="cc"># (Content redacted by DoD with █████ in the public disclosure)</span>
+
+https://███████/daumw2017/ThankYou.aspx?<span class="cv">PID</span>=<span class="ch">12000</span>&amp;<span class="cv">RNo</span>=<span class="ch">7380</span>   <span class="cc">→ ████</span>
+https://███/daumw2017/ThankYou.aspx?<span class="cv">PID</span>=<span class="ch">11999</span>&amp;<span class="cv">RNo</span>=<span class="ch">9841</span>    <span class="cc">→ █████</span>
+https://█████████/daumw2017/ThankYou.aspx?<span class="cv">PID</span>=<span class="ch">11998</span>&amp;<span class="cv">RNo</span>=<span class="ch">1038</span>  <span class="cc">→ ████</span>
+https://██████/daumw2017/ThankYou.aspx?<span class="cv">PID</span>=<span class="ch">11997</span>&amp;<span class="cv">RNo</span>=<span class="ch">8846</span>   <span class="cc">→ ████</span>
+
+<span class="cc"># PIDs are clearly sequential: 11997, 11998, 11999, 12000</span>
+<span class="cc"># RNos found via brute-force: 7380, 9841, 1038, 8846</span>
+<span class="cc"># Each represents a different registrant's personal information</span></code></pre>
+      </div>
+
+      <p>The confirmed results make two things clear: PID values are strictly sequential (consecutive integers), and the brute-forced <code>RNo</code> values are uniformly distributed across the 0000–9999 range — confirming they are randomly generated, not derived from any predictable seed.</p>
+
+      <h2 id="impact">Impact</h2>
+      <p>The researcher summarised the impact precisely in the report: <em>"Hacker can get access to all tickets on the site, which contain emails, first names, last names and other confidential information. Also, a hacker has the ability to change data of this tickets."</em></p>
+      <p>Breaking this down:</p>
+      <ul>
+        <li>
+          <strong>PII of all registrants exposed.</strong>
+          Each ticket page contained the registrant's personal information — name, email address, and other registration details. With sequential PIDs and a brute-forceable 4-digit code, every registrant's data was accessible given enough automated requests.
+        </li>
+        <li>
+          <strong>Full write access to tickets.</strong>
+          The vulnerability was not read-only. The attacker could modify the content of any accessed ticket — changing the registrant's details in place. This enables impersonation, data corruption, and disruption of the event's registration records.
+        </li>
+        <li>
+          <strong>Government event registrant data at risk.</strong>
+          DoD-associated events attract military personnel, government contractors, and civilians with security clearances. A registration leak exposes names and emails that could be used for targeted spear-phishing, social engineering, or identity correlation against other government datasets.
+        </li>
+        <li>
+          <strong>Unauthenticated exploitation possible.</strong>
+          The ticket URL requires no login — only the <code>PID</code> and <code>RNo</code> parameters. An attacker who has never registered for the event can still enumerate tickets, provided they have a valid <code>ASP.NET_SessionId</code> (obtainable by visiting the site anonymously).
+        </li>
+        <li>
+          <strong>Scalable enumeration.</strong>
+          With PIDs starting from a known base (the attacker's own PID after registering) and extending backwards, every prior registrant is reachable. At 20–30 threads and 10,000 attempts per PID, dozens of tickets per minute could be harvested.
+        </li>
+      </ul>
+
+      <h2 id="weak-randomness">4 Digits Is Not Enough — Why Short Random Codes Fail as Access Controls</h2>
+      <p>The designers of this system attempted a lightweight access control: instead of requiring a login, they appended a short random code to the confirmation URL. This is a common pattern in registration systems and email confirmations — and it can work, but only when the code space is large enough to be practically unguessable.</p>
+      <p>A 4-digit decimal code has exactly <strong>10,000 possible values</strong>. Consider the comparison:</p>
+
+      <div class="post-code">
+        <div class="post-code-header">
+          <div class="post-code-dots"><span></span><span></span><span></span></div>
+          <span class="post-code-label">Code space comparison — 4-digit code vs secure alternatives</span>
+        </div>
+        <pre><code><span class="cc">4-digit decimal (0000–9999):       10,000 values  ← this report</span>
+<span class="cc">6-digit decimal (000000–999999):   1,000,000 values</span>
+<span class="cc">8-character alphanumeric (base 62): ~218 trillion values</span>
+<span class="cc">UUID v4 (random):                  ~5.3 × 10³⁵ values</span>
+<span class="cc">32-byte cryptographic token:       ~1.16 × 10⁷⁷ values</span>
+
+<span class="cc">At 30 req/s with Burp Intruder, 10,000 attempts take: ~5.5 minutes</span>
+<span class="cc">At 30 req/s, 218 trillion attempts would take:         ~230,000 years</span>
+<span class="cc">The difference between security and insecurity here is code length.</span></code></pre>
+      </div>
+
+      <p>The fundamental problem is that 4-digit codes are designed for <em>human convenience</em> (easy to type, remember, or speak over the phone) — not for security. When used as the sole access control on a URL that exposes personal data, they provide trivially breakable protection against automated attack.</p>
+      <p>A secondary problem: the system combined a short random code with a <em>sequential</em> PID. Even if the <code>RNo</code> were longer, the sequential PID tells an attacker exactly which values to target. An attacker who registers once learns approximately how many other registrants exist and which PIDs to enumerate. The two parameters compound each other's weakness.</p>
+
+      <h2 id="fix">The Fix</h2>
+      <p>The correct remediation addresses both the weak random code and the sequential PID:</p>
+
+      <div class="post-code">
+        <div class="post-code-header">
+          <div class="post-code-dots"><span></span><span></span><span></span></div>
+          <span class="post-code-label">Remediation approaches — short-term and long-term</span>
+        </div>
+        <pre><code><span class="cc">── Short-term: replace 4-digit code with a cryptographically strong token ──</span>
+<span class="cc"># Instead of RNo=4387 (4 digits, 10,000 values):</span>
+<span class="cc"># Generate a 32-byte (256-bit) cryptographically random token per ticket</span>
+
+<span class="cc"># Python example:</span>
+<span class="ck">import</span> secrets
+token = secrets.<span class="cf">token_urlsafe</span>(<span class="cn">32</span>)
+<span class="cc"># e.g. "X9k2mPqR7nJvLtYc8wBzA3uHdEfGi5sN0oVCKxW4e1Q"</span>
+<span class="cc"># 43 URL-safe characters, ~256 bits of entropy</span>
+<span class="cc"># Brute-force at 30 req/s: effectively impossible</span>
+
+<span class="cc">── Better: replace sequential PID + code with a single opaque token ────────</span>
+<span class="cc"># Remove PID from the URL entirely — use only the token as the identifier</span>
+<span class="cc"># Map token → ticket internally on the server</span>
+<span class="cc"># The token reveals nothing about other tickets' identifiers</span>
+
+<span class="cc">URL before: /ThankYou.aspx?PID=12004&amp;RNo=4387</span>
+<span class="cc">URL after:  /ThankYou.aspx?token=X9k2mPqR7nJvLtYc...</span>
+
+<span class="cc">── Best: require authentication ──────────────────────────────────────────────</span>
+<span class="cc"># Link the ticket to the registered user's authenticated session</span>
+<span class="cc"># Access /ThankYou.aspx → verify session → return only that user's ticket</span>
+<span class="cc"># No URL parameter needed for identity — session IS the access control</span></code></pre>
+      </div>
+
+      <p>Additional hardening regardless of the approach chosen:</p>
+      <ul>
+        <li><strong>Rate-limit the ThankYou.aspx endpoint.</strong> Even with a strong token, implementing a rate limit (e.g. 10 requests per minute per IP per session) prevents enumeration attempts and creates an observable signal for anomaly detection.</li>
+        <li><strong>One-time use tokens.</strong> If the confirmation URL is only meant to be viewed once (or a small number of times), mark the token as consumed after first access. A consumed token cannot be brute-forced or replayed.</li>
+        <li><strong>Do not embed PII in accessible URLs.</strong> Ticket confirmation pages should load data server-side based on the token, not pass registration data back through the URL or expose it to anyone who knows two parameters.</li>
+      </ul>
+
+      <h2 id="hunting">How to Hunt Weak Token / Short Code IDORs</h2>
+      <ul>
+        <li>
+          <strong>Register for the application and inspect your confirmation URL.</strong>
+          Any URL you receive after registration — confirmation pages, ticket pages, receipt pages — that contains numeric or short alphanumeric parameters in the query string is a candidate. Note the parameter names and measure the code space.
+        </li>
+        <li>
+          <strong>Calculate the code space size.</strong>
+          A 4-digit decimal code: 10,000. A 6-character alphanumeric: ~2.2 billion. A UUID: astronomically large. If you can enumerate the full space in under an hour with Burp at reasonable thread count, the token is brute-forceable and the IDOR is practical.
+        </li>
+        <li>
+          <strong>Check if the sequential ID is present alongside the short code.</strong>
+          The most dangerous combination is a sequential ID (tells you which records exist) plus a short random code (provides weak protection). If the sequential ID alone does not return data but combined with a brute-forced short code does — that is this vulnerability class.
+        </li>
+        <li>
+          <strong>Measure response differentials to detect a hit.</strong>
+          In Burp Intruder, sort results by response length or status code. A correct <code>RNo</code> will typically produce a page with actual content (longer response, status 200 with substantial body). An incorrect <code>RNo</code> will produce an error or empty page (shorter response, or redirect). The differential makes correct hits identifiable at a glance.
+        </li>
+        <li>
+          <strong>Confirm write access after finding a correct code.</strong>
+          Once you have confirmed a read IDOR, check whether the same ticket can be modified. On confirmation/receipt pages, look for edit or update actions. If modifications succeed on a ticket you did not create, document that as additional impact — it escalates the severity from Medium to High.
+        </li>
+        <li>
+          <strong>Test against your own data only.</strong>
+          To confirm the brute-force is feasible, attempt to find your own ticket's <code>RNo</code> from a fresh browser session (without the URL, using only the brute-force). When you find it, the vulnerability is proven without accessing any real user's data. Stop there.
+        </li>
+      </ul>
+
+      <div class="post-code">
+        <div class="post-code-header">
+          <div class="post-code-dots"><span></span><span></span><span></span></div>
+          <span class="post-code-label">Burp Intruder config — 4-digit numeric brute-force</span>
+        </div>
+        <pre><code><span class="cc"># Attack type: Sniper</span>
+<span class="cc"># Payload type: Numbers</span>
+<span class="cv">From:</span> 0
+<span class="cv">To:</span>   9999
+<span class="cv">Step:</span> 1
+<span class="cv">Min integer digits:</span> 4   <span class="cc">← zero-padded: 0000, 0001, ..., 9999</span>
+
+<span class="cc"># Resource pool: 20–30 threads (as documented by researcher)</span>
+
+<span class="cc"># Grep - Extract: configure a match rule on text unique to a successful</span>
+<span class="cc"># response (e.g. the registrant's name or "Thank You for Registering")</span>
+<span class="cc"># Results with this text present = correct RNo found</span></code></pre>
+      </div>
+
+      <hr class="post-divider" />
+
+      <h2 id="refs">References</h2>
+      <ul class="post-refs">
+        <li><a href="https://hackerone.com/reports/498351" target="_blank" rel="noopener">[1] HackerOne Report #498351 — [█████] Get all tickets (IDOR) — U.S. Dept of Defense</a></li>
+        <li><a href="https://hackerone.com/reports/1627974" target="_blank" rel="noopener">[2] Related: HackerOne Report #1627974 — IDOR on U.S. DoD Vendor Portal (delete company)</a></li>
+        <li><a href="https://hackerone.com/reports/800608" target="_blank" rel="noopener">[3] Related: HackerOne Report #800608 — IDOR: Delete any user's saved searches on U.S. DoD Portal</a></li>
+        <li><a href="https://owasp.org/www-project-web-security-testing-guide/latest/4-Web_Application_Security_Testing/05-Authorization_Testing/04-Testing_for_Insecure_Direct_Object_References" target="_blank" rel="noopener">[4] OWASP WSTG — Testing for Insecure Direct Object References</a></li>
+        <li><a href="https://portswigger.net/web-security/access-control/idor" target="_blank" rel="noopener">[5] PortSwigger Web Security Academy — IDOR</a></li>
+        <li><a href="https://cheatsheetseries.owasp.org/cheatsheets/Insecure_Direct_Object_Reference_Prevention_Cheat_Sheet.html" target="_blank" rel="noopener">[6] OWASP IDOR Prevention Cheat Sheet</a></li>
+        <li><a href="https://cwe.mitre.org/data/definitions/639.html" target="_blank" rel="noopener">[7] CWE-639 — Authorization Bypass Through User-Controlled Key</a></li>
+        <li><a href="https://cwe.mitre.org/data/definitions/330.html" target="_blank" rel="noopener">[8] CWE-330 — Use of Insufficiently Random Values</a></li>
+      </ul>
+
+      <div class="post-nav">
+        <a href="./blog-h1-800608-idor-shopify-orders.html" class="post-nav-link post-nav-prev">
+          <span class="post-nav-dir">← Previous Post</span>
+          <span class="post-nav-title">IDOR: Delete Any User's Saved Searches on U.S. DoD Portal #800608</span>
+        </a>
+        <a href="./blog-h1-120305-idor-veris-venueid.html" class="post-nav-link post-nav-next">
+          <span class="post-nav-dir">Next Post →</span>
+          <span class="post-nav-title">IDOR: Venue Data Exposed via venue_id on Veris #120305</span>
+        </a>
+      </div>
+
+    </article>
+  </div>
+
+</div>
+
+<footer>
+  <p>© 2025 <span class="f-name">Darshak Patel</span> · B.Tech CSE Cybersecurity</p>
+  <div class="f-links">
+    <a href="../../index.html">Home</a>
+    <a href="../../pages/about.html">About</a>
+    <a href="../../pages/expertise.html">Expertise</a>
+    <a href="../../pages/certifications.html">Certifications</a>
+    <a href="../../pages/achievements.html">Achievements</a>
+    <a href="../../pages/tools.html">Tools</a>
+    <a href="../../pages/resources.html">Resources</a>
+    <a href="../index.html">Blog</a>
+    <a href="../../pages/contact.html">Contact</a>
+  </div>
+</footer>
+
+<script src="../../assets/js/main.js"></script>
+<script>
+  (function () {
+    const bar = document.getElementById('read-progress');
+    function update() {
+      const h = document.documentElement;
+      const pct = (h.scrollTop / (h.scrollHeight - h.clientHeight)) * 100;
+      bar.style.width = Math.min(pct, 100) + '%';
+    }
+    window.addEventListener('scroll', update, { passive: true });
+    update();
+  })();
+  (function () {
+    const links = document.querySelectorAll('.toc-list a');
+    const headings = Array.from(document.querySelectorAll('.post-article h2[id]'));
+    if (!links.length || !headings.length) return;
+    function onScroll() {
+      const top = window.scrollY + 100;
+      let active = headings[0];
+      for (const h of headings) { if (h.offsetTop <= top) active = h; }
+      links.forEach(l => l.classList.toggle('active', l.getAttribute('href') === '#' + active.id));
+    }
+    window.addEventListener('scroll', onScroll, { passive: true });
+    onScroll();
+  })();
+</script>
+</body>
+</html>

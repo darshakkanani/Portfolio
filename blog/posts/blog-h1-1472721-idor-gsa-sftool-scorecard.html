@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="IDOR on U.S. GSA sftool.gov — HackerOne #1472721. How any authenticated user could view, edit, download, and reassign permissions on any other user's sustainability scorecard by navigating to its URL — no brute-force, no token manipulation required." />
+  <title>IDOR via Scorecard Name on U.S. GSA Sustainable Facilities Tool — HackerOne #1472721 | Blog — Darshak Patel</title>
+  <link rel="stylesheet" href="../../assets/css/style.css" />
+  <link rel="stylesheet" href="../../assets/css/pages/post.css" />
+</head>
+<body>
+
+<div class="read-progress" id="read-progress"></div>
+<canvas id="particles"></canvas>
+
+<nav>
+  <a href="../../index.html" class="nav-logo">
+    <span class="bracket">[</span>dp<span class="bracket">]</span>
+  </a>
+  <ul class="nav-links">
+    <li><a href="../../pages/about.html">about</a></li>
+    <li><a href="../../pages/expertise.html">expertise</a></li>
+    <li><a href="../../pages/certifications.html">certifications</a></li>
+    <li><a href="../../pages/achievements.html">achievements</a></li>
+    <li><a href="../../pages/tools.html">tools</a></li>
+    <li><a href="../../pages/resources.html">resources</a></li>
+    <li><a href="../index.html" class="active">blog</a></li>
+    <li><a href="../../pages/contact.html">contact</a></li>
+  </ul>
+  <a href="mailto:your@email.com" class="nav-cta">Hire Me</a>
+  <div class="nav-hamburger" aria-label="menu">
+    <span></span><span></span><span></span>
+  </div>
+</nav>
+
+<div class="post-wrap">
+
+  <!-- ── Hero ── -->
+  <div class="post-hero" data-vuln="idor">
+    <div class="post-hero-inner">
+      <a href="../index.html" class="post-back">← Back to Blog</a>
+      <div class="post-vuln-badge">⬡ IDOR</div>
+      <div class="post-meta">
+        <span class="post-tag">Bug Bounty</span>
+        <span class="post-tag">Web App</span>
+        <span class="post-tag" data-sev="high">High</span>
+        <span class="post-meta-sep">·</span>
+        <span>Feb 6, 2022</span>
+        <span class="post-meta-sep">·</span>
+        <span>8 min read</span>
+      </div>
+      <h1 class="post-h1">IDOR via Scorecard Name on U.S. GSA Sustainable Facilities Tool — HackerOne #1472721</h1>
+      <p class="post-sub">How any authenticated user on the GSA Sustainable Facilities Tool could view, edit, download, and assign permissions on any other user's sustainability scorecard — just by navigating to a URL containing the scorecard's name. No brute-force, no token manipulation: a direct access control failure exposing full write access to government facility assessment data.</p>
+      <div class="post-stats">
+        <div class="post-stat">
+          <span class="post-stat-label">Program</span>
+          <span class="post-stat-value">U.S. General Services Administration</span>
+        </div>
+        <div class="post-stat">
+          <span class="post-stat-label">Report</span>
+          <span class="post-stat-value">#1472721</span>
+        </div>
+        <div class="post-stat">
+          <span class="post-stat-label">Severity</span>
+          <span class="post-stat-value">High</span>
+        </div>
+        <div class="post-stat">
+          <span class="post-stat-label">Weakness</span>
+          <span class="post-stat-value">Improper Access Control (CWE-284)</span>
+        </div>
+        <div class="post-stat">
+          <span class="post-stat-label">Reporter</span>
+          <span class="post-stat-value">@imthatt</span>
+        </div>
+        <div class="post-stat">
+          <span class="post-stat-label">Submitted</span>
+          <span class="post-stat-value">Feb 6, 2022</span>
+        </div>
+        <div class="post-stat">
+          <span class="post-stat-label">Disclosed</span>
+          <span class="post-stat-value">Mar 17, 2022</span>
+        </div>
+        <div class="post-stat">
+          <span class="post-stat-label">Bounty</span>
+          <span class="post-stat-value">$0 (VDP — no bounty)</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Source + Attribution ── -->
+  <div class="post-body">
+    <a href="https://hackerone.com/reports/1472721" target="_blank" rel="noopener" class="post-source">
+      ↗ HackerOne Report #1472721 — U.S. General Services Administration
+    </a>
+    <p class="post-attr">Independent educational breakdown of a publicly disclosed report. Credit for the original finding belongs to @imthatt.</p>
+  </div>
+
+  <!-- ── Layout ── -->
+  <div class="post-layout">
+
+    <aside class="post-toc">
+      <div class="toc-label">Contents</div>
+      <ul class="toc-list">
+        <li><a href="#what">What Is IDOR?</a></li>
+        <li><a href="#context">The Target</a></li>
+        <li><a href="#bug">The Bug</a></li>
+        <li><a href="#request">The Vulnerable Endpoint</a></li>
+        <li><a href="#poc">Proof of Concept</a></li>
+        <li><a href="#impact">Impact</a></li>
+        <li><a href="#name-not-id">Why a Name in the URL Is Still an IDOR</a></li>
+        <li><a href="#government">Government VDPs — No Bounty, High Responsibility</a></li>
+        <li><a href="#fix">The Fix</a></li>
+        <li><a href="#hunting">How to Hunt It</a></li>
+        <li><a href="#refs">References</a></li>
+      </ul>
+    </aside>
+
+    <article class="post-article">
+
+      <h2 id="what">What Is IDOR?</h2>
+      <p><strong>Insecure Direct Object Reference (IDOR)</strong> is an access control vulnerability where an application uses a user-controlled value to look up or act on an internal resource, without verifying that the requesting user is authorised to access it. The user-controlled value can be a numeric ID, a UUID, or — as in this report — a human-readable name embedded in a URL path.</p>
+      <p>This report also demonstrates that an IDOR can expose <strong>full write access</strong>, not just read access. The attacker did not merely view another user's data — they could edit it, download it, and even assign permissions on it to third parties. This is what pushed the severity to <strong>High</strong>.</p>
+
+      <h2 id="context">The Target</h2>
+      <p>The vulnerable application is the <strong>Sustainable Facilities Tool</strong> (<code>sftool.gov</code>), operated by the <strong>U.S. General Services Administration (GSA)</strong>. The GSA manages U.S. government properties and procurement. The Sustainable Facilities Tool helps federal facility managers create and track sustainability assessments — called <strong>scorecards</strong> — for government buildings, measuring performance across criteria like energy use, water efficiency, and environmental quality.</p>
+      <p>Each scorecard is created by a user and associated with that user's account. After creating a scorecard, the user is taken to a management URL that includes the scorecard's name as a path component:</p>
+
+      <div class="post-code">
+        <div class="post-code-header">
+          <div class="post-code-dots"><span></span><span></span><span></span></div>
+          <span class="post-code-label">Scorecard management URL — name embedded in path</span>
+        </div>
+        <pre><code>https://demo.sftool.gov/TwsHome/ScorecardManage/<span class="cv">testdsfdfsf</span>
+                                                    <span class="cc">↑ scorecard name</span></code></pre>
+      </div>
+
+      <p>This URL structure made the scorecard name the sole access key. The researcher discovered that navigating to this URL with a different account — using the name of another user's scorecard — gave full access to that scorecard, with no ownership check performed by the server.</p>
+
+      <h2 id="bug">The Bug</h2>
+      <p>The <code>ScorecardManage</code> endpoint used the scorecard name from the URL path to look up and load the scorecard. It correctly required authentication — unauthenticated users were rejected. But after authentication, it performed <strong>no check that the authenticated user owned the scorecard being accessed</strong>.</p>
+      <p>What made this particularly severe was the breadth of operations available through this endpoint. An attacker navigating to another user's scorecard URL could:</p>
+      <ul>
+        <li><strong>View</strong> the entire scorecard and all its assessment data</li>
+        <li><strong>Edit</strong> the scorecard's content and scoring data</li>
+        <li><strong>Download</strong> the scorecard as a file</li>
+        <li><strong>Assign permissions</strong> — add other accounts as read-only or edit collaborators on the victim's scorecard</li>
+      </ul>
+      <p>This goes well beyond a read IDOR. The attacker has full administrative control over the victim's scorecard, including the ability to corrupt it and to permanently add third-party accounts to it.</p>
+
+      <div class="post-code">
+        <div class="post-code-header">
+          <div class="post-code-dots"><span></span><span></span><span></span></div>
+          <span class="post-code-label">Access control gap — what was checked vs what was missing</span>
+        </div>
+        <pre><code><span class="cc"># Victim's scorecard URL (victim created scorecard named "testdsfdfsf")</span>
+https://demo.sftool.gov/TwsHome/ScorecardManage/<span class="cv">testdsfdfsf</span>
+
+<span class="cc"># Attacker navigates to the same URL from their own account:</span>
+<span class="ck">GET</span> <span class="cf">https://demo.sftool.gov/TwsHome/ScorecardManage/testdsfdfsf</span> HTTP/1.1
+<span class="ck">Cookie:</span> <span class="cs">session=ATTACKER_SESSION</span>
+
+<span class="cc"># ✓ Checks: is the user authenticated? (yes)</span>
+<span class="cc"># ✗ Does NOT check: does this scorecard belong to the authenticated user?</span>
+<span class="cc"># Result: attacker gets full access — view, edit, download, assign permissions</span></code></pre>
+      </div>
+
+      <div class="post-note" data-type="warn"><strong>Authentication ≠ Authorization.</strong> The server confirms the attacker is a logged-in user of the system — but never asks whether that logged-in user is permitted to act on <em>this specific scorecard</em>. IDOR bugs exist precisely in this gap between identity verification and permission verification.</div>
+
+      <h2 id="request">The Vulnerable Endpoint</h2>
+      <p>The researcher documented the exact steps in the report. The scorecard name appears directly in the URL path — it is the final path segment after <code>/ScorecardManage/</code>. Changing that segment to the name of any other user's scorecard gives full access to it:</p>
+
+      <div class="post-code">
+        <div class="post-code-header">
+          <div class="post-code-dots"><span></span><span></span><span></span></div>
+          <span class="post-code-label">Vulnerable URL pattern — scorecard name as access key</span>
+        </div>
+        <pre><code><span class="cc"># Victim created a scorecard — URL shared or observed:</span>
+https://demo.sftool.gov/TwsHome/ScorecardManage/<span class="cv">testdsfdfsf</span>
+
+<span class="cc"># Attacker (different authenticated account) navigates to the same URL:</span>
+https://demo.sftool.gov/TwsHome/ScorecardManage/<span class="ch">testdsfdfsf</span>
+
+<span class="cc"># Full access granted — view, edit, download, assign permissions</span>
+<span class="cc"># All actions performed on the victim's scorecard, from attacker's session</span>
+<span class="cc"># Changes are permanent — victim's scorecard is modified</span></code></pre>
+      </div>
+
+      <p>Important technical observations:</p>
+      <ul>
+        <li><strong>Name as identifier.</strong> The scorecard name — a user-defined string — is the only lookup key. There is no additional token, nonce, or secret protecting the URL. Knowing the name is sufficient for full access.</li>
+        <li><strong>No brute-force required.</strong> The researcher explicitly noted: <em>"We can brute force scorecard names but I am not doing this as the above on my accounts already shows the issue."</em> The vulnerability is demonstrable without any enumeration — the attacker simply needs to know one valid scorecard name, which may be shared, guessable from context, or discoverable through other means.</li>
+        <li><strong>Changes persist.</strong> The report states: <em>"Log back into the victim account and the scorecard information has been changed."</em> Edits made by the attacker are real, permanent modifications to the victim's scorecard data.</li>
+      </ul>
+
+      <h2 id="poc">Proof of Concept</h2>
+      <p>The researcher created two accounts on <code>demo.sftool.gov</code> and reproduced the vulnerability with the following steps (as reported):</p>
+      <ol>
+        <li><strong>Account A (victim):</strong> Browse to <code>/tws</code> and create a new scorecard. Fill in all required information. Note the scorecard name — it appears in the final URL, e.g. <code>https://demo.sftool.gov/TwsHome/ScorecardManage/testdsfdfsf</code></li>
+        <li><strong>Log out</strong> of Account A.</li>
+        <li><strong>Account B (attacker):</strong> Log in. Navigate directly to Account A's scorecard URL: <code>https://demo.sftool.gov/TwsHome/ScorecardManage/testdsfdfsf</code></li>
+        <li><strong>From Account B's session</strong>, perform all available actions:
+          <ul>
+            <li>View the scorecard content — all data visible</li>
+            <li>Edit the scorecard — modify scoring data and save</li>
+            <li>Download the scorecard — exported file retrieved</li>
+            <li>Assign permissions — add Account B (or any other account) as a read-only or edit collaborator</li>
+          </ul>
+        </li>
+        <li><strong>Log back into Account A.</strong> Confirm that the scorecard has been modified by Account B's edits — the changes are persistent and visible to the legitimate owner.</li>
+      </ol>
+
+      <div class="post-code">
+        <div class="post-code-header">
+          <div class="post-code-dots"><span></span><span></span><span></span></div>
+          <span class="post-code-label">Two-account PoC — full access from attacker session</span>
+        </div>
+        <pre><code><span class="cc">── Account A (victim) ──────────────────────────────────────────</span>
+<span class="cc"># Creates scorecard: https://demo.sftool.gov/TwsHome/ScorecardManage/testdsfdfsf</span>
+<span class="cc"># Logs out</span>
+
+<span class="cc">── Account B (attacker) ────────────────────────────────────────</span>
+<span class="cc"># Logs in, navigates to victim's URL:</span>
+<span class="ck">GET</span> <span class="cf">https://demo.sftool.gov/TwsHome/ScorecardManage/testdsfdfsf</span>
+<span class="ck">Cookie:</span> <span class="cs">session=ACCOUNT_B_SESSION</span>
+
+<span class="cc"># Full scorecard loaded — attacker can:</span>
+<span class="cc"># ✓ View all scorecard data</span>
+<span class="cc"># ✓ Edit and save changes</span>
+<span class="cc"># ✓ Download the scorecard file</span>
+<span class="cc"># ✓ Add themselves or others as collaborators</span>
+
+<span class="cc">── Account A logs back in ───────────────────────────────────────</span>
+<span class="cc"># Scorecard data has been changed — attacker's edits are permanent</span>
+<span class="cc"># Attacker now has persistent collaborator access</span></code></pre>
+      </div>
+
+      <div class="post-note"><strong>Responsible disclosure:</strong> the researcher tested only between their own two accounts on the demo environment — as documented: <em>"the above on my accounts already shows the issue."</em> This is the correct approach: prove the vulnerability with your own test data, do not access real users' scorecards.</div>
+
+      <h2 id="impact">Impact</h2>
+      <p>This vulnerability was correctly rated <strong>High</strong> because the attacker's access is not limited to reading data — it includes full write, download, and permission management. The concrete impact on the GSA platform:</p>
+      <ul>
+        <li>
+          <strong>Government facility data exposed and modifiable.</strong>
+          Sustainability scorecards contain official assessments of U.S. federal buildings — energy performance baselines, water usage, compliance scores. An attacker could read this data (information disclosure) or corrupt it (integrity violation), undermining the reliability of official government facility records.
+        </li>
+        <li>
+          <strong>Permanent data modification.</strong>
+          Unlike a read IDOR, the attacker's edits persist in the victim's scorecard. The victim's data is irreversibly changed unless they detect the modification and manually restore it. If the victim exports or submits the scorecard before noticing, corrupted data enters official reporting workflows.
+        </li>
+        <li>
+          <strong>Unauthorised permission assignment.</strong>
+          The attacker can add themselves or any third-party account as a permanent collaborator on the victim's scorecard. Even after the IDOR is patched, a pre-established collaborator relationship may persist — creating a backdoor into the victim's ongoing work.
+        </li>
+        <li>
+          <strong>No brute-force required at all.</strong>
+          The researcher confirmed the vulnerability without any enumeration. Scorecard names are user-defined and may be shared with colleagues, embedded in emails, or guessable from naming conventions (building names, project codes, facility identifiers). The attack surface is practical, not theoretical.
+        </li>
+        <li>
+          <strong>Cross-agency exposure.</strong>
+          The GSA serves multiple federal agencies. A vulnerability on the shared sftool.gov platform means one agency's employee could access and corrupt another agency's facility assessments — crossing organisational and security boundaries that government systems are required to enforce.
+        </li>
+      </ul>
+
+      <h2 id="name-not-id">Why a Name in the URL Is Still an IDOR</h2>
+      <p>IDOR is not limited to numeric IDs. The vulnerability class applies to <strong>any user-controlled identifier</strong> used to locate a resource without a subsequent ownership check. In this report the identifier is a user-defined string in the URL path — but the access control failure is identical to a numeric IDOR.</p>
+
+      <div class="post-code">
+        <div class="post-code-header">
+          <div class="post-code-dots"><span></span><span></span><span></span></div>
+          <span class="post-code-label">IDOR by identifier type — the vulnerability class is the same</span>
+        </div>
+        <pre><code><span class="cc"># Numeric IDOR</span>
+<span class="ck">GET</span> /scorecards/<span class="ch">4821</span>
+<span class="cc"># ✗ No ownership check → any user can access scorecard 4821</span>
+
+<span class="cc"># Name-based IDOR (this report)</span>
+<span class="ck">GET</span> /TwsHome/ScorecardManage/<span class="ch">testdsfdfsf</span>
+<span class="cc"># ✗ No ownership check → same vulnerability, string identifier</span>
+
+<span class="cc"># UUID-based IDOR (still vulnerable without ownership check)</span>
+<span class="ck">GET</span> /scorecards/<span class="ch">a3f8c2e1-9b4d-4f72-8e1c-3d7b92f10a45</span>
+<span class="cc"># ✗ No ownership check → IDOR, just harder to enumerate</span>
+
+<span class="cc"># The fix is identical in all three cases: verify ownership after lookup</span></code></pre>
+      </div>
+
+      <h2 id="government">Government VDPs — No Bounty, High Impact</h2>
+      <p>This report was submitted to the <strong>U.S. General Services Administration's Vulnerability Disclosure Program</strong> and received <strong>$0</strong> bounty — standard for U.S. federal VDPs, which operate under <a href="https://cyber.dhs.gov/bod/20-01/" target="_blank" rel="noopener">CISA BOD 20-01</a> and are required to accept vulnerability disclosures without payment. The absence of a bounty does not reduce the severity, importance, or credit due for the finding. The GSA resolved this High severity vulnerability in under 40 days — submitted February 6, disclosed March 17, 2022.</p>
+
+      <h2 id="fix">The Fix</h2>
+      <p>The correct fix is a server-side ownership check on every operation at the <code>ScorecardManage</code> endpoint — applied before any data is returned or any action is permitted:</p>
+
+      <div class="post-code">
+        <div class="post-code-header">
+          <div class="post-code-dots"><span></span><span></span><span></span></div>
+          <span class="post-code-label">Pseudocode — before and after the fix</span>
+        </div>
+        <pre><code><span class="cc"># Before the fix — name lookup, no ownership check</span>
+<span class="ck">def</span> <span class="cf">scorecard_manage</span>(scorecard_name, current_user):
+    scorecard = Scorecard.find_by_name(scorecard_name)
+    <span class="ck">if not</span> scorecard: <span class="ck">return</span> <span class="ch">404</span>
+    <span class="ck">return</span> render_with_full_access(scorecard)  <span class="cc">← any user gets full access</span>
+
+<span class="cc"># After the fix — ownership verified before any action is permitted</span>
+<span class="ck">def</span> <span class="cf">scorecard_manage</span>(scorecard_name, current_user):
+    scorecard = Scorecard.find_by_name(scorecard_name)
+    <span class="ck">if not</span> scorecard: <span class="ck">return</span> <span class="ch">404</span>
+
+    <span class="cc"># Is this scorecard owned by or explicitly shared with the current user?</span>
+    <span class="ck">if not</span> scorecard.<span class="cv">accessible_by</span>(current_user):
+        <span class="ck">return</span> <span class="ch">404</span>   <span class="cc">← 404 preferred over 403 (avoids confirming existence)</span>
+
+    <span class="ck">return</span> render_with_full_access(scorecard)  <span class="cc">← only the owner gets access</span></code></pre>
+      </div>
+
+      <p>The fix must cover every action — view, edit save, download, and permission assignment — not just the initial page load. If each action hits a separate handler, each handler needs its own ownership check. A partial fix that protects the view but not the edit/download/assign leaves those actions exploitable.</p>
+      <p>Best practice: use a <strong>user-scoped query</strong> from the start — <code>current_user.scorecards.find_by_name(name)</code> rather than <code>Scorecard.find_by_name(name)</code> — so a foreign scorecard can never be retrieved, regardless of what name is supplied.</p>
+
+      <h2 id="hunting">How to Hunt IDOR on Name-Based URL Endpoints</h2>
+      <ul>
+        <li><strong>Spot resource names in URL paths.</strong> Any path segment that looks like a user-defined name — <code>/ScorecardManage/my-project</code>, <code>/workspace/team-alpha</code>, <code>/reports/q1-results</code> — is a candidate. Create the same resource from Account B and try Account A's name from Account B's session.</li>
+        <li><strong>Test all CRUD operations separately.</strong> A fix may protect reads but leave edit, download, and permission assignment endpoints open. Test each independently.</li>
+        <li><strong>Check what the endpoint exposes beyond read.</strong> Many management interfaces offer multiple actions from a single URL. Map all available buttons/forms before reporting — a write IDOR is significantly more impactful than a read IDOR and warrants a higher severity.</li>
+        <li><strong>Look for permission-assignment actions specifically.</strong> The ability to add collaborators to a resource you don't own is an especially dangerous finding — it grants persistent access that survives after the vulnerability is patched, unless the assigned collaborator is explicitly removed.</li>
+        <li><strong>Test demo/staging environments.</strong> They run the same code as production and are the correct place to test government applications. Never test with real data from real users.</li>
+      </ul>
+
+      <hr class="post-divider" />
+
+      <h2 id="refs">References</h2>
+      <ul class="post-refs">
+        <li><a href="https://hackerone.com/reports/1472721" target="_blank" rel="noopener">[1] HackerOne Report #1472721 — IDOR at demo.sftool.gov via scorecard name (U.S. GSA)</a></li>
+        <li><a href="https://sftool.gov/" target="_blank" rel="noopener">[2] GSA Sustainable Facilities Tool (sftool.gov)</a></li>
+        <li><a href="https://cyber.dhs.gov/bod/20-01/" target="_blank" rel="noopener">[3] CISA BOD 20-01 — Vulnerability Disclosure Policy for Federal Agencies</a></li>
+        <li><a href="https://owasp.org/www-project-web-security-testing-guide/latest/4-Web_Application_Security_Testing/05-Authorization_Testing/04-Testing_for_Insecure_Direct_Object_References" target="_blank" rel="noopener">[4] OWASP WSTG — Testing for Insecure Direct Object References</a></li>
+        <li><a href="https://portswigger.net/web-security/access-control/idor" target="_blank" rel="noopener">[5] PortSwigger Web Security Academy — IDOR</a></li>
+        <li><a href="https://cheatsheetseries.owasp.org/cheatsheets/Insecure_Direct_Object_Reference_Prevention_Cheat_Sheet.html" target="_blank" rel="noopener">[6] OWASP IDOR Prevention Cheat Sheet</a></li>
+        <li><a href="https://cwe.mitre.org/data/definitions/284.html" target="_blank" rel="noopener">[7] CWE-284 — Improper Access Control</a></li>
+      </ul>
+
+      <div class="post-nav">
+        <a href="./blog-h1-1450117-idor-nextcloud-deck-boardid.html" class="post-nav-link post-nav-prev">
+          <span class="post-nav-dir">← Previous Post</span>
+          <span class="post-nav-title">IDOR: Inject Stacks into Any User's Kanban Board in Nextcloud Deck #1450117</span>
+        </a>
+        <a href="./blog-h1-1627974-idor-dod-vendor.html" class="post-nav-link post-nav-next">
+          <span class="post-nav-dir">Next Post →</span>
+          <span class="post-nav-title">IDOR on U.S. DoD Vendor Portal #1627974</span>
+        </a>
+      </div>
+
+    </article>
+  </div>
+
+</div>
+
+<footer>
+  <p>© 2025 <span class="f-name">Darshak Patel</span> · B.Tech CSE Cybersecurity</p>
+  <div class="f-links">
+    <a href="../../index.html">Home</a>
+    <a href="../../pages/about.html">About</a>
+    <a href="../../pages/expertise.html">Expertise</a>
+    <a href="../../pages/certifications.html">Certifications</a>
+    <a href="../../pages/achievements.html">Achievements</a>
+    <a href="../../pages/tools.html">Tools</a>
+    <a href="../../pages/resources.html">Resources</a>
+    <a href="../index.html">Blog</a>
+    <a href="../../pages/contact.html">Contact</a>
+  </div>
+</footer>
+
+<script src="../../assets/js/main.js"></script>
+<script>
+  (function () {
+    const bar = document.getElementById('read-progress');
+    function update() {
+      const h = document.documentElement;
+      const pct = (h.scrollTop / (h.scrollHeight - h.clientHeight)) * 100;
+      bar.style.width = Math.min(pct, 100) + '%';
+    }
+    window.addEventListener('scroll', update, { passive: true });
+    update();
+  })();
+  (function () {
+    const links = document.querySelectorAll('.toc-list a');
+    const headings = Array.from(document.querySelectorAll('.post-article h2[id]'));
+    if (!links.length || !headings.length) return;
+    function onScroll() {
+      const top = window.scrollY + 100;
+      let active = headings[0];
+      for (const h of headings) { if (h.offsetTop <= top) active = h; }
+      links.forEach(l => l.classList.toggle('active', l.getAttribute('href') === '#' + active.id));
+    }
+    window.addEventListener('scroll', onScroll, { passive: true });
+    onScroll();
+  })();
+</script>
+</body>
+</html>

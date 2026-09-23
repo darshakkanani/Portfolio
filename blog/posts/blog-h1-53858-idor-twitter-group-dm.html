@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="IDOR on X/Twitter — HackerOne #53858. How a user who left a group DM could still access all subsequent messages in that group by navigating directly to the message delete URL — exposing private DM content without any re-invitation." />
+  <title>IDOR: Access Group DMs After Leaving on Twitter — HackerOne #53858 | Blog — Darshak Patel</title>
+  <link rel="stylesheet" href="../../assets/css/style.css" />
+  <link rel="stylesheet" href="../../assets/css/pages/post.css" />
+</head>
+<body>
+
+<div class="read-progress" id="read-progress"></div>
+<canvas id="particles"></canvas>
+
+<nav>
+  <a href="../../index.html" class="nav-logo">
+    <span class="bracket">[</span>dp<span class="bracket">]</span>
+  </a>
+  <ul class="nav-links">
+    <li><a href="../../pages/about.html">about</a></li>
+    <li><a href="../../pages/expertise.html">expertise</a></li>
+    <li><a href="../../pages/certifications.html">certifications</a></li>
+    <li><a href="../../pages/achievements.html">achievements</a></li>
+    <li><a href="../../pages/tools.html">tools</a></li>
+    <li><a href="../../pages/resources.html">resources</a></li>
+    <li><a href="../index.html" class="active">blog</a></li>
+    <li><a href="../../pages/contact.html">contact</a></li>
+  </ul>
+  <a href="mailto:your@email.com" class="nav-cta">Hire Me</a>
+  <div class="nav-hamburger" aria-label="menu">
+    <span></span><span></span><span></span>
+  </div>
+</nav>
+
+<div class="post-wrap">
+
+  <!-- ── Hero ── -->
+  <div class="post-hero" data-vuln="idor">
+    <div class="post-hero-inner">
+      <a href="../index.html" class="post-back">← Back to Blog</a>
+      <div class="post-vuln-badge">⬡ IDOR</div>
+      <div class="post-meta">
+        <span class="post-tag">Bug Bounty</span>
+        <span class="post-tag">Web App</span>
+        <span class="post-tag" data-sev="medium">Privilege Escalation</span>
+        <span class="post-meta-sep">·</span>
+        <span>Mar 29, 2015</span>
+        <span class="post-meta-sep">·</span>
+        <span>8 min read</span>
+      </div>
+      <h1 class="post-h1">IDOR: Access Group DMs After Leaving the Group on Twitter — HackerOne #53858</h1>
+      <p class="post-sub">How a user who had left a Twitter group DM could still read all subsequent messages posted in that conversation — simply by navigating to the direct message URL. The access control was never revoked on departure.</p>
+      <div class="post-stats">
+        <div class="post-stat">
+          <span class="post-stat-label">Program</span>
+          <span class="post-stat-value">X / xAI (Twitter)</span>
+        </div>
+        <div class="post-stat">
+          <span class="post-stat-label">Report</span>
+          <span class="post-stat-value">#53858</span>
+        </div>
+        <div class="post-stat">
+          <span class="post-stat-label">Weakness</span>
+          <span class="post-stat-value">Privilege Escalation / IDOR</span>
+        </div>
+        <div class="post-stat">
+          <span class="post-stat-label">Reporter</span>
+          <span class="post-stat-value">@akhil-reni (wesecureapp)</span>
+        </div>
+        <div class="post-stat">
+          <span class="post-stat-label">Submitted</span>
+          <span class="post-stat-value">Mar 29, 2015</span>
+        </div>
+        <div class="post-stat">
+          <span class="post-stat-label">Disclosed</span>
+          <span class="post-stat-value">Oct 3, 2015</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Source + Attribution ── -->
+  <div class="post-body">
+    <a href="https://hackerone.com/reports/53858" target="_blank" rel="noopener" class="post-source">
+      ↗ HackerOne Report #53858 — X / xAI (Twitter)
+    </a>
+    <p class="post-attr">Independent educational breakdown of a publicly disclosed report. Credit for the original finding belongs to @akhil-reni (wesecureapp).</p>
+  </div>
+
+  <!-- ── Layout ── -->
+  <div class="post-layout">
+
+    <aside class="post-toc">
+      <div class="toc-label">Contents</div>
+      <ul class="toc-list">
+        <li><a href="#background">Background</a></li>
+        <li><a href="#context">The Target</a></li>
+        <li><a href="#bug">The Bug</a></li>
+        <li><a href="#request">The Vulnerable Request</a></li>
+        <li><a href="#poc">Proof of Concept</a></li>
+        <li><a href="#impact">Real-World Impact</a></li>
+        <li><a href="#access-revocation">The Access Revocation Gap</a></li>
+        <li><a href="#fix">The Fix</a></li>
+        <li><a href="#hunting">How to Hunt It</a></li>
+        <li><a href="#refs">References</a></li>
+      </ul>
+    </aside>
+
+    <article class="post-article">
+
+      <h2 id="background">Background</h2>
+      <p><strong>Insecure Direct Object Reference (IDOR)</strong> is an access control vulnerability where an application exposes a reference to an internal object and fails to verify that the requesting user is authorised to access it. Most IDOR discussions focus on static access control — a user who was never permitted to access an object gaining access to it. This report describes a subtler and equally dangerous variant: <strong>access that was granted and then revoked, but where the revocation was never enforced</strong>.</p>
+      <p>This report was submitted by <strong>@akhil-reni (wesecureapp)</strong> on <strong>29 March 2015</strong> and publicly disclosed on <strong>3 October 2015</strong>. It targets Twitter's group direct messaging feature. A user who had been part of a group DM and subsequently left the group could still access all new messages sent in that conversation — because Twitter never invalidated their access to the DM's URL when they departed.</p>
+      <p>Twitter resolved the issue. The report was rated as a Privilege Escalation finding.</p>
+
+      <h2 id="context">The Target</h2>
+      <p>Twitter's (now X's) group direct messaging feature allows multiple users to participate in a shared private conversation. Messages within the group are assigned unique numeric DM IDs. Each message has an associated URL — used internally for actions such as deletion — of the form:</p>
+
+      <div class="post-code">
+        <div class="post-code-header">
+          <div class="post-code-dots"><span></span><span></span><span></span></div>
+          <span class="post-code-label">Twitter group DM message URL pattern</span>
+        </div>
+        <pre><code>https://mobile.twitter.com/a/messages/<span class="cv">582225197727506432</span>/delete</code></pre>
+      </div>
+
+      <p>The expected behaviour when a user leaves a group DM: they lose access to all messages in that conversation — past and future. Remaining members can continue the conversation with the expectation of privacy. The user who left has no way back in without being re-invited.</p>
+      <p>The actual behaviour: leaving the group removed the user from the visible participant list but <strong>did not revoke their ability to access message URLs</strong>. By directly navigating to a message URL in the group, the departed user could still read the message content — completely bypassing the "you left this group" restriction.</p>
+
+      <h2 id="bug">The Bug</h2>
+      <p>When a user leaves a group DM, Twitter updated its data model to reflect the departure — the user no longer appears in the group's participant list. However, the endpoint that serves individual message content — accessible via the <code>/a/messages/{dm_id}/delete</code> URL — <strong>did not re-check group membership</strong> before returning the message. It only verified that the user was authenticated, not that they were still an active member of the conversation the message belonged to.</p>
+      <p>The access control gap:</p>
+
+      <div class="post-code">
+        <div class="post-code-header">
+          <div class="post-code-dots"><span></span><span></span><span></span></div>
+          <span class="post-code-label">Access control model — what was checked vs what was missing</span>
+        </div>
+        <pre><code><span class="cc"># Group DM participant list (correctly updated on departure)</span>
+<span class="cc"># ✓ User C removed from group participant list when they leave</span>
+<span class="cc"># ✓ Group inbox: User C can no longer see the conversation thread</span>
+
+<span class="cc"># Individual message URL (access control gap)</span>
+<span class="ck">GET</span> https://mobile.twitter.com/a/messages/<span class="ch">582225197727506432</span>/delete
+<span class="ck">Cookie:</span> <span class="cs">auth_token=USER_C_SESSION</span>   <span class="cc">← User C who already LEFT the group</span>
+
+<span class="cc"># ✓ Checks: is the user authenticated? (yes)</span>
+<span class="cc"># ✗ Does NOT check: is this user currently a member of this DM group?</span>
+<span class="cc"># Result: message content returned to User C despite their departure</span></code></pre>
+      </div>
+
+      <p>The root cause is a <strong>membership check that was applied at the thread/inbox level but not at the individual message level</strong>. Twitter correctly blocked access to the group conversation listing for departed users, but the per-message endpoint operated independently and trusted authentication alone as a sufficient gate.</p>
+
+      <div class="post-note" data-type="warn"><strong>Leaving a group is a revocation event.</strong> Any access control model that grants permissions at join time must also revoke them at leave time — and that revocation must be enforced at every access point, not just the primary inbox view. Partial revocation is functionally no revocation at all.</div>
+
+      <h2 id="request">The Vulnerable Request</h2>
+      <p>The researcher demonstrated the vulnerability by navigating directly to a group DM message URL from an account that had left the group. The exact URL pattern from the report:</p>
+
+      <div class="post-code">
+        <div class="post-code-header">
+          <div class="post-code-dots"><span></span><span></span><span></span></div>
+          <span class="post-code-label">Vulnerable request — departed user accessing a group message</span>
+        </div>
+        <pre><code><span class="cc"># User C has left the DM group. Naruto and Goku continue sending messages.</span>
+<span class="cc"># A new message is sent with DM ID 582225197727506432.</span>
+
+<span class="cc"># From User C's session — direct navigation to the message URL:</span>
+<span class="ck">GET</span> <span class="cf">https://mobile.twitter.com/a/messages/582225197727506432/delete</span> HTTP/1.1
+<span class="ck">Host:</span> mobile.twitter.com
+<span class="ck">Cookie:</span> <span class="cs">auth_token=USER_C_SESSION_COOKIE</span>
+
+<span class="cc"># Expected: 403 Forbidden — User C left this group</span>
+<span class="cc"># Actual:   200 OK — message content returned to User C</span></code></pre>
+      </div>
+
+      <p>Two important observations from the report:</p>
+      <ul>
+        <li><strong>The DM ID is the only identifier needed.</strong> User C must know (or be able to observe) the DM ID of a message sent after they left. In practice, a user who was part of a group before leaving will have seen earlier message IDs — and since DM IDs are likely sequential or time-based, the IDs of subsequent messages are predictable.</li>
+        <li><strong>The <code>/delete</code> suffix is the action endpoint, not a deletion confirmation.</strong> Navigating to this URL surfaces the message content as part of the action context. It is not a read endpoint by design — but it returns message data, making it a functional read IDOR via an action endpoint. This is the same pattern seen in Vimeo's <a href="./blog-h1-52181-idor-vimeo-private-comment.html">comment_edit_form</a> IDOR: action endpoints pre-populate data and become de-facto read endpoints when their authorization is weak.</li>
+      </ul>
+
+      <h2 id="poc">Proof of Concept</h2>
+      <p>The researcher describes the PoC using three fictional Twitter accounts — Naruto, Goku, and Eren — to cleanly illustrate the three roles involved: the group creator, a remaining member, and the departed user. Steps to reproduce as reported:</p>
+      <ol>
+        <li><strong>Create three accounts:</strong> Account A, Account B, and Account C.</li>
+        <li><strong>Account A</strong> creates a group DM conversation including A, B, and C.</li>
+        <li><strong>Account C leaves</strong> the group DM. At this point, A and B believe the conversation is now private between just the two of them.</li>
+        <li><strong>Account A or B sends a new message</strong> in the group. This generates a new DM ID. Intercept or observe this ID in the network traffic of Account A or B.</li>
+        <li><strong>From Account C's session</strong>, navigate directly to: <code>https://mobile.twitter.com/a/messages/[DM_ID]/delete</code></li>
+        <li><strong>Result:</strong> Account C can read the message content — even though they left the group and the message was sent after their departure. The conversation that A and B believed was private is accessible to C.</li>
+      </ol>
+
+      <div class="post-code">
+        <div class="post-code-header">
+          <div class="post-code-dots"><span></span><span></span><span></span></div>
+          <span class="post-code-label">Three-account PoC — group DM access after departure</span>
+        </div>
+        <pre><code><span class="cc">── Account A (group creator) ────────────────────────────────────</span>
+<span class="cc"># Creates group DM with A, B, C</span>
+<span class="cc"># Sends a message after C leaves — DM ID captured: 582225197727506432</span>
+
+<span class="cc">── Account C (departed user) ────────────────────────────────────</span>
+<span class="cc"># Has left the group — no longer visible in participant list</span>
+<span class="cc"># Navigates directly to the message URL:</span>
+<span class="ck">GET</span> <span class="cf">https://mobile.twitter.com/a/messages/582225197727506432/delete</span>
+<span class="ck">Cookie:</span> <span class="cs">auth_token=ACCOUNT_C_SESSION</span>
+
+<span class="cc"># Expected: 403 — you are no longer a member of this group</span>
+<span class="cc"># Actual: 200 — message content fully accessible to Account C</span>
+<span class="cc"># Privacy expectation of A and B is violated</span></code></pre>
+      </div>
+
+      <div class="post-note"><strong>The researcher included a screenshot as proof.</strong> The report references <code>http://i.imgur.com/j08a01n.png</code> showing Account C successfully accessing the group message content. Including visual evidence — a screenshot of the response or the rendered message — is excellent practice for this class of bug because it removes ambiguity about whether the content was genuinely returned or just the URL was accessible.</div>
+
+      <h2 id="impact">Real-World Impact</h2>
+      <p>Twitter's group DM feature is used for private, sensitive conversations among small trusted groups — business discussions, personal communications, confidential coordination. The privacy expectation when someone leaves a group is absolute: <em>they are gone, and they cannot see what we say next.</em> This vulnerability broke that expectation completely:</p>
+      <ul>
+        <li>
+          <strong>Post-departure message exposure.</strong>
+          Every message sent in a group DM after a user left was readable by that user. There is no upper time limit — the access persisted indefinitely until Twitter patched the bug. A user who left a group in January could read all messages sent through to whenever they chose to check.
+        </li>
+        <li>
+          <strong>No signal to the victim.</strong>
+          The remaining group members had no way to know their messages were being read by a departed user. No notification, no access log, no audit trail. From A and B's perspective the conversation was private. From C's perspective it remained an open book.
+        </li>
+        <li>
+          <strong>Targeted eavesdropping.</strong>
+          A malicious user could join a group DM specifically to obtain the DM IDs of early messages, then leave while continuing to monitor all subsequent messages. The departure creates a false sense of security while surveillance continues undetected.
+        </li>
+        <li>
+          <strong>Platform scale.</strong>
+          Twitter (now X) had hundreds of millions of users in 2015. Group DMs were a core communication feature. The potential scope of affected conversations was enormous — any group DM where a member had ever left was potentially exposed.
+        </li>
+      </ul>
+
+      <h2 id="access-revocation">The Access Revocation Gap — A Systemic Pattern</h2>
+      <p>This vulnerability belongs to a class that goes beyond simple IDOR: <strong>incomplete access revocation</strong>. The system correctly grants access when users join groups and correctly removes them from the visible participant list when they leave — but fails to revoke the underlying access permission at the resource level.</p>
+      <p>This pattern appears across many applications that manage group or shared resources:</p>
+
+      <div class="post-code">
+        <div class="post-code-header">
+          <div class="post-code-dots"><span></span><span></span><span></span></div>
+          <span class="post-code-label">Incomplete revocation — common failure pattern</span>
+        </div>
+        <pre><code><span class="cc">── Access grant (correctly implemented) ────────────────────────</span>
+<span class="cc"># User joins group → gains access to group resources</span>
+<span class="cc"># Recorded: group_membership table, user_id + group_id</span>
+
+<span class="cc">── Access revocation (incomplete in this bug) ──────────────────</span>
+<span class="cc"># User leaves group → removed from participant list (UI level)</span>
+<span class="cc"># BUT: resource-level access check still passes for this user</span>
+<span class="cc"># The permission model and the enforcement model are out of sync</span>
+
+<span class="cc">── Correct revocation ──────────────────────────────────────────</span>
+<span class="cc"># On every resource access (message, file, event):</span>
+<span class="cc"># CHECK group_membership WHERE user_id = current_user AND group_id = this_group</span>
+<span class="cc"># If not found → 403 Forbidden, regardless of other session validity</span></code></pre>
+      </div>
+
+      <p>The test for this class of vulnerability is always the same: <strong>perform the revocation event (leave, unshare, revoke invite), then attempt to access the resource using the revoked account</strong>. If access succeeds, revocation is incomplete.</p>
+
+      <h2 id="fix">The Fix</h2>
+      <p>The correct fix is to add a <strong>current membership check</strong> to every endpoint that accesses group DM content — not just the inbox listing, but every individual message endpoint:</p>
+
+      <div class="post-code">
+        <div class="post-code-header">
+          <div class="post-code-dots"><span></span><span></span><span></span></div>
+          <span class="post-code-label">Pseudocode — before and after the fix</span>
+        </div>
+        <pre><code><span class="cc"># Before the fix — authentication only, no membership check</span>
+<span class="ck">def</span> <span class="cf">get_dm_action</span>(dm_id, current_user):
+    message = DirectMessage.find(dm_id)
+    <span class="ck">if not</span> message:
+        <span class="ck">return</span> <span class="ch">404</span>
+    <span class="ck">return</span> render(message)    <span class="cc">← any authenticated user gets the message</span>
+
+<span class="cc"># After the fix — membership in the group verified before returning data</span>
+<span class="ck">def</span> <span class="cf">get_dm_action</span>(dm_id, current_user):
+    message = DirectMessage.find(dm_id)
+    <span class="ck">if not</span> message:
+        <span class="ck">return</span> <span class="ch">404</span>
+
+    <span class="cc"># Check: is the current user still an active member of this DM's group?</span>
+    group = message.group
+    <span class="ck">if not</span> group.<span class="cv">is_active_member</span>(current_user):
+        <span class="ck">return</span> <span class="ch">403 Forbidden</span>    <span class="cc">← departed users cannot access messages</span>
+
+    <span class="ck">return</span> render(message)</code></pre>
+      </div>
+
+      <p>Key principles for the fix:</p>
+      <ul>
+        <li><strong>Check current membership, not historical membership.</strong> The check must query whether the user is an <em>active</em> member at request time — not whether they were ever a member. A user who left is no longer active, even if their user ID appears in the group's history.</li>
+        <li><strong>Apply the check to every resource endpoint.</strong> The inbox listing was correctly protected. The individual message endpoint was not. Every endpoint that touches group content needs the same membership gate — no exceptions for "action" endpoints, AJAX endpoints, or API endpoints.</li>
+        <li><strong>Membership revocation must be synchronous.</strong> When a user leaves a group, their access must be revoked immediately and atomically — not eventually, not lazily. Any window between departure and access revocation is exploitable.</li>
+      </ul>
+
+      <h2 id="hunting">How to Hunt Incomplete Access Revocation IDORs</h2>
+      <ul>
+        <li>
+          <strong>Identify every membership / access-grant event in the application.</strong>
+          Group DM invitations, workspace invitations, file sharing, document collaboration permissions — any feature where one user grants another user access to a resource. Each of these has a corresponding revocation event to test.
+        </li>
+        <li>
+          <strong>Perform the revocation, then test resource access immediately.</strong>
+          Leave the group, revoke the share, remove the collaborator. As the revoked user, attempt to access the resource directly using its URL or API endpoint. If access succeeds, revocation is incomplete.
+        </li>
+        <li>
+          <strong>Test resource-level endpoints specifically, not just listing endpoints.</strong>
+          Applications often protect the listing (inbox, file list, document index) but miss individual resource endpoints (message view, file download, document edit). After revocation, test both: the listing (which should show nothing) and specific resource URLs (which should return 403).
+        </li>
+        <li>
+          <strong>Use direct URLs / API calls, not the UI.</strong>
+          The UI may correctly hide the resource from the revoked user. But the API endpoint that serves the resource may still respond. Always test by constructing direct HTTP requests — the UI is not a security boundary.
+        </li>
+        <li>
+          <strong>Record resource IDs before the revocation event.</strong>
+          When you are still a member of a group, note the IDs of specific messages, files, or documents. After leaving, attempt to access those specific IDs. This confirms the gap precisely and produces a clean PoC.
+        </li>
+        <li>
+          <strong>Test with newly created resources too.</strong>
+          After leaving a group, have another account create a new resource (send a message). Attempt to access its URL. If even newly created resources — ones that exist only after your departure — are accessible, the access check is based on historical membership (or no membership check at all) rather than current membership.
+        </li>
+      </ul>
+
+      <div class="post-code">
+        <div class="post-code-header">
+          <div class="post-code-dots"><span></span><span></span><span></span></div>
+          <span class="post-code-label">Test checklist — access revocation verification</span>
+        </div>
+        <pre><code><span class="cc"># Step 1: join group, note resource IDs (message IDs, file IDs, etc.)</span>
+<span class="cc"># Step 2: leave the group</span>
+<span class="cc"># Step 3: test access to resources that existed BEFORE departure</span>
+<span class="ck">GET</span> /messages/<span class="ch">PRE_DEPARTURE_ID</span>   <span class="cc">← should be 403</span>
+
+<span class="cc"># Step 4: have another member create a NEW resource AFTER your departure</span>
+<span class="cc"># Step 5: test access to resources that exist AFTER departure</span>
+<span class="ck">GET</span> /messages/<span class="ch">POST_DEPARTURE_ID</span>  <span class="cc">← should be 403</span>
+
+<span class="cc"># If either succeeds: revocation is incomplete → IDOR confirmed</span>
+<span class="cc"># Pre-departure access: historical membership trusted (wrong)</span>
+<span class="cc"># Post-departure access: no membership check at all (worst case)</span></code></pre>
+      </div>
+
+      <hr class="post-divider" />
+
+      <h2 id="refs">References</h2>
+      <ul class="post-refs">
+        <li><a href="https://hackerone.com/reports/53858" target="_blank" rel="noopener">[1] HackerOne Report #53858 — IDOR: Access group DMs after leaving (X / xAI, Twitter)</a></li>
+        <li><a href="https://hackerone.com/reports/52646" target="_blank" rel="noopener">[2] Related: HackerOne Report #52646 — IDOR: Deleted DMs still accessible via Twitter API</a></li>
+        <li><a href="https://owasp.org/www-project-web-security-testing-guide/latest/4-Web_Application_Security_Testing/05-Authorization_Testing/04-Testing_for_Insecure_Direct_Object_References" target="_blank" rel="noopener">[3] OWASP WSTG — Testing for Insecure Direct Object References</a></li>
+        <li><a href="https://portswigger.net/web-security/access-control/idor" target="_blank" rel="noopener">[4] PortSwigger Web Security Academy — IDOR</a></li>
+        <li><a href="https://cheatsheetseries.owasp.org/cheatsheets/Insecure_Direct_Object_Reference_Prevention_Cheat_Sheet.html" target="_blank" rel="noopener">[5] OWASP IDOR Prevention Cheat Sheet</a></li>
+        <li><a href="https://cwe.mitre.org/data/definitions/639.html" target="_blank" rel="noopener">[6] CWE-639 — Authorization Bypass Through User-Controlled Key</a></li>
+      </ul>
+
+      <div class="post-nav">
+        <a href="./blog-h1-52646-idor-twitter-deleted-dms.html" class="post-nav-link post-nav-prev">
+          <span class="post-nav-dir">← Previous Post</span>
+          <span class="post-nav-title">IDOR: Deleted DMs Still Accessible via Twitter API #52646</span>
+        </a>
+        <a href="./blog-h1-57163-open-redirect-hackerone.html" class="post-nav-link post-nav-next">
+          <span class="post-nav-dir">Next Post →</span>
+          <span class="post-nav-title">Open Redirect on HackerOne.com #57163</span>
+        </a>
+      </div>
+
+    </article>
+  </div>
+
+</div>
+
+<footer>
+  <p>© 2025 <span class="f-name">Darshak Patel</span> · B.Tech CSE Cybersecurity</p>
+  <div class="f-links">
+    <a href="../../index.html">Home</a>
+    <a href="../../pages/about.html">About</a>
+    <a href="../../pages/expertise.html">Expertise</a>
+    <a href="../../pages/certifications.html">Certifications</a>
+    <a href="../../pages/achievements.html">Achievements</a>
+    <a href="../../pages/tools.html">Tools</a>
+    <a href="../../pages/resources.html">Resources</a>
+    <a href="../index.html">Blog</a>
+    <a href="../../pages/contact.html">Contact</a>
+  </div>
+</footer>
+
+<script src="../../assets/js/main.js"></script>
+<script>
+  (function () {
+    const bar = document.getElementById('read-progress');
+    function update() {
+      const h = document.documentElement;
+      const pct = (h.scrollTop / (h.scrollHeight - h.clientHeight)) * 100;
+      bar.style.width = Math.min(pct, 100) + '%';
+    }
+    window.addEventListener('scroll', update, { passive: true });
+    update();
+  })();
+  (function () {
+    const links = document.querySelectorAll('.toc-list a');
+    const headings = Array.from(document.querySelectorAll('.post-article h2[id]'));
+    if (!links.length || !headings.length) return;
+    function onScroll() {
+      const top = window.scrollY + 100;
+      let active = headings[0];
+      for (const h of headings) { if (h.offsetTop <= top) active = h; }
+      links.forEach(l => l.classList.toggle('active', l.getAttribute('href') === '#' + active.id));
+    }
+    window.addEventListener('scroll', onScroll, { passive: true });
+    onScroll();
+  })();
+</script>
+</body>
+</html>
